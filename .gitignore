@@ -1,0 +1,11 @@
+var/
+config/
+databases/
+files/
+img/
+error.log
+.htaccess
+TODO
+MAJ.log
+DEMO.sqlite
+themes/default/gravatars/*.png

@@ -1,0 +1,192 @@
+/* NOTES
+------------------------------------------------------------ */
+.notes-menu-buttons {
+	margin: 2px 0;
+	padding: 0;
+	text-align: right;
+}
+
+.notes-menu-buttons > li {
+	display: inline-block;
+}
+
+.notes-menu-buttons button::before {
+	font-size: 1.6em;
+}
+
+.notes-menu-buttons button {
+	vertical-align: middle;
+}
+
+#list-notes {
+	text-align: center;
+}
+
+#post-new-note label[for="note"]::before {
+	content: "\e944";
+}
+
+.notebloc {
+	box-sizing: border-box;
+	max-height: 300px;
+	width: 240px;
+	word-wrap: break-word;
+	position: relative;
+	z-index: 1;
+	vertical-align: text-top;
+	display: inline-flex; 
+	flex-direction: column;
+	background-color: #fafaba;
+	transition: box-shadow .2s ease-in;
+	margin: 10px;
+	padding: 0 0 50px;
+	overflow: hidden;
+	text-align: left;
+
+}
+
+.notebloc:hover {
+	box-shadow: 0 2px 15px rgba(0,0,0,0.30);
+}
+
+.notebloc .title > h2,
+#popup.popup-note .title > h2 {
+	padding: 15px;
+	margin: 0;
+	font-size: 1.1em;
+	font-weight: 700;
+}
+
+.notebloc > .content {
+	white-space: pre-line;
+	overflow-y: hidden;
+}
+
+.notebloc > .content,
+#popup.popup-note .content {
+	margin: 0;
+	padding: 15px;
+	font-size: 1em;
+	flex: 1;
+}
+
+.noteCtrls {
+	position: relative;
+	margin: 0;
+	padding: 0 5px 5px;
+	display: flex;
+	align-items: center;
+}
+
+.noteCtrls > button {
+	background-color: transparent;
+	border: 1px solid transparent;
+	border-radius: 50%;
+	height: 40px;
+	width: 40px;
+	transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
+	padding: 0;
+	color: rgba(0, 0, 0, .6);
+	transition: opacity .2s ease-in;
+}
+
+.noteCtrls > button::before {
+	font-size: 1.6em;
+}
+
+.noteCtrls > button.colorIcon::before { content: "\e946"; }
+.noteCtrls > button.supprIcon::before { content: "\e90f"; }
+
+.noteCtrls > .colors {
+	display: none;
+	position: absolute;
+	list-style: none;
+	height: 95px;
+	width: 95px;
+	left: 4px;
+	bottom: 4px;
+	margin: 0;
+	padding: 0;
+	background-color: white;
+	border-radius: 2px;
+	box-shadow: 2px 2px 3px rgba(0, 0, 0, .2);
+	line-height: 0;
+}
+
+.noteCtrls .colorIcon:focus + .colors,
+.noteCtrls .colors:hover {
+	display: block;
+}
+
+.noteCtrls > .colors > li {
+	box-sizing: border-box;
+	border: 1px silver solid;
+	cursor: pointer;
+	width: 25px;
+	height: 25px;
+	display: inline-block;
+	border-radius: 50%;
+	margin: 5px 0 0 5px;
+}
+
+.noteCtrls > .colors > li:hover {
+	opacity: .95;
+	border-color: gray;
+}
+
+.noteCtrls li > button:focus,
+.noteCtrls li > button::-moz-focus-inner {
+	background-color: rgba(0, 0, 0, .05);
+	transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1) 0s;
+	outline: none;
+	border-color: transparent;
+}
+
+
+/* on popup display */
+
+#popup.popup-note {
+	min-height: 300px;
+	min-width: 360px;
+	width: 600px;
+	box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.3), 0 0px 12px 0 rgba(0, 0, 0, 0.3);
+	overflow: hidden; /* for rounded corners */
+	padding: 0;
+	max-width: 100%;
+	max-height: 100%;
+	resize: both;
+	display: flex;
+	flex-direction: column;
+	animation:  appearSlow .2s;
+}
+
+#popup.popup-note > textarea.content {
+	background: transparent;
+	border: 0;
+	resize: none;
+}
+
+#popup.popup-note > .date {
+	padding: 0 15px;
+	text-align: right;
+	font-style: italic;
+	font-size: .9em;
+	color: #666;
+}
+#popup.popup-note .submit-bttns {
+	width: auto;
+	flex: 1;
+	padding: 0;
+	margin: 5px 10px;
+}
+
+#popup.popup-note .noteCtrls .submit {
+	background: white;
+	box-shadow: none;
+	color: #222;
+	font-size: .9em;
+}
+
+#popup.popup-note .noteCtrls .button-cancel {
+	background: transparent;
+}

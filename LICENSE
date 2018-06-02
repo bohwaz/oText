@@ -1,0 +1,78 @@
++-=======================================================================-+
+|                                oText                                    |
++-=======================================================================-+
+| oText                                                                   |
+|   is a lightweight Blog engine with several web-related capabilities.   |
+|                                                                         |
+| (c) 2006      Frederic Nassar.                                          |
+| (c) 2010-2016 Timo van Neerden, AKA Le Hollandais Volant                |
+| (c) 2016-     Timo van Neerden                                          |
+|                                                                         |
+| oText is redistributed under the terms of the X11 / MIT Licence         |
+|                                      http://opensource.org/licenses/MIT |
+|                                                                         |
+| oText is based upon others ressources, that are listed below.           |
+|                                                                         |
+|                                                                         |
++-=======================================================================-+
+
+
++-=======================================================================-+
+|                                                         BLOGOTEXT       |
++-------------------------------------------------------------------------+
+| https://github.com/blogotext/blogotext/                                 |
+|                                                                         |
+| Blogotext was created by Frederic Nassar in 2006.                       |
+| It has been pushed forward between 2010 and 2016 by Timo van Neerden    |
+|                                                                         |
+| Blogotext was freed to the community in 2016 and still goes on.         |
+|                                                                         |
+| oText is a fork of Blogotext that moves on its own.                     |
+|                                                                         |
++-------------------------------------------------------------------------+
+|                                            GOOGLE MATERIAL DESIGN ICONS |
++-------------------------------------------------------------------------+
+| https://github.com/google/material-design-icons                         |
+|                                                                         |
+| (c) 2014 Google Inc                                                     |
+|                                                                         |
+| The ressource is included according to the CC-BY-4.0 license            |
+|                                                                         |
++-------------------------------------------------------------------------+
+|                                                     GOOGLE ROBOTO FONTS |
++-------------------------------------------------------------------------+
+| https://www.google.com/fonts/specimen/Roboto                            |
+|                                                                         |
+| Roboto is free font set for material design                             |
+|                                                                         |
+| (c) 2014 Google Inc                                                     |
+|                                                                         |
+| These fonts are licensed under a Apache License and included in         |
+| Blogotext accordingly.                                                  |
+|                                                                         |
++-------------------------------------------------------------------------+
+
+
++--------------------------------------------------------------------------------+
+| MIT License                                                                    |
+|                                                                                |
+| Copyright (c) 2018 timo van neerden                                            |
+|                                                                                |
+| Permission is hereby granted, free of charge, to any person obtaining a copy   |
+| of this software and associated documentation files (the "Software"), to deal  |
+| in the Software without restriction, including without limitation the rights   |
+| to use, copy, modify, merge, publish, distribute, sublicense, and/or sell      |
+| copies of the Software, and to permit persons to whom the Software is          |
+| furnished to do so, subject to the following conditions:                       |
+|                                                                                |
+| The above copyright notice and this permission notice shall be included in all |
+| copies or substantial portions of the Software.                                |
+|                                                                                |
+| THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     |
+| IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,       |
+| FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE    |
+| AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER         |
+| LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  |
+| OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  |
+| SOFTWARE.                                                                      |
++--------------------------------------------------------------------------------+
