@@ -22,8 +22,21 @@
 	text-align: center;
 }
 
-#post-new-note label[for="note"]::before {
+#post-new-note {
+	cursor: pointer;
+}
+
+#post-new-note .contain::before {
 	content: "\e944";
+	font-size: 1.3em;
+	color: rgba(0, 0, 0, .5);
+	margin-right: 10px;
+	line-height: inherit;
+}
+
+#post-new-note .contain {
+	line-height: 3em;
+	color: rgba(0, 0, 0, .3);
 }
 
 .notebloc {

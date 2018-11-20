@@ -28,7 +28,7 @@ function valider_form_commentaire($commentaire, $mode) {
 	if (!strlen(trim($commentaire['bt_content'])) or $commentaire['bt_content'] == "<p></p>") { // comment may not be empty
 		$erreurs[] = $GLOBALS['lang']['err_comm_contenu'];
 	}
-	if ( !preg_match('/\d{14}/',$commentaire['bt_article_id']) ) { // comment has to be on a valid article_id
+	if (empty(trim($commentaire['bt_article_id']))) {
 		$erreurs[] = $GLOBALS['lang']['err_comm_article_id'];
 	}
 
@@ -70,7 +70,6 @@ function valider_form_commentaire_ajax($commentaire) {
 }
 
 function valider_form_billet($billet) {
-	$date = decode_id($billet['bt_id']);
 	$erreurs = array();
 	if (isset($_POST['supprimer']) and !(isset($_POST['token']) and check_token($_POST['token'])) ) {
 		$erreurs[] = $GLOBALS['lang']['err_wrong_token'];

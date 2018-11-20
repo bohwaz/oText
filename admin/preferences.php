@@ -124,6 +124,9 @@ function afficher_form_prefs($erreurs = '') {
 		$fld_cfg_blog .= form_checkbox('auto_keywords', $GLOBALS['automatic_keywords'], $GLOBALS['lang']['pref_automatic_keywords'] );
 		$fld_cfg_blog .= '</p>'."\n";
 		$fld_cfg_blog .= '<p>'."\n";
+		$fld_cfg_blog .= form_select('arts_id_format', array('1' => $GLOBALS['lang']['pref_id_format_ymdhis'], '0' => $GLOBALS['lang']['pref_id_format_rand6']), $GLOBALS['format_id_blog'],$GLOBALS['lang']['pref_id_format']);
+		$fld_cfg_blog .= '</p>'."\n";
+		$fld_cfg_blog .= '<p>'."\n";
 		$fld_cfg_blog .= form_checkbox('global_comments', $GLOBALS['global_com_rule'], $GLOBALS['lang']['pref_allow_global_coms']);
 		$fld_cfg_blog .= '</p>'."\n";
 		$fld_cfg_blog .= '<p>'."\n";

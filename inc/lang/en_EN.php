@@ -91,6 +91,6 @@ $GLOBALS['lang'] = array(
 'label_suivant'						=> 'Older entries',
 
 // Chiffres 0 à 9 pour captcha
-'chiffres' => array('zero','one','two','three','four','five','six','seven','eight','nine');
+'chiffres' => array('zero','one','two','three','four','five','six','seven','eight','nine'),
 
 );

@@ -12,6 +12,8 @@ $begin = microtime(true);
 
 // Use UTF-8 for all
 mb_internal_encoding('UTF-8');
+mb_substitute_character('none');
+
 
 define('BT_ROOT', dirname(dirname(__file__)).'/');
 

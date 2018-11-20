@@ -89,6 +89,7 @@ function fichier_prefs() {
 		$auto_check_updates = (isset($_POST['check_update'])) ? '1' : '0';
 		$auto_dl_liens_fichiers = htmlspecialchars($_POST['dl_link_to_files']);
 		$nombre_liens_admin = htmlspecialchars($_POST['nb_list_linx']);
+		$format_id_blog = htmlspecialchars($_POST['arts_id_format']);
 	} else {
 		$lang = (isset($_POST['langue']) and preg_match('#^[a-z]{2}$#', $_POST['langue'])) ? $_POST['langue'] : 'fr';
 		$auteur = addslashes(clean_txt(htmlspecialchars(USER_LOGIN)));
@@ -112,6 +113,7 @@ function fichier_prefs() {
 		$auto_check_updates = 1;
 		$auto_dl_liens_fichiers = '0';
 		$nombre_liens_admin = '50';
+		$format_id_blog = '1';		
 	}
 	$prefs = "<?php\n";
 	$prefs .= "\$GLOBALS['lang'] = '".$lang."';\n";
@@ -136,6 +138,7 @@ function fichier_prefs() {
 	$prefs .= "\$GLOBALS['check_update']= '".$auto_check_updates."';\n";
 	$prefs .= "\$GLOBALS['max_linx_admin']= '".$nombre_liens_admin."';\n";
 	$prefs .= "\$GLOBALS['dl_link_to_files']= '".$auto_dl_liens_fichiers."';\n";
+	$prefs .= "\$GLOBALS['format_id_blog']= '".$format_id_blog."';\n";
 	$prefs .= "?>";
 	if (file_put_contents($fichier_prefs, $prefs) === FALSE) {
 		return FALSE;
@@ -271,15 +274,18 @@ function request_external_files($feeds, $timeout, $echo_progress=false) {
 
 		// exec connexions
 		$running = $oldrunning = 0;
-
+		$utime = microtime(true);
 		do {
 			curl_multi_exec($master, $running);
 
+			// echoes the nb of feeds remaining
 			if ($echo_progress === true) {
-				// echoes the nb of feeds remaining
-				echo ($total_feed_chunk-$running).'/'.$total_feed.' '; ob_flush(); flush();
+				if ($utime + 0.5 < microtime(true)) {
+					echo ($total_feed_chunk-$running).'/'.$total_feed.' '; ob_flush(); flush();
+					$utime = microtime(true);
+				}
 			}
-			usleep(100000);
+			usleep(1000);
 		} while ($running > 0);
 
 
@@ -288,7 +294,12 @@ function request_external_files($feeds, $timeout, $echo_progress=false) {
 			$response = curl_multi_getcontent($curl_arr[$url]);
 			$header_size = curl_getinfo($curl_arr[$url], CURLINFO_HEADER_SIZE);
 			$results[$url]['headers'] = http_parse_headers(mb_strtolower(substr($response, 0, $header_size)));
-			$results[$url]['body'] = trim(substr($response, $header_size));
+
+			// get only header, trim it, remove invalid UTF8 chars (half bits, etc.).
+
+			//$results[$url]['body'] = iconv("UTF-8", "UTF-8//IGNORE", trim(substr($response, $header_size))); // deprecated, iconv uses a bugged lib
+			$results[$url]['body'] = mb_convert_encoding(trim(substr($response, $header_size)), 'UTF-8'); 
+
 		}
 		// Ferme les gestionnaires
 		curl_multi_close($master);
@@ -450,11 +461,20 @@ function feed2array($feed_content, $feedlink) {
 				}
 
 				// content
-				//if (!empty($item->subtitle)) {      $flux['items'][$c]['bt_content'] = (string)$item->subtitle; }
-				//if (!empty($item->summary)) {       $flux['items'][$c]['bt_content'] = (string)$item->summary; }
 				if (!empty($item->description)) {   $flux['items'][$c]['bt_content'] = (string)$item->description; }
 				if (!empty($item->content)) {       $flux['items'][$c]['bt_content'] = (string)$item->content; }
 				if (!empty($item->children('content', true)->encoded)) { $flux['items'][$c]['bt_content'] = (string)$item->children('content', true)->encoded; }
+
+				// SPECIAL CASES
+				//  for Youtube
+				if (strpos(parse_url($feedlink, PHP_URL_HOST), 'youtube.com') !== FALSE) {
+					$content = $item->children('media', true)->group->children('media', true)->description;
+					$yt_video_id = (string)$item->children('yt', true)->videoId;
+					if (!empty($yt_video_id) ) { $flux['items'][$c]['bt_content'] = '<iframe width="1120" height="630" src="https://www.youtube.com/embed/'.$yt_video_id.'?rel=0"></iframe>'; }
+					if (!empty($content) ) { $flux['items'][$c]['bt_content'] .= nl2br((string) $content); }
+				}
+
+
 				if (empty($flux['items'][$c]['bt_content'])) $flux['items'][$c]['bt_content'] = '-';
 
 				// place le lien du flux (on a besoin de ça)

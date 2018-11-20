@@ -73,14 +73,9 @@ echo '</div>'."\n";
 $out_html = '';
 $out_html .= '<div id="page">'."\n";
 
-$out_html .= '<form method="get" id="post-new-note" action="#">'."\n";
-$out_html .= '<fieldset>'."\n";
-$out_html .= "\t".'<div class="contain-input">'."\n";
-$out_html .= "\t\t".'<label for="note">'.$GLOBALS['lang']['label_note_ajout'].'</label>'."\n";
-$out_html .= "\t\t".'<input type="text" name="note" id="note" value="" size="70" placeholder="'.$GLOBALS['lang']['label_note_ajout'].'" class="text" autocomplete="off" tabindex="10" />'."\n";
-$out_html .= "\t".'</div>'."\n";
-$out_html .= '</fieldset>'."\n";
-$out_html .= '</form>'."\n\n";
+$out_html .= '<div id="post-new-note">'."\n";
+$out_html .= "\t".'<div class="contain">'.$GLOBALS['lang']['label_note_ajout'].'</div>'."\n";
+$out_html .= '</div>'."\n\n";
 
 $out_html .= '<div id="list-notes">'."\n";
 $out_html .= send_notes_json($tableau, true);

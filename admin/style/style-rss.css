@@ -6,7 +6,7 @@
 }
 
 #body.feeds #header {
-	box-shadow: 280px 1px 3px 0 rgba(0,0,0,0.5);
+	box-shadow: 280px 1px 8px rgba(0,0,0,.5);
 }
 
 #rss-list {
@@ -285,9 +285,12 @@
 	height: auto;
 }
 
-#post-list > li iframe[src="^https://www.youtube.com/"] {
+#post-list > li iframe[src^="https://www.youtube.com/"] {
 	max-width: 100%;
-	height: auto;
+	width: 100%;
+	display: block;
+	border: 0;
+	margin: 10px 0;
 }
 
 /* rss entry title */

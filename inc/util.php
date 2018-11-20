@@ -25,10 +25,17 @@ function decode_id($id) {
 	return $retour;
 }
 
-// used sometimes, like in the email that is sent.
+// Returns the URL of a blog post (with it’s id and title)
+
 function get_blogpath($id, $titre) {
-	$date = decode_id($id);
-	$path = $GLOBALS['racine'].'?d='.$date['annee'].'/'.$date['mois'].'/'.$date['jour'].'/'.$date['heure'].'/'.$date['minutes'].'/'.$date['secondes'].'-'.titre_url($titre);
+
+	if (strlen($id) === 14 and preg_match('#\d{14}#', $id)) {
+		$date = decode_id($id);
+		$path = $GLOBALS['racine'].'?d='.$date['annee'].'/'.$date['mois'].'/'.$date['jour'].'/'.$date['heure'].'/'.$date['minutes'].'/'.$date['secondes'].'-'.titre_url($titre);
+	}
+	else {
+		$path = $GLOBALS['racine'].'?d='.$id.'--'.trim(diacritique($titre), '-');
+	}
 	return $path;
 }
 
@@ -65,8 +72,13 @@ function check_session() {
 	} else {
 		$ip = date('m');
 	}
-	@session_start();
 	ini_set('session.cookie_httponly', TRUE);
+	session_set_cookie_params(365*24*60*60); // set new expiration time to the browser
+	@session_start([
+		'cookie_lifetime' => 86400*365,
+		'cookie_secure'   => isHTTPS(),
+		'cookie_httponly' => true,
+	]);
 
 	// generate hash for cookie
 	$newUID = hash('sha256', USER_PWHASH.USER_LOGIN.md5($_SERVER['HTTP_USER_AGENT'].$ip));
@@ -74,7 +86,6 @@ function check_session() {
 	// check old cookie  with newUID
 	if (isset($_COOKIE['BT-admin-stay-logged']) and $_COOKIE['BT-admin-stay-logged'] == $newUID) {
 		$_SESSION['user_id'] = md5($newUID);
-		session_set_cookie_params(365*24*60*60); // set new expiration time to the browser
 		session_regenerate_id(true);  // Send cookie
 		// Still logged in, return
 		return TRUE;
@@ -109,10 +120,14 @@ function operate_session() {
 
 function fermer_session() {
 	unset($_SESSION['nom_utilisateur'], $_SESSION['user_id'], $_SESSION['tokens']);
-	setcookie('BT-admin-stay-logged', NULL);
+	setcookie('BT-admin-stay-logged', null, time()-3600, null, null, isHTTPS(), true);
+
 	session_destroy(); // destroy session
 	// Saving server-side the possible lost data (writing article for example)
-	session_start();
+	session_start([
+		'cookie_secure'   => isHTTPS(),
+		'cookie_httponly' => true,
+	]);
 	session_regenerate_id(true); // change l'ID au cas ou
 	foreach($_POST as $key => $value){
 		$_SESSION['BT-post-'.$key] = $value;
@@ -274,4 +289,8 @@ function rm_dots_dir($array) {
 	if (($key = array_search('..', $array)) !== FALSE) { unset($array[$key]); }
 	if (($key = array_search('.', $array)) !== FALSE) { unset($array[$key]); }
 	return ($array);
+}
+
+function isHTTPS() {
+	return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
 }

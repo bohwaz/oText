@@ -6,6 +6,7 @@
 // See "LICENSE" file for info.
 // *** LICENSE ***
 
+set_time_limit (180);
 require_once 'inc/boot.php';
 operate_session();
 $GLOBALS['liste_flux'] = open_serialzd_file(FEEDS_DB);
@@ -248,6 +249,10 @@ function insert_bak_table($json) {
 				switch ($type) {
 					case 'articles':
 						foreach($data[$type] as $art) {
+							// if old syntax (< june 2018)
+							/*if (preg_match('#\d{14}#', $art['bt_id'])) {
+								$art['bt_id'] = substr(md5($art['bt_id']), 0, 6);
+							}*/
 							$query = 'INSERT INTO articles ( bt_type, bt_id, bt_date, bt_title, bt_abstract, bt_notes, bt_link, bt_content, bt_wiki_content, bt_tags, bt_keywords, bt_nb_comments, bt_allow_comments, bt_statut ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )';
 							$array = array( $art['bt_type'], $art['bt_id'], $art['bt_date'], $art['bt_title'], $art['bt_abstract'], $art['bt_notes'], $art['bt_link'], $art['bt_content'], $art['bt_wiki_content'], $art['bt_tags'], $art['bt_keywords'], $art['bt_nb_comments'], $art['bt_allow_comments'], $art['bt_statut'] );
 							$req = $GLOBALS['db_handle']->prepare($query);
@@ -257,13 +262,17 @@ function insert_bak_table($json) {
 
 					case 'commentaires':
 						foreach($data[$type] as $com) {
+							if (preg_match('#\d{14}#', $com['bt_article_id'])) {
+								$com['bt_article_id'] = substr(md5($com['bt_article_id']), 0, 6);
+							}
+
 							$query = 'INSERT INTO commentaires (bt_type, bt_id, bt_article_id, bt_content, bt_wiki_content, bt_author, bt_link, bt_webpage, bt_email, bt_subscribe, bt_statut) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 							$array = array($com['bt_type'], $com['bt_id'], $com['bt_article_id'], $com['bt_content'], $com['bt_wiki_content'], $com['bt_author'], $com['bt_link'], $com['bt_webpage'], $com['bt_email'], $com['bt_subscribe'], $com['bt_statut']);
 							$req = $GLOBALS['db_handle']->prepare($query);
 							$req->execute($array);
 
-							recompte_commentaires();
 						}
+						recompte_commentaires();
 						break;
 
 					case 'links':

@@ -38,32 +38,30 @@
 	color: #333;
 }
 
-#post-new-lien .contain-input,
-#post-new-note .contain-input {
+#post-new-lien .contain-input {
 	display: flex;
 	align-items: center;
 }
 
-#post-new-lien label[for="url"],
-#post-new-note label[for="note"] {
+#post-new-lien label[for="url"] {
 	width: 24px;
 	height: 24px;
 	overflow: hidden;
 }
 
-#post-new-lien label[for="url"]::before,
-#post-new-note label[for="note"]::before {
-	content: "\e910";
+#post-new-lien label[for="url"]::before {
+	content: "\e94a";
 	font-size: 1.3em;
 	line-height: 24px;
 	color: rgba(0, 0, 0, .5);
 }
 
-#post-new-lien #url,
-#post-new-note #note {
+#post-new-lien #url {
 	width: 100%;
 	min-width: 0;
 	background: white;
+	box-shadow: none;
+	border: none;
 }
 
 /* Form new link (title, descr, tags…)
@@ -93,6 +91,7 @@
 	padding: 14px 7px 2px 1px;
 	margin: 5px 0 0 0;
 	max-width: 100%;
+	box-shadow: none;
 }
 
 

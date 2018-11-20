@@ -16,25 +16,26 @@ $GLOBALS['liste_flux'] = open_serialzd_file(FEEDS_DB);
 function feed_list_html() {
 	// counts unread feeds in DB
 	$feeds_nb = rss_count_feed();
-	$total_unread = $total_favs = $total_today = 0;
+
+/*	$total_unread = $total_favs = $total_today = 0;
 	foreach ($feeds_nb as $feed) {
 		$total_unread += $feed['nbrun'];
 		$total_favs += $feed['nbfav'];
 		$total_today += $feed['nbtoday'];
-	}
+	}*/
 
 
 	// first item : special buttons (all feeds ; favs ; today)
 	$html = "\t\t".'<li class="special"><ul>'."\n";
 
 		// all feeds
-		$html .= "\t\t\t".'<li class="all-feeds active-site" id="global-post-counter" data-nbrun="'.$total_unread.'"><a href="#" onclick="return RssWall.sortAll();">'.$GLOBALS['lang']['rss_label_all_feeds'].'</a></li>'."\n";
+		$html .= "\t\t\t".'<li class="all-feeds active-site" id="global-post-counter"><a href="#" onclick="return RssWall.sortAll();">'.$GLOBALS['lang']['rss_label_all_feeds'].'</a></li>'."\n";
 
 		// today items
-		$html .= "\t\t\t".'<li class="today-feeds" id="today-post-counter" data-nbrun="'.$total_today.'"><a href="#" onclick="return RssWall.sortToday();">'.$GLOBALS['lang']['rss_label_today_feeds'].'</a></li>'."\n";
+		$html .= "\t\t\t".'<li class="today-feeds" id="today-post-counter"><a href="#" onclick="return RssWall.sortToday();">'.$GLOBALS['lang']['rss_label_today_feeds'].'</a></li>'."\n";
 
 		// favorites items
-		$html .= "\t\t\t".'<li class="fav-feeds" id="favs-post-counter" data-nbrun="'.$total_favs.'"><a href="#" onclick="return RssWall.sortFavs();">'.$GLOBALS['lang']['rss_label_favs_feeds'].'</a></li>'."\n";
+		$html .= "\t\t\t".'<li class="fav-feeds" id="favs-post-counter"><a href="#" onclick="return RssWall.sortFavs();">'.$GLOBALS['lang']['rss_label_favs_feeds'].'</a></li>'."\n";
 
 	$html .= "\t\t".'</ul></li>'."\n";
 

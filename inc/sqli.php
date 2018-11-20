@@ -36,7 +36,7 @@ function create_tables() {
 			ID INTEGER PRIMARY KEY $auto_increment,
 			bt_type CHAR(20),
 			bt_id BIGINT,
-			bt_article_id BIGINT,
+			bt_article_id TEXT,
 			bt_content TEXT,
 			bt_wiki_content TEXT,
 			bt_author TEXT,
@@ -52,7 +52,7 @@ function create_tables() {
 		(
 			ID INTEGER PRIMARY KEY $auto_increment,
 			bt_type CHAR(20),
-			bt_id BIGINT,
+			bt_id TEXT,
 			bt_date BIGINT,
 			bt_title TEXT,
 			bt_abstract TEXT,
@@ -256,9 +256,8 @@ function get_entry($table, $entry, $id, $retour_mode) {
 // from an array given by SQLite's requests, this function adds some more stuf to data stored by DB.
 function init_list_articles($article) {
 	if (!empty($article)) {
-		$dec_id = decode_id($article['bt_id']);
-		$article = array_merge($article, decode_id($article['bt_date']));
-		$article['bt_link'] = $GLOBALS['racine'].'?d='.$dec_id['annee'].'/'.$dec_id['mois'].'/'.$dec_id['jour'].'/'.$dec_id['heure'].'/'.$dec_id['minutes'].'/'.$dec_id['secondes'].'-'.titre_url($article['bt_title']);
+		//$article = array_merge($article, decode_id($article['bt_date']));
+		$article['bt_link'] = get_blogpath($article['bt_id'], $article['bt_title']);
 	}
 	return $article;
 }
@@ -290,7 +289,10 @@ function init_post_article() { //no $mode : it's always admin.
 		$keywords = extraire_mots($_POST['titre'].' '.$formated_contenu);
 	}
 	$date = str_replace('-', '', $_POST['ymd']) . str_replace(':', '', $_POST['his']);
-	$id = (isset($_POST['article_id']) and preg_match('#\d{14}#', $_POST['article_id'])) ? $_POST['article_id'] : $date;
+
+	$new_id = ($GLOBALS['format_id_blog'] == '1') ? $date : substr(md5($date), 0, 6) ;
+
+	$id = (isset($_POST['article_id'])) ? $_POST['article_id'] : $new_id ;
 
 	$article = array (
 		'bt_id'				=> $id,
@@ -302,7 +304,7 @@ function init_post_article() { //no $mode : it's always admin.
 		'bt_wiki_content'	=> clean_txt($_POST['contenu']),
 		'bt_link'			=> '', // this one is not needed yet. Maybe in the futur. I dunno why it is still in the DB…
 		'bt_keywords'		=> $keywords,
-		'bt_tags'			=> (isset($_POST['categories']) ? htmlspecialchars(traiter_tags($_POST['categories'])) : ''), // htmlSpecialChars() nedded to escape the (") since tags are put in a <input/>. (') are escaped in form_categories(), with addslashes – not here because of JS problems :/
+		'bt_tags'			=> (isset($_POST['categories']) ? htmlspecialchars(traiter_tags($_POST['categories'])) : ''),
 		'bt_statut'			=> $_POST['statut'],
 		'bt_allow_comments'	=> $_POST['allowcomment'],
 	);

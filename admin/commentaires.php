@@ -9,7 +9,7 @@
 require_once 'inc/boot.php';
 operate_session();
 
-setcookie('lastAccessComments', time(), time()+365*24*60*60, null, null, false, true);
+setcookie('lastAccessComments', time(), time()+365*24*60*60, null, null, true, true);
 
 
 function afficher_commentaire($comment) {
@@ -79,8 +79,8 @@ if (isset($_POST['_verif_envoi'])) {
 }
 
 
-// if article ID is given in query string
-if ( isset($_GET['post_id']) and preg_match('#\d{14}#', $_GET['post_id']) )  {
+// if article ID is given in query string : list comments related to that Article
+if ( isset($_GET['post_id']))  {
 	$article_id = $_GET['post_id'];
 
 	$query = "SELECT c.*, a.bt_title FROM commentaires AS c, articles AS a WHERE c.bt_article_id=? AND c.bt_article_id=a.bt_id ORDER BY c.bt_id";
@@ -147,8 +147,7 @@ echo '<div id="subnav">'."\n";
 	afficher_form_filtre('commentaires', (isset($_GET['filtre'])) ? htmlspecialchars($_GET['filtre']) : '');
 	echo '<div class="nombre-elem">'."\n";
 	if (!empty($article_id)) {
-		$dec_id = decode_id($article_id);
-		$article_link = $GLOBALS['racine'].'?d='.implode('/', $dec_id).'-'.titre_url($article_title);
+		$article_link = get_blogpath($article_id, $article_title);
 		echo '<ul>'."\n";
 		echo "\t".'<li><a href="ecrire.php?post_id='.$article_id.'">'.$GLOBALS['lang']['ecrire'].$article_title.'</a></li>'."\n";
 		echo "\t".'<li><a href="'.$article_link.'">'.$GLOBALS['lang']['lien_article'].'</a></li>'."\n";

@@ -61,7 +61,7 @@ function afficher_topnav($titre, $html_sub_menu) {
 	$html .= "\t".'</div>'."\n";
 
 	// h1 title
-	$html .=  "\t".'<h1><a href="'.$tab.'">'.$titre.'</a></h1>'."\n";
+	$html .=  "\t".'<h1 id="titre-page"><a href="'.$tab.'">'.$titre.'</a></h1>'."\n";
 
 	// search field
 	if (!in_array($tab, array('preferences.php', 'ecrire.php', 'maintenance.php'))) {
@@ -174,7 +174,7 @@ function moteur_recherche() {
 	}
 	$return = "\t".'<form action="?" method="get" id="search">'."\n";
 	$return .= "\t\t".'<input id="q" name="q" type="search" size="20" value="'.$requete.'" placeholder="'.$GLOBALS['lang']['placeholder_search'].'" accesskey="f" />'."\n";
-	//$return .= "\t\t".'<label for="q">'.'</label>'."\n";
+	$return .= "\t\t".'<label id="label_q" for="q">'.$GLOBALS['lang']['rechercher'].'</label>'."\n";
 	$return .= "\t\t".'<button id="input-rechercher" type="submit">'.$GLOBALS['lang']['rechercher'].'</button>'."\n";
 	if (isset($_GET['mode'])) {
 		$return .= "\t\t".'<input id="mode" name="mode" type="hidden" value="'.htmlspecialchars(stripslashes($_GET['mode'])).'"/>'."\n";
@@ -469,8 +469,7 @@ function html_readmore() {
 		}
 		unset($articles[$i]['bt_content']);
 		// generates link
-		$dec_id = decode_id($article['bt_id']);
-		$articles[$i]['bt_link'] = $GLOBALS['racine'].'?d='.implode('/', $dec_id).'-'.titre_url($article['bt_title']);
+		$articles[$i]['bt_link'] = get_blogpath($article['bt_id'], $article['bt_title']);
 	}
 
 	// generates the UL/LI list.
@@ -491,10 +490,10 @@ function html_readmore() {
 */
 function html_get_image_from_article($article) {
 	// extract image from $article
-	preg_match('#<img *.* src=(["|\']?)(([^\1 ])*)(\1).*>#U', $article, $matches);
-	$img = '<img src=favicon.png />';
+	preg_match('#<img *.* src=(["|\']?)([^\1 ]*)(\1)[^>]*>#', $article, $matches);
+	$img = array('<img src=favicon.png />', '', 'favicon.png', '');
 	if (!empty($matches)) {
-		$img = $matches[0];
+		$img = $matches;
 	}
 	return $img;
 

@@ -10,7 +10,7 @@ $GLOBALS['langs'] = array("fr" => 'Français', "en" => 'English');
 
 if (empty($GLOBALS['lang'])) $GLOBALS['lang'] = '';
 
-switch ($GLOBALS['lang']) {
+switch ($GLOBALS['lang']['id']) {
 	case 'fr':
 		include_once('lang/fr_FR.php');
 		break;

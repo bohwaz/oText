@@ -255,6 +255,10 @@
 
 .form-commentaire .formatbut {
 	border: 1px solid silver;
+	position: absolute;
+	left: 0;
+	right: 0;
+	z-index: +3;
 }
 
 .commentbloc.foreground .cl-edit { /* hide edit button if already on edit */
@@ -264,11 +268,13 @@
 /* textarea field in comments */
 .form-commentaire .field {
 	margin-top: 30px;
+	position: relative;
 }
 
 .form-commentaire textarea.text {
 	border-left: 1px solid silver;
 	border-right: 1px solid silver;
+	padding-top: 47px;
 }
 /*.form-commentaire textarea.text:not(:invalid) {
 	border-bottom: 1px solid silver;

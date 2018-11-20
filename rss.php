@@ -31,7 +31,7 @@ $xml .= '<atom:link href="'.$GLOBALS['racine'].'rss.php'.((!empty($_SERVER['QUER
 
 // RSS DU BLOG
 /* si y'a un ID en paramètre : rss sur fil commentaires de l'article "ID" */
-if (isset($_GET['id']) and preg_match('#^[0-9]{14}$#', $_GET['id'])) {
+if (isset($_GET['id'])) {
 	$GLOBALS['db_handle'] = open_base();
 	$article_id = htmlspecialchars($_GET['id']);
 
@@ -178,8 +178,7 @@ else {
 }
 
 $end = microtime(TRUE);
-$xml .= '<!-- cached file generated on '.date("r").' -->'."\n";
-$xml .= '<!-- generated in '.round(($end - $begin),6).' seconds -->'."\n";
+$xml .= '<!-- cached file generated in '.round(($end - $begin),6).' seconds, on '.date("r").' -->'."\n";
 $xml .= '</channel>'."\n";
 $xml .= '</rss>';
 

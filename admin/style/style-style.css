@@ -189,8 +189,8 @@ body {
 	background: var(--md-primary-color);
 	position: sticky;
 	top: 0;
-	box-shadow: 0 1px 3px 0 rgba(0,0,0,0.5)
-
+	box-shadow: 0 1px 3px 0 rgba(0,0,0,0.5);
+	box-shadow: 0 1px 8px rgba(0,0,0,.5);
 }
 
 #axe { /* the entire page without top bars (#header) and footer (#footer) */
@@ -326,22 +326,22 @@ q, blockquote {
 	background: inherit;
 }
 
-#top > #nav,
-#top > h1,
-#top > #search,
-#top > #notif-icon,
-#top > #nav-acc {
+#nav,
+#titre-page,
+#search,
+#notif-icon,
+#nav-acc {
 	box-sizing: border-box;
 	line-height: 48px;
 }
 
 /* TOP > Left nav bar
 ------------------------------------------------------*/
-#top > #nav {
+#nav {
 	flex: 0 0 48px;
 }
 
-#top > #nav::before {
+#nav::before {
 	font-size: 1.6em;
 	text-align: center;
 	content: "\e906";
@@ -354,7 +354,7 @@ q, blockquote {
 
 /* TOP > Left nav bar > menu
 ----------------------------------------*/
-#top > #nav > ul {
+#nav > ul {
 	list-style-type: none;
 	margin: 0;
 	padding: 20px;
@@ -372,7 +372,7 @@ q, blockquote {
 	border-radius: 2px;
 }
 
-#top > #nav > ul::before {
+#nav > ul::before {
 	content: "";
 	position: absolute;
 	padding: 7px;
@@ -384,13 +384,13 @@ q, blockquote {
 	background: inherit;
 }
 
-#top > #nav > ul.visible {
+#nav > ul.visible {
 	opacity: 1;
 	transform: translateY(0);
 	transition: opacity .2s ease-in;
 }
 
-#top > #nav > ul > li {
+#nav > ul > li {
 	margin: 5px;
 	display: inline-block;
 	height: 70px;
@@ -403,11 +403,11 @@ q, blockquote {
 	border-radius: 2px;
 }
 
-#top > #nav > ul > li:hover {
+#nav > ul > li:hover {
 	border-color: rgba(0, 0, 0, .1);
 }
 
-#top > #nav a {
+#nav a {
 	margin: 0;
 	display: block;
 	text-decoration: none;
@@ -442,7 +442,7 @@ q, blockquote {
 
 /* TOP > H1 : title w/ link;
 ------------------------------------------------------*/
-#top > h1 {
+#titre-page {
 	flex: 1 0 auto;
 	padding-left: 8px;
 	margin: 0;
@@ -450,7 +450,7 @@ q, blockquote {
 	font-weight: normal;
 }
 
-#top > h1 > a {
+#titre-page > a {
 	text-decoration: none;
 	color: inherit;
 	display: inline-block;
@@ -458,7 +458,7 @@ q, blockquote {
 
 /* TOP > Search button + searchbar
 ------------------------------------------------------*/
-#top > #search {
+#search {
 	flex: 0 1 550px;
 	margin: 0 15px 0 8px;
 	display: flex;
@@ -470,7 +470,10 @@ q, blockquote {
 	overflow: hidden;
 }
 
-#top #q { /* normal */
+#input-rechercher {
+	display: none;
+}
+#q { /* normal */
 	padding: 0 10px;
 	border: 1px solid transparent;
 	box-sizing: border-box;
@@ -481,26 +484,27 @@ q, blockquote {
 	background-color: transparent;
 }
 
-#top #q:focus,
-#top #q:focus + button::before,
-#top #q[value=""]:focus,
-#top #q[value=""]:focus + button::before,
-#top #q:not([value=""]),
-#top #q:not([value=""]) + button::before { /* focus OR not empty (a search is done) */
+#q:focus,
+#q:focus + #label_q::before,
+#q[value=""]:focus,
+#q[value=""]:focus + #label_q::before,
+#q:not([value=""]),
+#q:not([value=""]) + label::before { /* focus OR not empty (a search is done) */
 	background: rgba(255, 255, 255, 1);
 }
 
 
-#top #input-rechercher {
+#label_q {
 	border: 0;
 	overflow: hidden;
 	padding: 0;
 	box-sizing: border-box;
 	flex: 0 0 48px;
 	order: 1;
+	text-align: center;
 }
 
-#top #input-rechercher::before {
+#label_q::before {
 	content: "\e925";
 	position: relative;
 	font-size: 1.6em;
@@ -511,19 +515,19 @@ q, blockquote {
 }
 
 
-#top #q:hover { /* hover */
+#q:hover { /* hover */
 	cursor: text;
 }
 
 
 /* TOP > Notif-icon / drop-down menu
 ------------------------------------------------------*/
-#top > #notif-icon {
+#notif-icon {
 	flex: 0 0 48px;
 	position: relative;
 }
 
-#top > #notif-icon::before {
+#notif-icon::before {
 	font-size: 1.6em;
 	text-align: center;
 	content: "\e948";
@@ -534,11 +538,11 @@ q, blockquote {
 
 }
 
-#top > #notif-icon.hasNotifs::before {
+#notif-icon.hasNotifs::before {
 	content: "\e949";
 }
 
-#top > #notif-icon.hasNotifs::after {
+#notif-icon.hasNotifs::after {
 	content: attr(data-nb-notifs);
 	position: absolute;
 	color: white;
@@ -553,7 +557,7 @@ q, blockquote {
 	right: 30px;
 }
 
-#top > #notif-icon > ul {
+#notif-icon > ul {
 	list-style-type: none;
 	margin: 0;
 	padding: 25px 10px;
@@ -572,7 +576,7 @@ q, blockquote {
 	border-radius: 2px;
 }
 
-#top > #notif-icon > ul::before {
+#notif-icon > ul::before {
 	content: "";
 	position: absolute;
 	padding: 7px;
@@ -584,14 +588,14 @@ q, blockquote {
 	background: inherit;
 }
 
-#top > #notif-icon > ul.visible {
+#notif-icon > ul.visible {
 	opacity: 1;
 	z-index: 1;
 	transition: opacity .4s ease-out;
 	transform: translateY(0);
 }
 
-#top > #notif-icon a {
+#notif-icon a {
 	margin: 0;
 	display: block;
 	text-decoration: none;
@@ -600,7 +604,7 @@ q, blockquote {
 	border-radius: 2px;
 }
 
-#top > #notif-icon a:hover {
+#notif-icon a:hover {
 	background: rgba(0, 0, 0, .1);
 }
 
@@ -608,11 +612,11 @@ q, blockquote {
 
 /* TOP > Right nav bar
 ------------------------------------------------------*/
-#top > #nav-acc {
+#nav-acc {
 	flex: 0 0 48px;
 }
 
-#top > #nav-acc::before {
+#nav-acc::before {
 	font-size: 2em;
 	text-align: center;
 	content: "\e900";
@@ -624,7 +628,7 @@ q, blockquote {
 
 /* TOP > right menu
 ----------------------------------------*/
-#top > #nav-acc > ul {
+#nav-acc > ul {
 	list-style-type: none;
 	margin: 0;
 	padding: 0;
@@ -641,13 +645,13 @@ q, blockquote {
 
 }
 
-#top > #nav-acc > ul.visible {
+#nav-acc > ul.visible {
 	transition: transform .4s ease-out;
 	transform: translateY(0);
 }
 
 
-#top > #nav-acc a {
+#nav-acc a {
 	margin: 0;
 	height: 45px;
 	line-height: 45px;
@@ -657,18 +661,18 @@ q, blockquote {
 	color: inherit;
 }
 
-#top > #nav-acc a:hover {
+#nav-acc a:hover {
 	background: rgba(0, 0, 0, .1);
 }
 
-#top > #nav-acc a:after {
+#nav-acc a:after {
 	font-size: 1.9em;
 	margin-left: 5px;
 }
 
-#top > #nav-acc #lien-preferences:after { content: "\e914"; }
-#top > #nav-acc #lien-site:after        { content: "\e912"; }
-#top > #nav-acc #lien-deconnexion:after { content: "\e90e"; }
+#nav-acc #lien-preferences:after { content: "\e914"; }
+#nav-acc #lien-site:after        { content: "\e912"; }
+#nav-acc #lien-deconnexion:after { content: "\e90e"; }
 
 
 /* TOP > Sub-menu (on specific pages)
@@ -878,24 +882,23 @@ form {
 
 .text {
 	margin: 0;
-	padding: 10px;
-	border: 0 solid transparent;
+	padding: 15px;
+	border: 1px solid transparent;
+	border-bottom-color: silver;
 	border-radius: 0;
 	background: white no-repeat;
-	background-image: linear-gradient(to bottom, #2196F3, #2196F3), linear-gradient(to bottom, silver, silver);
-	background-position: 0 100%, 100% 100%;
-	background-size: 0 2px, 100% 1px;
-	transition: background-size 0.3s cubic-bezier(0.64, 0.09, 0.08, 1);
+	position: relative;
 }
 
 .text:invalid {
 	box-shadow: none;
 	outline: none;
-	background-image: linear-gradient(to bottom, #f44336, #f44336), linear-gradient(to bottom, silver, silver);
+	border-bottom-color: red;
 }
 
 .text:focus {
-	background-size: 100% 2px, 100% 1px;
+	box-shadow: 0px 0px 5px 2px silver;
+	z-index: 2;
 }
 
 
@@ -911,6 +914,9 @@ select {
 	max-width: 250px;
 }
 
+select:focus {
+	box-shadow: 0px 0px 5px 2px silver;
+}
 select option,
 select optgroup::before {
 	border: 0;

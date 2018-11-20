@@ -32,7 +32,11 @@ if (extension_loaded('zlib')) {
 
 header('Content-Type: text/html; charset=UTF-8');
 
-session_start();
+session_start([
+    'cookie_lifetime' => 86400*365,
+    'cookie_secure'   => true,
+    'cookie_httponly' => true,
+]);
 
 $GLOBALS['db_handle'] = open_base();
 
@@ -40,6 +44,19 @@ $GLOBALS['db_handle'] = open_base();
 /*****************************************************************************
  some misc requests
 ******************************************************************************/
+
+// Old syntaxed ID in URL : redirects to new ID syntax
+/*if ( isset($_GET['d']) and preg_match('#^\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2}#', $_GET['d']) ) {
+	$tab = explode('/', $_GET['d']);
+	$oldid = substr($tab['0'].$tab['1'].$tab['2'].$tab['3'].$tab['4'].$tab['5'], '0', '14');
+	$id = substr(md5($oldid), 0, 6);
+
+ 	header("HTTP/1.1 301 Moved Permanently");
+	header('Location: '.get_blogpath($id, substr(array_slice($tab, 5)[0], 3) ));
+	exit;
+
+
+}*/
 
 // Random article
 if (isset($_GET['random'])) {
@@ -74,9 +91,15 @@ if ( isset($_GET['unsub'], $_GET['mail'], $_GET['article']) and $_GET['unsub'] =
  Show one post : 1 blogpost (with comments)
 ******************************************************************************/
 // Single Blog Post
-if ( isset($_GET['d']) and preg_match('#^\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2}#', $_GET['d']) ) {
-	$tab = explode('/', $_GET['d']);
-	$id = substr($tab['0'].$tab['1'].$tab['2'].$tab['3'].$tab['4'].$tab['5'], '0', '14');
+if ( isset($_GET['d']) and ( preg_match('#^\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2}#', $_GET['d']) or preg_match('#^[0-9a-z]{6}--#', $_GET['d']) ) ) {
+
+	if (preg_match('#^\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2}#', $_GET['d']) ) {
+		$tab = explode('/', $_GET['d']);
+		$id = substr($tab['0'].$tab['1'].$tab['2'].$tab['3'].$tab['4'].$tab['5'], '0', '14');
+	} elseif (preg_match('#^[0-9a-z]{6}--#', $_GET['d']) ) {
+		$id = substr($_GET['d'], 0, 6);
+	}
+
 	// 'admin' connected is allowed to see draft articles, but not 'public'. Same for article posted with a date in the future.
 	if (empty($_SESSION['user_id'])) {
 		$query = "SELECT * FROM articles WHERE bt_id=? AND bt_date <=? AND bt_statut=1 LIMIT 1";
@@ -91,11 +114,11 @@ if ( isset($_GET['d']) and preg_match('#^\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2}#', 
 		if (isset($_POST['_verif_envoi'], $_POST['commentaire'], $_POST['captcha'], $_POST['_token'], $_POST['auteur'], $_POST['email'], $_POST['webpage']) and ($billets[0]['bt_allow_comments'] == '1' )) {
 			// COOKIES
 			if (isset($_POST['allowcuki'])) { // si cookies autorisés, conserve les champs remplis
-				if (isset($_POST['auteur'])) {  setcookie('auteur_c', $_POST['auteur'], time() + 365*24*3600, null, null, false, true); }
-				if (isset($_POST['email'])) {   setcookie('email_c', $_POST['email'], time() + 365*24*3600, null, null, false, true); }
-				if (isset($_POST['webpage'])) { setcookie('webpage_c', $_POST['webpage'], time() + 365*24*3600, null, null, false, true); }
-				setcookie('subscribe_c', (isset($_POST['subscribe']) and $_POST['subscribe'] == 'on' ) ? 1 : 0, time() + 365*24*3600, null, null, false, true);
-				setcookie('cookie_c', 1, time() + 365*24*3600, null, null, false, true);
+				if (isset($_POST['auteur'])) {  setcookie('auteur_c', $_POST['auteur'], time() + 365*24*3600, null, null, true, true); }
+				if (isset($_POST['email'])) {   setcookie('email_c', $_POST['email'], time() + 365*24*3600, null, null, true, true); }
+				if (isset($_POST['webpage'])) { setcookie('webpage_c', $_POST['webpage'], time() + 365*24*3600, null, null, true, true); }
+				setcookie('subscribe_c', (isset($_POST['subscribe']) and $_POST['subscribe'] == 'on' ) ? 1 : 0, time() + 365*24*3600, null, null, true, true);
+				setcookie('cookie_c', 1, time() + 365*24*3600, null, null, true, true);
 			}
 
 			// COMMENT POST INIT

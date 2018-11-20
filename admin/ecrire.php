@@ -24,8 +24,9 @@ function afficher_form_billet($article, $erreurs) {
 	}
 
 	if (!empty($article)) {
-		$defaut_ymd = $article['annee'].'-'.$article['mois'].'-'.$article['jour'];
-		$defaut_his = $article['heure'].':'.$article['minutes'].':'.$article['secondes'];
+		$date_dec = decode_id($article['bt_date']);
+		$defaut_ymd = $date_dec['annee'].'-'.$date_dec['mois'].'-'.$date_dec['jour'];
+		$defaut_his = $date_dec['heure'].':'.$date_dec['minutes'].':'.$date_dec['secondes'];
 		$titredefaut = $article['bt_title'];
 		$chapodefaut = get_entry('articles', 'bt_abstract', $article['bt_id'], 'return');
 		$notesdefaut = $article['bt_notes'];
@@ -58,9 +59,10 @@ function afficher_form_billet($article, $erreurs) {
 	$html .= '<textarea id="notes" name="notes" rows="5" cols="20" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_notes']).'" tabindex="40" class="text" >'.$notesdefaut.'</textarea>'."\n" ;
 	$html .= '</div>'."\n";
 
+	$html .= '<div id="content_format">'."\n";
 	$html .= form_formatting_toolbar(TRUE);
-
 	$html .= '<textarea id="contenu" name="contenu" rows="35" cols="60" required="" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_contenu']).'" tabindex="55" class="text">'.$contenudefaut.'</textarea>'."\n" ;
+	$html .= '</div>'."\n";
 
 	if ($GLOBALS['activer_categories'] == '1') {
 		$html .= "\t".'<div id="tag_bloc">'."\n";

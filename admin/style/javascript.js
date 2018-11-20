@@ -1130,11 +1130,6 @@ function RssReader() {
 			tweetLink.classList.add("lien-tweet");
 			share.appendChild(tweetLink);
 			// G+ link
-			var gplusLink = document.createElement("a");
-			gplusLink.href = 'https://plus.google.com/share?url=' + encodeURIComponent(item.link);
-			gplusLink.target = "_blank";
-			gplusLink.classList.add("lien-gplus");
-			share.appendChild(gplusLink);
 
 			postHead.appendChild(share);
 			li.appendChild(postHead);
@@ -1369,13 +1364,6 @@ function RssReader() {
 			// mark items as read in list
 			for (var i = 0, len = this.feedList.length ; i < len ; i++) { this.feedList[i].statut = 0; }
 
-			// recount unread items in the list of sites/folders
-//			for (var i = 0, liList = document.querySelectorAll('#feed-list li:not(.fav-feeds)'), len = liList.length ; i < len ; i++) {
-//				liList[i].dataset.nbrun = 0;
-//				liList[i].dataset.nbtoday = 0;
-//				liList[i].querySelector('.counter').firstChild.nodeValue = '(0)';
-//			}
-
 			this.sortAll();
 		}
 
@@ -1388,25 +1376,13 @@ function RssReader() {
 
 			// update GLOBAL counter by substracting unread items from the folder
 
-//			var gcount = document.getElementById('global-post-counter');
-//			gcount.dataset.nbrun -= markWhat.dataset.nbrun;
-//			gcount.firstChild.nodeValue = '('+gcount.dataset.nbrun+')';
-
-			// update TODAY counter by substracting unread items from the folder
-//			var todayCount = document.getElementById('today-post-counter');
-//			todayCount.dataset.nbrun -= markWhat.dataset.nbtoday;
-//			todayCount.firstChild.nodeValue = '('+todayCount.dataset.nbrun+')';
-
 			// mark 0 for that folder
 			markWhat.dataset.nbrun = 0;
-//			markWhat.dataset.nbtoday = 0;
-//			markWhat.querySelector('.counter').firstChild.nodeValue = '(0)';
 
 			// mark 0 for the sites in that folder
 			var sitesInFolder = markWhat.querySelectorAll('ul > li');
 			for (var i = 0, len = sitesInFolder.length ; i < len ; i++) {
 				sitesInFolder[i].dataset.nbrun = 0;
-//				sitesInFolder[i].querySelector('.counter').firstChild.nodeValue = '(0)';
 			}
 
 			// mark items as read in list
@@ -1430,19 +1406,11 @@ function RssReader() {
 			// update global counter by substracting unread items from the site
 			var gcount = document.getElementById('global-post-counter');
 			gcount.dataset.nbrun -= markWhat.dataset.nbrun;
-//			gcount.firstChild.nodeValue = '('+gcount.dataset.nbrun+')';
-
-			// update TODAY counter by substracting unread items from the site
-//			var todayCount = document.getElementById('today-post-counter');
-//			todayCount.dataset.nbrun -= markWhat.dataset.nbtoday;
-//			todayCount.firstChild.nodeValue = '('+todayCount.dataset.nbrun+')';
 
 			// if site is in a folder, update amount of unread for that folder too
 			var parentFolder = markWhat.parentNode.parentNode;
 			if (parentFolder.dataset.folder) {
 				parentFolder.dataset.nbrun -= markWhat.dataset.nbrun;
-//				parentFolder.dataset.nbtoday -= markWhat.dataset.nbtoday;
-//				parentFolder.querySelector('.counter').firstChild.nodeValue = '('+parentFolder.dataset.nbrun+')';
 			}
 
 			// mark items as read in list
@@ -1454,7 +1422,6 @@ function RssReader() {
 
 			// mark 0 for that folder folder’s unread counters
 			markWhat.dataset.nbrun = markWhat.dataset.nbtoday = 0;
-//			markWhat.querySelector('.counter').firstChild.nodeValue = '(0)';
 
 			this.sortItemsBySite(siteHash);
 		}
@@ -1482,24 +1449,14 @@ function RssReader() {
 		// decrement global counter
 		var gcount = document.getElementById('global-post-counter');
 		gcount.dataset.nbrun -= 1;
-//		gcount.firstChild.nodeValue = '('+gcount.dataset.nbrun+')';
 		// decrement site & site.today counter
 		var site = this.feedsList.querySelector('li[data-feed-hash="'+thePost.dataset.sitehash+'"]');
 		site.dataset.nbrun -= 1;
 
-//		if (thePost.dataset.postdate >= this.ymd000) {
-//			site.dataset.nbtoday -= 1;
-//			var todayCount = document.getElementById('today-post-counter');
-//			todayCount.dataset.nbrun -= 1;
-//			todayCount.firstChild.nodeValue = '('+todayCount.dataset.nbrun+')';
-//		}
-
-//		site.querySelector('.counter').firstChild.nodeValue = '('+site.dataset.nbrun+')';
 		// decrement folder (if any)
 		var parentFolder = site.parentNode.parentNode;
 		if (parentFolder.dataset.folder) {
 			parentFolder.dataset.nbrun -= 1;
-//			parentFolder.querySelector('.counter').firstChild.nodeValue = '('+parentFolder.dataset.nbrun+')';
 		}
 	}
 

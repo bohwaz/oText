@@ -40,7 +40,7 @@ if (isset($_POST['_verif_envoi']) and valider_form() === TRUE) { // OK : getting
 
 	if (!empty($_POST['stay_logged'])) { // if user wants to stay logged
 		$user_id = hash('sha256', USER_PWHASH.USER_LOGIN.md5($_SERVER['HTTP_USER_AGENT'].$ip));
-		setcookie('BT-admin-stay-logged', $user_id, time()+365*24*60*60, null, null, false, true);
+		setcookie('BT-admin-stay-logged', $user_id, time()+365*24*60*60, null, null, isHTTPS(), true);
 		session_set_cookie_params(365*24*60*60); // set expiration time to the browser
 	} else {
 		$_SESSION['stay_logged_mode'] = 0;

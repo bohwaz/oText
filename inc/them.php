@@ -54,6 +54,7 @@ $GLOBALS['balises'] = array(
 	'article_tags' => '{article_tags}',
 	'article_tags_plain' => '{article_tags_plain}',
 	'article_illustration' => '{article_illustration}',
+	'article_illustration_url' => '{article_illustration_url}',
 	'nb_commentaires' => '{nombre_commentaires}',
 
 	// Commentaire
@@ -99,6 +100,8 @@ function conversions_theme($texte, $solo_art, $cnt_mode) {
 		if ($solo_art['bt_type'] == 'article') {
 			$texte = str_replace($GLOBALS['balises']['article_chapo'], str_replace(array("\r", "\n"), ' ', ((empty($solo_art['bt_abstract'])) ? mb_substr(strip_tags($solo_art['bt_content']), 0, 249).'…' : $solo_art['bt_abstract'])), $texte);
 			$texte = str_replace($GLOBALS['balises']['blog_motscles'], $solo_art['bt_keywords'], $texte);
+			$texte = str_replace($GLOBALS['balises']['article_illustration_url'], $solo_art['illustration_image'][2], $texte);
+
 		}
 		if ($solo_art['bt_type'] == 'link' or $solo_art['bt_type'] == 'note') {
 			$texte = str_replace($GLOBALS['balises']['article_chapo'], trim(str_replace(array("\r", "\n"), ' ', mb_substr(strip_tags($solo_art['bt_content']), 0, 149))).'…', $texte);
@@ -107,6 +110,7 @@ function conversions_theme($texte, $solo_art, $cnt_mode) {
 	}
 
 	// si remplacé, ceci n'a pas d'effet.
+	$texte = str_replace($GLOBALS['balises']['article_illustration_url'], 'favicon.png', $texte);
 	$texte = str_replace($GLOBALS['balises']['blog_description'], $GLOBALS['description'], $texte);
 	$texte = str_replace($GLOBALS['balises']['article_titre_page'], '', $texte);
 	$texte = str_replace($GLOBALS['balises']['blog_motscles'], $GLOBALS['keywords'], $texte);
@@ -158,7 +162,9 @@ function conversions_theme_article($texte, $billet) {
 	$texte = str_replace($GLOBALS['balises']['form_commentaire'], $GLOBALS['form_commentaire'], $texte);
 	$texte = str_replace($GLOBALS['balises']['rss_comments'], 'rss.php?id='.$billet['bt_id'], $texte);
 	$texte = str_replace($GLOBALS['balises']['article_titre'], $billet['bt_title'], $texte);
-	$texte = str_replace($GLOBALS['balises']['article_illustration'], html_get_image_from_article($billet['bt_content']), $texte);
+	$detected_images = html_get_image_from_article($billet['bt_content']);
+	$texte = str_replace($GLOBALS['balises']['article_illustration'], $detected_images[0], $texte);
+
 	$texte = str_replace($GLOBALS['balises']['article_titre_echape'], urlencode($billet['bt_title']), $texte);
 	$texte = str_replace($GLOBALS['balises']['article_chapo'], ((empty($billet['bt_abstract'])) ? mb_substr(strip_tags($billet['bt_content']), 0, 249).'…' : $billet['bt_abstract']), $texte);
 	$texte = str_replace($GLOBALS['balises']['article_contenu'], $billet['bt_content'], $texte);
@@ -233,7 +239,9 @@ function afficher_index($tableau, $type) {
 				redirection($tableau[0]['bt_link']);
 				exit;
 			} else {
-				if (count($tableau)==1 and ($tableau[0]['bt_type'] == 'link' or $tableau[0]['bt_type'] == 'note') ) $data = $tableau[0];
+				if (count($tableau)==1 and ($tableau[0]['bt_type'] == 'link' or $tableau[0]['bt_type'] == 'note') ) {
+					$data = $tableau[0];
+				}
 				if ($tableau[0]['bt_type'] == 'article') {
 					if (!($theme_article = file_get_contents($GLOBALS['theme_post_artc']))) die($GLOBALS['lang']['err_theme_introuvable']);
 					$conversion_theme_fonction = 'conversions_theme_article';
@@ -261,6 +269,7 @@ function afficher_index($tableau, $type) {
 
 	elseif ($type == 'post') {
 		$billet = $tableau;
+		$billet['illustration_image'] = html_get_image_from_article($billet['bt_content']);
 		// parse & apply template article
 		$HTML_article = conversions_theme_article($theme_post, $billet);
 
@@ -298,7 +307,7 @@ function afficher_liste($tableau) {
 		$HTML_elmts .= '<ul id="liste-all-articles">'."\n";
 		foreach ($tableau as $e) {
 			$short_date = substr($e['bt_date'], 0, 4).'/'.substr($e['bt_date'], 4, 2).'/'.substr($e['bt_date'], 6, 2);
-			$HTML_elmts .= "\t".'<li><time datetime="'.date_formate_iso($e['bt_id']).'">'.$short_date.'</time><a href="'.$e['bt_link'].'">'.$e['bt_title'].'</a></li>'."\n";
+			$HTML_elmts .= "\t".'<li><time datetime="'.date_formate_iso($e['bt_date']).'">'.$short_date.'</time><a href="'.$e['bt_link'].'">'.$e['bt_title'].'</a></li>'."\n";
 		}
 		$HTML_elmts .= '</ul>'."\n";
 		$HTML = str_replace(extract_boucles($theme_page, $GLOBALS['boucles']['posts'], 'incl'), $HTML_elmts, $HTML_article);

@@ -228,6 +228,11 @@ function markup_articles($texte) {
 	return $texte_formate;
 }
 
+// for href (for security reasons, the data is cleaned before injecting in html)
+function clean_href($matches) {
+	return '<a href="'.addslashes($matches[2]).'">'.$matches[1].'</a>';
+}
+
 function markup($texte) {
 	$texte = preg_replace('#\[([^|]+)\|(\s*javascript.*)\]#i', '$1', $texte);
 	$texte = preg_replace("/(\r\n|\r\n\r|\n|\n\r|\r)/", "\r", $texte);
@@ -258,10 +263,6 @@ function markup($texte) {
 	$texte_formate = preg_replace('#\[code(=(\w+))?\](.*?)\[/code\]#s', '[code$1][/code]', $texte);
 	$texte_formate = preg_replace($tofind, $toreplace, $texte_formate);
 
-	// for href (for security reasons, the data is cleaned before injecting in html)
-	function clean_href($matches) {
-		return '<a href="'.addslashes($matches[2]).'">'.$matches[1].'</a>';
-	}
 	$texte_formate = preg_replace_callback('#\[([^[]+)\|([^[]+)\]#', 'clean_href', $texte_formate);
 
 	$texte_formate = parse_texte_paragraphs($texte_formate);
@@ -270,9 +271,9 @@ function markup($texte) {
 	return $texte_formate;
 }
 
-function date_formate($id, $format_force='') {
+function date_formate($d, $format_force='') {
 	$retour ='';
-	$date= decode_id($id);
+	$date= decode_id($d);
 	$jour_l = jour_en_lettres($date['jour'], $date['mois'], $date['annee']);
 	$mois_l = mois_en_lettres($date['mois']);
 		$format = array (
@@ -295,8 +296,8 @@ function date_formate($id, $format_force='') {
 	return ucfirst($retour);
 }
 
-function heure_formate($id, $format_force='') {
-	$date = decode_id($id);
+function heure_formate($d, $format_force='') {
+	$date = decode_id($d);
 	$timestamp = mktime($date['heure'], $date['minutes'], $date['secondes'], $date['mois'], $date['jour'], $date['annee']);
 	$format = array (
 		'0' => date('H\:i\:s',$timestamp),	// 23:56:04
@@ -313,8 +314,8 @@ function heure_formate($id, $format_force='') {
 	return $retour;
 }
 
-function date_formate_iso($id) {
-	$date = decode_id($id);
+function date_formate_iso($d) {
+	$date = decode_id($d);
 	$timestamp = mktime($date['heure'], $date['minutes'], $date['secondes'], $date['mois'], $date['jour'], $date['annee']);
 	$date_iso = date('c', $timestamp);
 	return $date_iso;
@@ -324,6 +325,7 @@ function date_formate_iso($id) {
 function return_bytes($val) {
 	$val = trim($val);
 	$prefix = strtolower($val[strlen($val)-1]);
+	$val = (int)$val;
 	switch($prefix) {
 		case 'g': $val *= 1024;
 		case 'm': $val *= 1024;

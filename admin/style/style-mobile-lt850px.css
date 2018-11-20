@@ -63,22 +63,22 @@
 
 	/* TOP
 	------------------------------------------------------*/
-	#top > #nav > ul {
+	#nav > ul {
 		padding: 10px;
 	}
 
-	#top > h1 {
+	#titre-page {
 		padding: 0;
 	}
 
-	#top > #search {
+	#search {
 		flex: 0 0 48px;
 		background-color: transparent;
 		margin: 0;
 		overflow: hidden;
 		color: inherit;
 	}
-	#top > #search #q { /* normal */
+	#search #q { /* normal */
 		padding: 0;
 		z-index: 1;
 		background: inherit;
@@ -89,18 +89,20 @@
 		opacity: 0;
 	}
 
-	#top #input-rechercher {
+	#label_q {
 		order: 2;
 	}
 
-	#top #input-rechercher::before {
+	#label_q::before,
+	#q:focus + #label_q::before,
+	#q[value=""]:focus + #label_q::before {
 		background-color: transparent;
 	}
 
 
-	#top > #search #q:focus,
-	#top > #search #q[value=""]:focus,
-	#top > #search #q:not([value=""]) { /* focus OR not empty (a search is done) */
+	#search #q:focus,
+	#search #q[value=""]:focus,
+	#search #q:not([value=""]) { /* focus OR not empty (a search is done) */
 		/*position: absolute;*/
 		border-radius: 3px;
 		width: calc( 0px - 8px - 48px + 100% - 48px - 48px - 8px );
@@ -113,23 +115,23 @@
 		opacity: 1;
 	}
 
-	#top > #search:hover #input-rechercher:active,
-	#top > #search #q:focus+#input-rechercher,
-	#top > #search #q:not([value=""])+#input-rechercher {
+	#search:hover #label_q:active,
+	#search #q:focus+#label_q,
+	#search #q:not([value=""])+#label_q {
 		position: static;
 		transition: 0s;
 		color: black;
 		z-index: 2;
 	}
 
-	#top > #search > #q:focus + button::before,
-	#top > #search > #q[value=""]:focus + button::before,
-	#top > #search > #q:not([value=""]) + button::before {
+	#search > #q:focus + button::before,
+	#search > #q[value=""]:focus + button::before,
+	#search > #q:not([value=""]) + button::before {
     	background: transparent;
 	}
 
 
-	#top > #search #q[value=""]:focus { /* onfocus */
+	#search #q[value=""]:focus { /* onfocus */
 		/*animation: popup-search .4s;
 		animation-fill-mode: forwards;*/
 	}

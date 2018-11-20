@@ -9,7 +9,7 @@
 require_once 'inc/boot.php';
 operate_session();
 
-setcookie('lastAccessAgenda', time(), time()+365*24*60*60, null, null, false, true);
+setcookie('lastAccessAgenda', time(), time()+365*24*60*60, null, null, true, true);
 
 
 // Notes are send to browser in JSON format, rendering is done client side.

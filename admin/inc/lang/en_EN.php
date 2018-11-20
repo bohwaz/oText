@@ -151,6 +151,9 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'pref_linx_dl_auto'				=> 'Automaticaly import shared files?',
 'pref_ask_everytime'			=> 'Ask each time',
 'pref_check_update'				=> 'Check updates automatically',
+'pref_id_format'				=> 'Articles URL format:',
+'pref_id_format_ymdhis'			=> 'Date-like: '.date('YmdHis'),
+'pref_id_format_rand6'			=> 'Random string: -ebd68b-',
 'maintenance_optim'				=> 'Cleanup database',
 
 // placeholders
