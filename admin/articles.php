@@ -25,18 +25,17 @@ function afficher_liste_articles($tableau) {
 				$out .= '<ul class="billets">'."\n";
 				$previous_date = $article_date;
 			}
-			// background grayed if articles are planned
-			$out .= "\t".'<li'.( ($article['bt_date'] > date('YmdHis')) ? ' class="planned"' : '').'>'."\n";
 			// title and icons by status
 			$title = trim(htmlspecialchars(mb_substr(strip_tags( (empty($article['bt_abstract']) ? $article['bt_content'] : $article['bt_abstract']) ), 0, 249), ENT_QUOTES)) . '…';
-			$out .= "\t\t".'<span class="'.( ($article['bt_statut'] == '1') ? 'on' : 'off').'">'.'<a href="ecrire.php?post_id='.$article['bt_id'].'" title="'.$title.'">'.$article['bt_title'].'</a>'.'</span>'."\n";
-			// date
-			$out .= "\t\t".'<span><a href="'.basename($_SERVER['SCRIPT_NAME']).'?filtre='.substr($article['bt_date'],0,8).'">'.date_formate($article['bt_date']).'</a><span>, '.heure_formate($article['bt_date']).'</span></span>'."\n";
-			// comments
-			$out .= "\t\t".'<span><a href="commentaires.php?post_id='.$article['bt_id'].'">'.$article['bt_nb_comments'].'</a></span>'."\n";
-			// preview link
-			$out .= "\t\t".'<span><a href="'.$article['bt_link'].'" title="'.$GLOBALS['lang'][(( $article['bt_statut'] == '1')?'lien_article':'preview')].'"></a></span>'."\n";
 
+			$out .= "\t".'<li class="'.( ($article['bt_statut'] == '1') ? 'on' : 'off').'">'."\n";
+			$out .= "\t\t".'<a class="titre" href="ecrire.php?post_id='.$article['bt_id'].'" title="'.$title.'">'.$article['bt_title']."\n";
+			if ($article['bt_date'] > date('YmdHis')) 
+			$out .= "\t\t\t".'<span class="planed">'.$GLOBALS['lang']['label_planned'].'</span>'."\n";
+			$out .= "\t\t".'</a>'."\n";
+			$out .= "\t\t".'<a class="date" href="'.basename($_SERVER['SCRIPT_NAME']).'?filtre='.substr($article['bt_date'],0,8).'">'.date_formate($article['bt_date']).', '.heure_formate($article['bt_date']).'</a>'."\n";
+			$out .= "\t\t".'<a class="comments" href="commentaires.php?post_id='.$article['bt_id'].'">'.$article['bt_nb_comments'].'</a>'."\n";
+			$out .= "\t\t".'<a class="preview" href="'.$article['bt_link'].'" title="'.$GLOBALS['lang'][(( $article['bt_statut'] == '1')?'lien_article':'preview')].'"></a>'."\n";
 			$out .= "\t".'</li>'."\n";
 			$i++;
 		}

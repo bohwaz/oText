@@ -24,6 +24,7 @@
 	opacity: 0;
 	transition: opacity 0.5s ease-in-out 0s;
 	z-index: -1;
+	border-radius: inherit;
 }
 
 #post-new-lien:hover::after,
@@ -68,10 +69,10 @@
 ------------------------------------------------------------*/
 #post-lien {
 	margin: auto;
-	width: 650px;
+	width: 800px;
 	max-width: 100%;
-	padding: 20px;
-	box-shadow: 0 0 24px 0 rgba(0, 0, 0, 0.3);
+	padding: 0 0 20px;
+	box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.3);
 	background: white;
 	display: flex;
 	flex-direction: column;
@@ -79,17 +80,15 @@
 	overflow: hidden;
 	min-height: 200px;
 	min-width: 200px;
+	border-radius: 8px;
 }
 
 #post-lien input.readonly-like { /* form nouveau lien (#2), le lien de l’URL */
 	color: #bbb;
 	font-style: italic;
-	padding-left: .2em;
 }
 
 #post-lien .text {
-	padding: 14px 7px 2px 1px;
-	margin: 5px 0 0 0;
 	max-width: 100%;
 	box-shadow: none;
 }
@@ -124,18 +123,33 @@
 	resize: none;
 }
 
+#post-lien > label {
+	padding-left: 20px;
+
+}
+
+#post-lien > .checkbox + label::before {
+	left: 0;
+}
+#post-lien > .checkbox + label::after {
+	margin-left: 15px;
+}
+
+#post-lien .submit-bttns {
+	max-width: none;
+}
 
 /* LINKS : tags */
 /* see also #tag_bloc+ in style-ecrire.css */
 
 #post-lien #type_tags {
-	padding-left: 5px;
-	margin-top: 0;
-	padding-top: 5px;
+	height: auto;
+	padding: 15px;
 }
 
 #post-lien #selected li:first-of-type {
 	border-left-width: 1px;
+	padding-left: 15px;
 }
 
 /* LINKS : list of link-blocs (see also in
@@ -198,6 +212,7 @@
 	align-items: center;
 	background-color: rgba(0, 0, 0, .05);
 	border-top: #eee;
+	border-radius: 0 0 15px 15px;
 }
 
 .linkbloc .link-tags {

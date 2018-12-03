@@ -391,68 +391,60 @@ function afficher_form_link($step, $erreurs, $editlink='') {
 	return $form;
 }
 
-
-function s_color($color) {
-	return '<button type="button" onclick="insertTag(this, \'[color='.$color.']\',\'[/color]\');"><span style="background:'.$color.';"></span></button>';
-}
-function s_size($size) {
-	return '<button type="button" onclick="insertTag(this, \'[size='.$size.']\',\'[/size]\');"><span style="font-size:'.$size.'pt;">'.$size.'. Ipsum</span></button>';
-}
-function s_u($char) {
-	return '<button type="button" onclick="insertChar(this, \''.$char.'\');"><span>'.$char.'</span></button>';
-}
 function form_formatting_toolbar($extended=FALSE) {
 	$html = '';
 
 	$html .= '<p class="formatbut">'."\n";
-	$html .= "\t".'<button id="button01" class="but" type="button" title="'.$GLOBALS['lang']['bouton-gras'].'" onclick="insertTag(this, \'[b]\',\'[/b]\');"><span></span></button>'."\n";
-	$html .= "\t".'<button id="button02" class="but" type="button" title="'.$GLOBALS['lang']['bouton-ital'].'" onclick="insertTag(this, \'[i]\',\'[/i]\');"><span></span></button>'."\n";
-	$html .= "\t".'<button id="button03" class="but" type="button" title="'.$GLOBALS['lang']['bouton-soul'].'" onclick="insertTag(this, \'[u]\',\'[/u]\');"><span></span></button>'."\n";
-	$html .= "\t".'<button id="button04" class="but" type="button" title="'.$GLOBALS['lang']['bouton-barr'].'" onclick="insertTag(this, \'[s]\',\'[/s]\');"><span></span></button>'."\n";
+	$html .= "\t".'<button id="button01" class="but" type="button" title="'.$GLOBALS['lang']['bouton-gras'].'" data-tag="[b]|[/b]"></button>'."\n";
+	$html .= "\t".'<button id="button02" class="but" type="button" title="'.$GLOBALS['lang']['bouton-ital'].'" data-tag="[i]|[/i]"></button>'."\n";
+	$html .= "\t".'<button id="button03" class="but" type="button" title="'.$GLOBALS['lang']['bouton-soul'].'" data-tag="[u]|[/u]"></button>'."\n";
+	$html .= "\t".'<button id="button04" class="but" type="button" title="'.$GLOBALS['lang']['bouton-barr'].'" data-tag="[s]|[/s]"></button>'."\n";
 
 	if ($extended) {
 		$html .= "\t".'<span class="spacer"></span>'."\n";
 		// bouton des couleurs
-		$html .= "\t".'<span id="button13" class="but but-dropdown" title=""><span></span><span class="list list-color">'
-				.s_color('black').s_color('gray').s_color('silver').s_color('white')
-				.s_color('blue').s_color('green').s_color('red').s_color('yellow')
-				.s_color('fuchsia').s_color('lime').s_color('aqua').s_color('maroon')
-				.s_color('purple').s_color('navy').s_color('teal').s_color('olive')
-				.s_color('#ff7000').s_color('#ff9aff').s_color('#a0f7ff').s_color('#ffd700')
-				.'</span></span>'."\n";
+		$html .= "\t".'<span id="button13" class="but but-dropdown" title=""><span class="list list-color">';
+		foreach (array('black', 'gray', 'silver', 'white', 'blue', 'green', 'red', 'yellow', 'fuchsia', 'lime', 'aqua', 'maroon', 'purple', 'navy', 'teal', 'olive', '#ff7000', '#ff9aff', '#a0f7ff', '#ffd700' ) as $value) {
+			$html .= '<button type="button" data-tag="[color='.$value.']|[/color]" style="background:'.$value.';"></button>';
+		}
+		$html .= '</span></span>'."\n";
 
 		// boutons de la taille de caractère
-		$html .= "\t".'<span id="button14" class="but but-dropdown" title=""><span></span><span class="list list-size">'
-				.s_size('9').s_size('12').s_size('16').s_size('20')
-				.'</span></span>'."\n";
+		$html .= "\t".'<span id="button14" class="but but-dropdown" title=""><span class="list list-size">';
+		foreach (array('9', '12', '16', '20') as $value) {
+			$html .= '<button type="button" data-tag="[size='.$value.']|[/size]" style="font-size:'.$value.'pt;">'.$value.'. Ipsum</button>';
+		}
+		$html .= '</span></span>'."\n";
 
 		// quelques caractères unicode
-		$html .= "\t".'<span id="button15" class="but but-dropdown" title=""><span></span><span class="list list-spechr">'
-				.s_u('æ').s_u('Æ').s_u('œ').s_u('Œ').s_u('é').s_u('É').s_u('è').s_u('È').s_u('ç').s_u('Ç').s_u('ù').s_u('Ù').s_u('à').s_u('À').s_u('ö').s_u('Ö')
-				.s_u('…').s_u('«').s_u('»').s_u('±').s_u('≠').s_u('×').s_u('÷').s_u('ß').s_u('®').s_u('©').s_u('↓').s_u('↑').s_u('←').s_u('→').s_u('ø').s_u('Ø')
-				.s_u('☠').s_u('☣').s_u('☢').s_u('☮').s_u('★').s_u('☯').s_u('☑').s_u('☒').s_u('☐').s_u('♫').s_u('♬').s_u('♪').s_u('♣').s_u('♠').s_u('♦').s_u('❤')
-				.s_u('♂').s_u('♀').s_u('☹').s_u('☺').s_u('☻').s_u('♲').s_u('⚐').s_u('⚠').s_u('☂').s_u('√').s_u('∑').s_u('λ').s_u('π').s_u('Ω').s_u('№').s_u('∞')
-				.'</span></span>'."\n";
+		$html .= "\t".'<span id="button15" class="but but-dropdown" title=""><span class="list list-spechr">';
+
+		foreach (preg_split('//u', 'æÆœŒéÉèÈçÇùÙàÀöÖ…«»±≠×÷ß®©↓↑←→øØ☠☣☢☮★☯☑☒☐♫♬♪♣♠♦❤♂♀☹☺☻♲⚐⚠☂√∑λπΩ№∞', null, PREG_SPLIT_NO_EMPTY) as $value) {
+			$html .= '<button type="button" data-tag="'.$value.'">'.$value.'</button>';
+		}
+		$html .= '</span></span>'."\n";
 
 		$html .= "\t".'<span class="spacer"></span>'."\n";
-		$html .= "\t".'<button id="button05" class="but" type="button" title="'.$GLOBALS['lang']['bouton-left'].'" onclick="insertTag(this, \'[left]\',\'[/left]\');"><span></span></button>'."\n";
-		$html .= "\t".'<button id="button06" class="but" type="button" title="'.$GLOBALS['lang']['bouton-center'].'" onclick="insertTag(this, \'[center]\',\'[/center]\');"><span></span></button>'."\n";
-		$html .= "\t".'<button id="button07" class="but" type="button" title="'.$GLOBALS['lang']['bouton-right'].'" onclick="insertTag(this, \'[right]\',\'[/right]\');"><span></span></button>'."\n";
-		$html .= "\t".'<button id="button08" class="but" type="button" title="'.$GLOBALS['lang']['bouton-justify'].'" onclick="insertTag(this, \'[justify]\',\'[/justify]\');"><span></span></button>'."\n";
+		$html .= "\t".'<button id="button05" class="but" type="button" title="'.$GLOBALS['lang']['bouton-left'].'" data-tag="[left]|[/left]" ></button>'."\n";
+		$html .= "\t".'<button id="button06" class="but" type="button" title="'.$GLOBALS['lang']['bouton-center'].'" data-tag="[center]|[/center]" ></button>'."\n";
+		$html .= "\t".'<button id="button07" class="but" type="button" title="'.$GLOBALS['lang']['bouton-right'].'" data-tag="[right]|[/right]"></button>'."\n";
+		$html .= "\t".'<button id="button08" class="but" type="button" title="'.$GLOBALS['lang']['bouton-justify'].'" data-tag="[justify]|[/justify]"></button>'."\n";
 
 		$html .= "\t".'<span class="spacer"></span>'."\n";
-		$html .= "\t".'<button id="button11" class="but" type="button" title="'.$GLOBALS['lang']['bouton-imag'].'" onclick="insertTag(this, \'[img]\',\'|alt[/img]\');"><span></span></button>'."\n";
-		$html .= "\t".'<button id="button16" class="but" type="button" title="'.$GLOBALS['lang']['bouton-liul'].'" onclick="insertChar(this, \'\n\n** element 1\n** element 2\n\');"><span></span></button>'."\n";
-		$html .= "\t".'<button id="button17" class="but" type="button" title="'.$GLOBALS['lang']['bouton-liol'].'" onclick="insertChar(this, \'\n\n## element 1\n## element 2\n\');"><span></span></button>'."\n";
+		$html .= "\t".'<button id="button11" class="but" type="button" title="'.$GLOBALS['lang']['bouton-imag'].'" data-tag="[img]||alt[/img]"></button>'."\n";
+		$html .= "\t".'<button id="button16" class="but" type="button" title="'.$GLOBALS['lang']['bouton-liul'].'" data-tag="\n\n** element 1\n** element 2\n"></button>'."\n";
+		$html .= "\t".'<button id="button17" class="but" type="button" title="'.$GLOBALS['lang']['bouton-liol'].'" data-tag="\n\n## element 1\n## element 2\n"></button>'."\n";
+		$html .= "\t".'<span class="spacer"></span>'."\n";
+		$html .= "\t".'<button id="button18" class="but js-action toggleAutoCorrect" type="button" title="'.$GLOBALS['lang']['bouton-spellcheck'].'"></button>'."\n";
 
 	}
 
 	$html .= "\t".'<span class="spacer"></span>'."\n";
-	$html .= "\t".'<button id="button09" class="but" type="button" title="'.$GLOBALS['lang']['bouton-lien'].'" onclick="insertTag(this, \'[\',\'|http://]\');"><span></span></button>'."\n";
-	$html .= "\t".'<button id="button10" class="but" type="button" title="'.$GLOBALS['lang']['bouton-cita'].'" onclick="insertTag(this, \'[quote]\',\'[/quote]\');"><span></span></button>'."\n";
-	$html .= "\t".'<button id="button12" class="but" type="button" title="'.$GLOBALS['lang']['bouton-code'].'" onclick="insertTag(this, \'[code]\',\'[/code]\');"><span></span></button>'."\n";
+	$html .= "\t".'<button id="button09" class="but" type="button" title="'.$GLOBALS['lang']['bouton-lien'].'" data-tag="[||http://]"></button>'."\n";
+	$html .= "\t".'<button id="button10" class="but" type="button" title="'.$GLOBALS['lang']['bouton-cita'].'" data-tag="[quote]|[/quote]"></button>'."\n";
+	$html .= "\t".'<button id="button12" class="but" type="button" title="'.$GLOBALS['lang']['bouton-code'].'" data-tag="[code]|[/code]"></button>'."\n";
 
-	$html .= '</p>';
+	$html .= '</p>'."\n";
 
 	return $html;
 }

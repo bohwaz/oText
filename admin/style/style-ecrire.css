@@ -14,7 +14,7 @@
 
 #apercu > h2 {
 	background: #f0f0f0;
-	border-radius: 3px 3px 0 0;
+	border-radius: 15px 15px 0 0;
 	padding: 10px 20px;
 	border-bottom: 1px solid #ddd;
 	margin: 0;
@@ -76,11 +76,15 @@
 
 #form-ecrire textarea {
 	resize: vertical;
+	border-bottom-left-radius: inherit;
+	border-bottom-right-radius: inherit;
+
 }
 
 #form-ecrire .main-form {
 	flex: 1 1 auto;
 	padding: 0;
+	border-radius: 15px;
 }
 #form-ecrire .main-form .text {
 	width: 100%;
@@ -90,6 +94,8 @@
 #titre {
 	font-weight: bold;
 	font-size: 1.15em;
+	border-top-left-radius: inherit;
+	border-top-right-radius: inherit;
 }
 
 #chapo_note {
@@ -112,6 +118,13 @@
 #type_tags,
 #mots_cles {
 	padding: 0 10px;
+	border-bottom-left-radius: inherit;
+	border-bottom-right-radius: inherit;
+}
+
+#form-ecrire .main-form > *:last-child {
+	border-bottom-left-radius: inherit;
+	border-bottom-right-radius: inherit;
 }
 
 #content_format {
@@ -120,10 +133,10 @@
 }
 /* Boutons de formatage  */
 p.formatbut {
-	line-height: 28px;
-	margin: 0; padding: 0px 5px 2px;
+	line-height: 36px;
+	margin: 0; padding: 0px 5px;
 	background: #f5f5f5;
-	height: 32px;
+	height: 40px;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -137,9 +150,12 @@ p.formatbut {
 	text-align: center;
 	vertical-align: middle;
 	background: rgba(0, 0, 0, 0);
-	height: 24px; width: 24px;
+	height: 32px;
+	width: 32px;
+	line-height: 32px;
 	border: 1px solid transparent;
 	border-radius: 4px;
+	box-sizing: border-box;
 }
 
 .formatbut .but:hover {
@@ -153,37 +169,43 @@ p.formatbut {
 	background: linear-gradient(to top, white, #d6d6d6);
 }
 
-.formatbut .but > span:nth-of-type(1) {
-	display: inline-block;
-	width: 24px;
-	height: 24px;
-	background: no-repeat transparent url(formatx2.png) 0 0 / 24px 492px;
-}
 
 .formatbut span.spacer {
-	margin: 0 4px;
-	border-left: 1px solid #e5e5e5;
-	border-right: 1px solid #fafafa
+	margin: 0 10px;
+	border-left: 1px solid #ddd;
+	border-right: 1px solid #fff;
+	height: 30px;
+	display: inline-block;
+	vertical-align: middle;
 }
 
-/* buttons : works in comment form and in article form */
-#button01 > span:nth-of-type(1) { background-position: 0px   0px; } /* bold */
-#button02 > span:nth-of-type(1) { background-position: 0px  -24px; } /* ital */
-#button03 > span:nth-of-type(1) { background-position: 0px  -48px; } /* underline */
-#button04 > span:nth-of-type(1) { background-position: 0px  -72px; } /* strike */
-#button05 > span:nth-of-type(1) { background-position: 0px -168px; } /* left align */
-#button06 > span:nth-of-type(1) { background-position: 0px -192px; } /* center align */
-#button07 > span:nth-of-type(1) { background-position: 0px -216px; } /* right align */
-#button08 > span:nth-of-type(1) { background-position: 0px -240px; } /* justify */
-#button09 > span:nth-of-type(1) { background-position: 0px -336px; } /* link */
-#button10 > span:nth-of-type(1) { background-position: 0px -360px; } /* quote */
-#button11 > span:nth-of-type(1) { background-position: 0px -264px; } /* image */
-#button12 > span:nth-of-type(1) { background-position: 0px -384px; } /* code */
-#button13 > span:nth-of-type(1) { background-position: 0px  -96px; } /* color edit */
-#button14 > span:nth-of-type(1) { background-position: 0px -120px; } /* font size edit */
-#button15 > span:nth-of-type(1) { background-position: 0px -144px; } /* unicode char insert */
-#button16 > span:nth-of-type(1) { background-position: 0px -288px; } /* ul list */
-#button17 > span:nth-of-type(1) { background-position: 0px -312px; } /* ol list */
+.formatbut > .but::before {
+	font-size: 1.6em;
+	height: 32px;
+	width: 32px;
+	display: block;
+	line-height: inherit;
+}
+
+
+#button01::before { content: "\e94c"; } /* bold */
+#button02::before { content: "\e94d"; } /* ital */
+#button03::before { content: "\e94e"; } /* underline */
+#button04::before { content: "\e94f"; } /* strike */
+#button05::before { content: "\e954"; } /* left align */
+#button06::before { content: "\e955"; } /* center align */
+#button07::before { content: "\e956"; } /* right align */
+#button08::before { content: "\e957"; } /* justify */
+#button09::before { content: "\e95b"; } /* link */
+#button10::before { content: "\e95c"; } /* quote */
+#button11::before { content: "\e958"; } /* image */
+#button12::before { content: "\e95e"; } /* code */
+#button13::before { content: "\e950"; } /* color edit */
+#button14::before { content: "\e952"; } /* font size edit */
+#button15::before { content: "\e953"; } /* unicode char insert */
+#button16::before { content: "\e959"; } /* ul list */
+#button17::before { content: "\e95a"; } /* ol list */
+#button18::before { content: "\e95d"; } /* autocorrect */
 
 .but-dropdown {
 	position: relative;
@@ -195,9 +217,9 @@ p.formatbut {
 	background-color: white;
 	width: 140px;
 	position: absolute;
-	top: 24px;
-	left: -1px;
-	line-height: 20px;
+	top: 30px;
+	left: 0px;
+	line-height: 24px;
 	box-shadow: 0px 4px 8px rgba(0, 0, 0, .3);
 }
 
@@ -206,30 +228,22 @@ p.formatbut {
 }
 
 /* list colors */
+.but-dropdown .list-color {
+	font-size: 0;
+}
+
 .but-dropdown .list-color button {
 	display: inline-block;
 	background: white;
-	margin: 0 2px;
+	margin: 3px;
 	width: 22px;
 	height: 22px;
-	padding: 3px;
-	border: 1px solid transparent;
-}
-
-.but-dropdown .list-color button span {
-	vertical-align: middle;
-	border: 1px solid #ccc;
-	margin: 0 auto;
-	display: block;
-	width: 12px;
-	height: 12px;
+	border: 1px solid silver;
+	border-radius: 50%;
 }
 
 .but-dropdown .list-color button:hover {
-	background-color: #ddd;
-}
-.but-dropdown .list-color button:hover span {
-	border-color: #888;
+	border-color: gray;
 }
 
 /* list sizes */
@@ -260,11 +274,6 @@ p.formatbut {
 	height: 33px;
 }
 
-.but-dropdown .list-size button span {
-	vertical-align: middle;
-	margin: 0 auto;
-}
-
 .but-dropdown .list-size button:hover {
 	background-color: #ddd;
 }
@@ -273,17 +282,16 @@ p.formatbut {
 
 .but-dropdown .list-spechr {
 	text-align: left;
-	width: 384px;
-	height: 94px;
-	padding: 3px;
+	width: 364px;
+	padding: 3px 3px 1px;
 }
 
 .but-dropdown .list-spechr button {
 	background: white;
 	margin: 0 2px 2px 0;
-	width: 22px;
+	width: 26px;
 	padding: 0;
-	height: 22px;
+	height: 26px;
 	border: 1px solid #ddd;
 	border-radius: 2px;
 	text-align: center;
@@ -326,9 +334,10 @@ p.formatbut {
 	border: 0;
 	margin: 0 -3px 0 0;
 	box-shadow: 1px 0px 0 #dadada inset, 0px -1px 0px #dadada inset;
-	height: 36px;
-	line-height: 36px;
 	box-sizing: border-box;
+	display: inline-flex;
+	align-items: center;
+	height: 100%;
 
 }
 
@@ -343,17 +352,12 @@ p.formatbut {
 #type_tags {
 	flex: 1 1 100px;
 	justify-content: flex-start;
-	height: 36px;
 }
 
 
 /* boutons d’options et date */
-#date-and-opts {
-	/*margin-top: 30px;
-	margin-bottom: 40px;
-	display: flex;
-	justify-content: space-between;*/
-
+#form-ecrire #date-and-opts {
+	border-radius: 15px;
 	flex: 0 0 300px;
 	margin-left: 20px;
 	display: flex;
@@ -387,7 +391,6 @@ p.formatbut {
 
 #date-and-opts > div > span::before {
 	vertical-align: middle;
-	font-family: "icon"!important;
 	font-size: 1.4em;
 }
 

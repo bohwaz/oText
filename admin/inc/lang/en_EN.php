@@ -335,5 +335,6 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'label_resume'					=> 'Home',
 'label_dl_fichier'				=> 'Also import file localy? ',
 'label_all_comm_by_author'		=> 'All comments by this author',
+'label_planned'					=> 'planned',
 
 ));

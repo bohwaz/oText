@@ -12,6 +12,7 @@
 	margin-bottom: 60px;
 	flex: 0 1 calc( 50% - 40px );
 	width: calc(50% - 40px );
+	border-radius: 15px;
 }
 
 #graphs .graph .form-legend {

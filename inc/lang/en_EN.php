@@ -34,6 +34,7 @@ $GLOBALS['lang'] = array(
 'bouton-justify'					=> 'Justify',
 'bouton-liul'						=> 'Insert a list',
 'bouton-liol'						=> 'Insert a ordered list',
+'bouton-spellcheck'					=> 'Toggle spellcheck',
 
 // Label avec ": "
 'label_dp_nom'						=> 'Name: ',

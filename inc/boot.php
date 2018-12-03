@@ -38,7 +38,6 @@ function import_ini_file($file_path) {
 }
 
 
-
 // Constants: folders
 define('DIR_ADMIN', BT_ROOT.'admin/');
 define('DIR_IMAGES', BT_ROOT.'img/');
@@ -65,13 +64,11 @@ define('FILE_MYSQL', DIR_CONFIG.'mysql.ini');
 // Constants: general
 define('BLOGOTEXT_NAME', 'oText');
 define('BLOGOTEXT_SITE', 'https://lehollandaisvolant.net/');
-define('BLOGOTEXT_VERSION', '1805-1');
+define('BLOGOTEXT_VERSION', '1812-1');
 define('MINIMAL_PHP_REQUIRED_VERSION', '5.5');
 define('BLOGOTEXT_UA', 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0');
 
 // init some vars
-$GLOBALS['form_commentaire'] = '';
-
 
 // ADVANCED CONFIG OPTIONS
 import_ini_file(FILE_SETTINGS_ADV);

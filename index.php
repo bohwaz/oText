@@ -128,21 +128,21 @@ if ( isset($_GET['d']) and ( preg_match('#^\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2}#'
 			}
 		} else { unset($_POST['enregistrer']); }
 
-		afficher_form_commentaire($id, 'public', $erreurs_form, '');
+		//afficher_form_commentaire($id, 'public', $erreurs_form, '');
 		if (empty($erreurs_form) and isset($_POST['enregistrer'])) {
 			traiter_form_commentaire($comment, 'public');
 		}
 
-		afficher_index($billets[0], 'post');
+		afficher_index($billets[0], 'post', $erreurs_form);
 	}
-	else { afficher_index(NULL, 'list'); }
+	else { afficher_index(NULL, 'list', ''); }
 
 }
 
 // single link post
 elseif ( isset($_GET['id']) and preg_match('#\d{14}#', $_GET['id']) ) {
 	$tableau = liste_elements("SELECT * FROM links WHERE bt_id=? AND bt_statut=1", array($_GET['id']), 'links');
-	afficher_index($tableau, 'list');
+	afficher_index($tableau, 'list', '');
 }
 
 
@@ -322,7 +322,7 @@ else {
 	$query .= $glue.$sql_a_p.$sql_order.$sql_p;
 	$tableau = liste_elements($query, $array, $where);
 	$GLOBALS['param_pagination'] = array('nb' => count($tableau), 'nb_par_page' => $GLOBALS['max_bill_acceuil']);
-	afficher_index($tableau, 'list');
+	afficher_index($tableau, 'list', '');
 }
 
  $end = microtime(TRUE);

@@ -335,5 +335,6 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'label_resume'					=> 'Résumé',
 'label_dl_fichier'				=> 'Également importer le fichier ? ',
 'label_all_comm_by_author'		=> 'Tous les commentaires de cet auteur',
+'label_planned'					=> 'planifié',
 
 ));

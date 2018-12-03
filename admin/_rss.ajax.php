@@ -40,6 +40,8 @@ if (isset($_POST['refresh_all'])) {
 	}
 	$new_entries = refresh_rss($GLOBALS['liste_flux']);
 	echo 'Success';
+	$new_entries = tri_selon_sous_cle($new_entries, 'bt_date');
+
 	echo send_rss_json($new_entries, false);
 	die;
 }
@@ -113,7 +115,14 @@ if (isset($_POST['mark-as-read'])) {
 	}
 
 	elseif ($what == 'site' and !empty($_POST['mark-as-read-data'])) {
-		$feedurl = $_POST['mark-as-read-data'];
+		$feedhash = $_POST['mark-as-read-data'];
+		$feedurl = "";
+		foreach ($GLOBALS['liste_flux'] as $i => $flux) {
+			if ($feedhash == crc32($i)) {
+				$feedurl = $i;
+				break;
+		}	}
+
 		$query = 'UPDATE rss SET bt_statut=0 WHERE bt_feed=?';
 		$array = array($feedurl);
 	}

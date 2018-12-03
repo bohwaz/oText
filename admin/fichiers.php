@@ -18,9 +18,9 @@ function send_files_json($files) {
 		$json_img .= "\t".'{'.
 			'"id":'.json_encode($im['bt_id']).', '.
 			'"folder":'.json_encode($im['bt_folder']).', '.
-			'"thbPath":'.json_encode(chemin_thb_img_test($dossier.'/'.$im['bt_path'].'/'.$im['bt_filename'])).', '.
-			'"absPath":'.json_encode($dossier.'/'.$im['bt_path'].'/'.$im['bt_filename']).', '.
-			'"fileName":'.json_encode($im['bt_filename']).
+			'"absPath":'.json_encode($dossier.'/'.$im['bt_path'].'/').', '.
+			'"fileName":'.json_encode($im['bt_filename']).', '.
+			'"thbPath":'.json_encode(chemin_thb_img_test($dossier.'/'.$im['bt_path'].'/'.$im['bt_filename'])).
 		'},'."\n";
 	}
 	$json_img = trim(trim($json_img), ',')."\n".']';
@@ -33,8 +33,8 @@ function send_files_json($files) {
 			'"id":'.json_encode($doc['bt_id']).', '.
 			'"fileSize":'.json_encode(taille_formate($doc['bt_filesize'])).', '.
 			'"fileType":'.json_encode($doc['bt_type']).', '.
-			'"absPath":'.json_encode($dossier.'/'.$doc['bt_path'].'/'.$doc['bt_filename']).', '.
-			'"fileName":'.json_encode($doc['bt_filename']).''.
+			'"absPath":'.json_encode($dossier.'/'.$doc['bt_path']).', '.
+			'"fileName":'.json_encode($doc['bt_filename']).
 		'},'."\n";
 	}
 	$json_files = trim(trim($json_files), ',')."\n".']';
@@ -54,11 +54,9 @@ function afficher_form_fichier($erreurs, $fichiers, $what) { // ajout d’un fic
 	if ($erreurs) {
 		echo erreurs($erreurs);
 	}
-	$form = '<form id="form-image" class="bordered-formbloc" enctype="multipart/form-data" method="post" action="'.basename($_SERVER['SCRIPT_NAME']).'" onsubmit="submitdnd(event);">'."\n";
+	$form = '<form id="form-image" enctype="multipart/form-data" method="post" action="'.basename($_SERVER['SCRIPT_NAME']).'" onsubmit="submitdnd(event);">'."\n";
 
 	if (empty($fichiers)) { // si PAS fichier donnée : formulaire nouvel envoi.
-		$form .= '<fieldset class="pref" >'."\n";
-
 		$form .= '<div id="form-dragndrop">'."\n";
 			$form .= '<div id="dragndrop-area" ondragover="event.preventDefault();" ondrop="handleDrop(event);" >'."\n";
 			$form .= "\t".'<div id="dragndrop-title">'."\n";
@@ -85,7 +83,6 @@ function afficher_form_fichier($erreurs, $fichiers, $what) { // ajout d’un fic
 		$form .= "\t".'<p class="submit-bttns"><button class="submit button-submit" type="submit" name="upload">'.$GLOBALS['lang']['img_upload'].'</button></p>'."\n";
 		$form .= '</div>'."\n";
 
-		$form .= '</fieldset>'."\n";
 	}
 	// si ID dans l’URL, il s’agit également du seul fichier dans le tableau fichiers, d’où le [0]
 	elseif (!empty($fichiers) and isset($_GET['file_id']) and preg_match('/\d{14}/',($_GET['file_id']))) {
@@ -329,9 +326,10 @@ echo 'var nbDraged = false;'."\n";
 echo 'var nbDone = 0;'."\n";
 echo 'var list = []; // list of uploaded files'."\n";
 
-echo 'document.body.addEventListener(\'dragover\', handleDragOver, true);'."\n";
-echo 'document.body.addEventListener(\'dragleave\', handleDragLeave, false);'."\n";
-echo 'document.body.addEventListener(\'dragend\', handleDragEnd, false);'."\n";
+echo 'document.getElementById(\'dragndrop-area\').addEventListener(\'dragenter\', handleDragEnter, false);'."\n";
+echo 'document.getElementById(\'dragndrop-area\').addEventListener(\'dragover\', handleDragOver, true);'."\n";
+echo 'document.getElementById(\'dragndrop-area\').addEventListener(\'dragleave\', handleDragLeave, false);'."\n";
+echo 'document.getElementById(\'dragndrop-area\').addEventListener(\'dragend\', handleDragEnd, false);'."\n";
 
 echo 'var imageWall = new imgListWall();'."\n";
 echo 'var filesWall = new docListWall();'."\n";

@@ -1,117 +1,102 @@
 /* TABLE LISTE BILLETS
 --------------------------------------------------------------------------- */
 
-#blocBillets {}
-
 #blocBillets h2 {
 	font-size: 1em;
 	color: rgba(0, 0, 0, .6);
-	padding: 20px 0 10px 0px;
+	padding: 15px;
 	background: #eee;
-	margin: 3px 0 3px;
+	margin: 0;
+	position: relative;
+	top: 50px;
+	height: 50px;
+	box-sizing: border-box;
+	border-radius: 15px 15px 0 0;
+	margin-top: -30px;
 }
 
 .billets {
-	padding: 0;
+	padding: 60px 10px 10px;
 	margin: auto;
 	list-style: none;
-}
-
-.billets a:not(:hover),
-.billets > li > span:nth-of-type(3) a:hover,
-.billets > li > span:nth-of-type(4) a:hover {
-	text-decoration: none;
+	border-radius: 15px;
 }
 
 .billets > li {
-	padding: 10px 20px;
-	min-height: 50px;
-	margin: 0;
+	padding: 0px 15px;
+	min-height: 60px;
+	margin: 1px 0;
 	display: flex;
 	align-items: center;
-	border-bottom: 1px solid rgba(0, 0, 0, .1);
+	border-radius: 15px;
 }
 
 .billets > li:hover {
-	transition: box-shadow 0.5s ease 0s;
-	position: relative;
-	box-shadow: 0px 6px 20px 0px rgba(0, 0, 0, 0.19), 0px 8px 17px 0px rgba(0, 0, 0, 0.2);
+	transition: background-color 0.5s ease 0s;
+	background-color: #eee;
 }
 
-.billets > li.planned {
-	background: #f0f0f0;
+.billets > li > a {
+	text-decoration: none;
+	opacity: .5;
+	color: inherit;
 }
 
-.billets > li > span:nth-of-type(1)::before,
-.billets > li > span:nth-of-type(2)::before,
-.billets > li > span:nth-of-type(3) a::before,
-.billets > li > span:nth-of-type(4) a::before {
-	font-size: 1.4em;
+.billets > li:hover > a {
+	opacity: 1;
+}
+
+.billets > li > a::before {
+	font-size: 1.6em;
 	margin-right: 5px;
 	color: rgba(0, 0, 0, .5);
 }
 
-.billets > li > span:nth-of-type(1)::before {
-	font-size: 1.9em;
-	margin-right: 20px;
-}
-
-.billets > li > span:nth-of-type(1).on::before {
-	content: "\e91c";
-	color: rgba(101, 234, 143, 1);
-}
-
-.billets > li > span:nth-of-type(1).off::before {
-	content: "\e917";
-	color: rgba(252, 101, 101, 1);
-}
-
-.billets > li > span:nth-of-type(1) { /*title*/
+.billets > li > a.titre { /*title*/
 	flex: 1;
-	padding: 0 10px 0 0;
-}
-
-.billets > li > span:nth-of-type(n+2) {
-	opacity: .5;
-	font-size: .9em;
-}
-.billets > li:hover > span:nth-of-type(n+2) {
 	opacity: 1;
-}
-
-.billets > li > span:nth-of-type(1),
-.billets > li > span:nth-of-type(1) a {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.billets > li > span:nth-of-type(2) { /*date*/
-	text-align: center;
+.billets > li > a.titre::before {
+	font-size: 1.9em;
+	margin-right: 20px;
 }
-.billets > li > span:nth-of-type(2)::before {
+
+.billets > li.on > a.titre::before {
+	content: "\e91c";
+	color: rgba(101, 234, 143, 1);
+}
+
+.billets > li.off > a.titre::before {
+	content: "\e917";
+	color: rgba(252, 101, 101, 1);
+}
+
+.billets > li > a.titre > span { /* "planned" */
+	font-style: italic;
+	padding: 1px 10px;
+	background: lightblue;
+	margin: 6px 6px 6px 10px;
+	border-radius: 10px;
+	text-decoration: none;
+}
+
+.billets > li > a.date::before {
 	content: "\e918";
 }
 
-.billets > li > span:nth-of-type(3) { /*comms*/
+.billets > li > a.comments { /*comms*/
 	padding: 0 0 0 12px;
 	margin: 0 15px 0 10px;
 }
-.billets > li > span:nth-of-type(3) a {
-}
-.billets > li > span:nth-of-type(3) a::before {
+
+.billets > li > a.comments::before {
 	content: "\e91b";
 }
 
-
-.billets > li > span:nth-of-type(4) a::before { /* prev */
+.billets > li > a.preview::before { /* prev */
 	content: "\e902";
 }
-
-
-.billets > li > span:nth-of-type(1) a,
-.billets > li > span:nth-of-type(2) a,
-.billets > li > span:nth-of-type(3) a {
-	color: inherit;
-}
-

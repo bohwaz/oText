@@ -23,27 +23,29 @@
 
 /* IMAGES : DnD area : ondrag-style */
 #form-image #dragndrop-area.fullpagedrag {
-	background: rgba(84, 145, 245, .8);
-	position: fixed;
-	top: 0; left: 0; right: 0; bottom: 0;
-	z-index: 100;
-	margin: 0;
-	color: white;
-	border-radius: 0;
-	border-width: 5px;
+	background: rgba(84, 145, 245, .3);
 	border-color: #0061FF;
 }
 
-#form-image #dragndrop-area.fullpagedrag #file-input-wrapper,
-#form-image #dragndrop-area.fullpagedrag #click-change-form {
-	display: none;
+#form-image #dragndrop-area.fullpagedrag > :nth-child(n+2) {
+	visibility: hidden;
+}
+
+#form-image #dragndrop-area.fullpagedrag::before {
+	content: "";
+	z-index: 100;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: inherit;
+	opacity: .3;
 }
 
 #form-image .fullpagedrag #dragndrop-title {
 	color: inherit;
-	height: 100%;
-	font-size: 1.8vw;
-	margin-bottom: 50px;
+	pointer-events: none;
 }
 
 /* IMAGES : DnD area : Title bloc */
@@ -138,21 +140,23 @@
 
 #img-others-infos p:not(.submit-bttns) {
 	display: flex;
-	max-width: 600px;
+	max-width: 660px;
 	margin: auto;
 	padding-top: 15px;
+	align-items: center;
 }
 
 #img-others-infos label:not([for="statut"]) {
-	width: 30px;
-	height: 30px;
+	width: 40px;
+	height: 40px;
 	overflow: hidden;
+	text-align: center;
 }
 
 #img-others-infos label:not([for="statut"])::before {
 	font-size: 1.4em;
 	color: rgba(0, 0, 0, .5);
-	line-height: 30px;
+	line-height: 40px;
 	display: inline-block;
 }
 
@@ -166,9 +170,7 @@
 
 #img-others-infos .text {
 	flex: 1 1 0%;
-	padding: 0 0 0 1px;
-	width: 100%;
-	min-width: 0;
+	padding: 10px 5px;
 }
 
 #onclicshow {

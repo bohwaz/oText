@@ -66,18 +66,26 @@
 }
 
 #feed-list li {
-	min-height: 1.6em;
-	padding: 0;
-	display: flex;
 	position: relative;
 	border-bottom: 1px solid #eee;
-	align-items: center;
 	font-weight: bold;
+
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding: 20px 45px;
+	background-repeat: no-repeat;
+	background-position: 15px center;
+	display: block;
+	align-items: center;
+	cursor: pointer;
 }
 
 
 
 #feed-list > li.special {
+	padding: 0;
+	text-align: center;
 }
 
 #feed-list > li.special:hover {
@@ -90,98 +98,63 @@
 }
 
 #feed-list > li.special > ul > li {
-	padding: 2px 0 2px 20px;
+	padding-right: 1em;
+	padding-left: 0;
 }
 
-#feed-list > li.special > ul > li > a::before {
-	display: inline-block;
-	vertical-align: middle;
+#feed-list > li.special > ul > li::before {
 	content: "\e901";
 	font-size: 1.6em;
 	font-weight: normal;
-	padding-right: 5px;
-	color: rgba(0, 0, 0, .6);
+	padding-right: .5em;
+	color: rgba(0, 0, 0, .5);
 }
 
-#feed-list > li.special .all-feeds a::before {
+#feed-list > li.special .all-feeds::before {
 	content: "\e901";
 }
 
-#feed-list > li.special .today-feeds a::before {
+#feed-list > li.special .today-feeds::before {
 	content: "\e918";
 }
 
-#feed-list > li.special .fav-feeds a::before {
+#feed-list > li.special .fav-feeds::before {
 	content: "\e90c";
 }
 
-#feed-list > li.feed-folder {
-	display: block;
-}
-
-#feed-list > li > span,
+/*#feed-list > li > span,
 #feed-list > li > ul > li > span {
 	padding: 10px 25px 10px 0
-}
+}*/
 
-#feed-list li a {
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	text-decoration: none;
-	color: inherit;
-	flex: 1;
-	padding: 15px 45px 15px 40px;
-	background-repeat: no-repeat;
-	background-position: 15px center;
-	display: block;
-	align-items: center;
-	outline: none;
-}
-
-#feed-list li.feed-site:not([data-nbrun="0"])::after,
-#feed-list li.feed-folder:not([data-nbrun="0"])::after {
+#feed-list li.feed-site:not([data-nbrun="0"])::before,
+#feed-list li.feed-folder:not([data-nbrun="0"])::before {
 	content: attr(data-nbrun);
 	font-family: inherit!important;
 	position: absolute;
-	right: 0;
 	right: 10px;
-	top: 1em;
 	padding: 2px 4px;
 	border-radius: 5px;
 	border: 1px solid silver;
 }
 
-#feed-list > li.feed-folder > .feed-folder-title > a {
-	padding-left: 15px;
-}
-
-#feed-list > li.feed-folder > .feed-folder-title {
-	display: flex;
-	padding: 0;
-	align-items: center;
-}
-
-#feed-list > li.feed-folder > .feed-folder-title span {
-	padding-left: 5px;
-}
-
 #feed-list > li.feed-folder > ul {
 	font-weight: normal;
 	padding-left: 0;
-	margin-left: 0px;
+	margin-left: -45px;
+	margin-right: -45px;
 	height: 0;
 	overflow: hidden;
+}
+
+#feed-list > li.feed-folder.open {
+	padding-bottom: 0;
 }
 
 #feed-list > li.feed-folder.open > ul {
 	height: auto;
 	overflow: visible;
-}
-
-#feed-list > li.feed-folder > ul > li > a {
-	padding-left: 50px;
-	background-position: 25px center;
+	margin-top: 20px;
 }
 
 #feed-list li.feed-folder a.unfold {
@@ -190,6 +163,9 @@
 	margin-left: 5px;
 	overflow: visible;
 	transition: transform ease .2s;
+	position: absolute;
+	left: 0;
+	top: 12px;
 }
 
 #feed-list li.feed-folder a.unfold::before {
@@ -377,11 +353,12 @@
 	color: inherit;
 	cursor: auto;
 	position: relative;
-	padding: 0 20px 15px;
+	padding: 0 15px 15px;
 }
 
 #post-list > li.open-post .rss-item-content {
 	margin-top: 15px;
+	margin-left: 15px;
 	transition: opacity .7s cubic-bezier(0.175, 0.585, 0.32, 1);
 	opacity: 1;
 	height: auto;

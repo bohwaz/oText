@@ -321,13 +321,19 @@ function init_post_article() { //no $mode : it's always admin.
  * but, this one can be used on admin side and on public side.
  *
  */
-function init_post_comment($id, $mode) {
+function init_post_comment($article_id, $mode) {
 	$comment = array();
-	if ( isset($id) ) {
-		if ( ($mode == 'admin') and (isset($_POST['is_it_edit'])) ) {
-			$status = (isset($_POST['activer_comm']) and $_POST['activer_comm'] == 'on' ) ? '0' : '1'; // c'est plus « désactiver comm en fait »
+	$is_edit = 0;
+	if ( $mode == 'admin' and (isset($_POST['com_supprimer']) or isset($_POST['com_activer']) or (isset($_POST['comment_id']) and is_numeric($_POST['comment_id']) )) ) {
+		$is_edit = 1;
+	}
+
+
+	if ( isset($article_id) ) {
+		if ( ($mode == 'admin') and ($is_edit)) {
+			$status = '1';
 			$comment_id = $_POST['comment_id'];
-		} elseif ($mode == 'admin' and !isset($_POST['is_it_edit'])) {
+		} elseif ($mode == 'admin' and !$is_edit) {
 			$status = '1';
 			$comment_id = date('YmdHis');
 		} else {
@@ -342,7 +348,7 @@ function init_post_comment($id, $mode) {
 
 		$comment = array (
 			'bt_id'				=> $comment_id,
-			'bt_article_id'	=> $id,
+			'bt_article_id'		=> $article_id,
 			'bt_content'		=> markup(htmlspecialchars(clean_txt($_POST['commentaire']), ENT_NOQUOTES)),
 			'bt_wiki_content'	=> clean_txt($_POST['commentaire']),
 			'bt_author'			=> protect($_POST['auteur']),
@@ -353,7 +359,7 @@ function init_post_comment($id, $mode) {
 			'bt_statut'			=> $status,
 		);
 	}
-	if ( isset($_POST['ID']) and is_numeric($_POST['ID']) ) { // ID only added on edit.
+	if ( isset($_POST['ID']) and !empty($_POST['ID']) and is_numeric($_POST['ID']) ) { // ID only added on edit.
 		$comment['ID'] = $_POST['ID'];
 	}
 
@@ -602,8 +608,14 @@ function traiter_form_commentaire($commentaire, $admin) {
 	$msg_param_to_trim = (isset($_GET['msg'])) ? '&msg='.$_GET['msg'] : '';
 	$query_string = str_replace($msg_param_to_trim, '', $_SERVER['QUERY_STRING']);
 
+	$is_edit = 0;
+	if ( $admin == 'admin' and (isset($_POST['com_supprimer']) or isset($_POST['com_activer']) or (isset($_POST['comment_id']) and is_numeric($_POST['comment_id']) )) ) {
+		$is_edit = 1;
+	}
+
+
 	// add new comment (admin + public)
-	if (isset($_POST['enregistrer']) and empty($_POST['is_it_edit'])) {
+	if (isset($_POST['enregistrer']) and !$is_edit) {
 		$result = bdd_commentaire($commentaire, 'enregistrer-nouveau');
 		if ($result === TRUE) {
 			if ($GLOBALS['comm_defaut_status'] == 1) { // send subscribe emails only if comments are not hidden
@@ -614,23 +626,24 @@ function traiter_form_commentaire($commentaire, $admin) {
 		}
 		else { die($result); }
 	}
+
 	// admin operations
 	elseif ($admin == 'admin') {
 		// edit
-		if (isset($_POST['enregistrer']) and isset($_POST['is_it_edit']) ) {
+		if (isset($_POST['enregistrer']) and $is_edit ) {
 			$result = bdd_commentaire($commentaire, 'editer-existant');
 			$redir = basename($_SERVER['SCRIPT_NAME']).'?'.$query_string.'&msg=confirm_comment_edit';
 		}
-		// remove OR change status (ajax call)
+		// comm.supp() OR comm.changeStatus() (ajax)
 		elseif (isset($_POST['com_supprimer']) or isset($_POST['com_activer']) ) {
-			$ID = (isset($_POST['com_supprimer']) ? htmlspecialchars($_POST['com_supprimer']) : htmlspecialchars($_POST['com_activer']));
+			$bt_id = (isset($_POST['com_supprimer']) ? htmlspecialchars($_POST['com_supprimer']) : htmlspecialchars($_POST['com_activer']));
 			$action = (isset($_POST['com_supprimer']) ? 'supprimer-existant' : 'activer-existant');
-				$comm = array('ID' => $ID, 'bt_article_id' => htmlspecialchars($_POST['com_article_id']));
+				$comm = array('bt_id' => $bt_id);
 				$result = bdd_commentaire($comm, $action);
 				// Ajax response
 				if ($result === TRUE) {
 					if (isset($_POST['com_activer']) and $GLOBALS['comm_defaut_status'] == 0) { // send subscribe emails if comments just got activated
-						send_emails(htmlspecialchars($_POST['com_bt_id']));
+						send_emails(htmlspecialchars($_POST['com_activer']));
 					}
 					rafraichir_cache_lv1();
 					echo 'Success'.new_token();
@@ -656,6 +669,7 @@ function bdd_commentaire($commentaire, $what) {
 
 	// ENREGISTREMENT D'UN NOUVEAU COMMENTAIRE.
 	if ($what == 'enregistrer-nouveau') {
+		$article_id = $commentaire['bt_article_id'];
 		try {
 			$req = $GLOBALS['db_handle']->prepare('INSERT INTO commentaires
 				(	bt_type,
@@ -684,32 +698,25 @@ function bdd_commentaire($commentaire, $what) {
 				$commentaire['bt_subscribe'],
 				$commentaire['bt_statut']
 			));
-			// remet à jour le nombre de commentaires associés à l’article.
-			$nb_comments_art = liste_elements_count("SELECT count(*) AS nbr FROM commentaires WHERE bt_article_id=? and bt_statut=1", array($commentaire['bt_article_id']));
-			$req2 = $GLOBALS['db_handle']->prepare('UPDATE articles SET bt_nb_comments=? WHERE bt_id=?');
-			$req2->execute( array($nb_comments_art, $commentaire['bt_article_id']) );
-
-			return TRUE;
 		} catch (Exception $e) {
 			return 'Erreur : '.$e->getMessage();
 		}
 	}
+	// ÉDITION D'UN COMMENTAIRE DÉJÀ EXISTANT. (hors activation)
 	elseif ($what == 'editer-existant') {
-	// ÉDITION D'UN COMMENTAIRE DÉJÀ EXISTANT. (ou activation)
+		$article_id = $commentaire['bt_article_id'];
+
 		try {
 			$req = $GLOBALS['db_handle']->prepare('UPDATE commentaires SET
-				bt_article_id=?,
 				bt_content=?,
 				bt_wiki_content=?,
 				bt_author=?,
 				bt_link=?,
 				bt_webpage=?,
 				bt_email=?,
-				bt_subscribe=?,
-				bt_statut=?
-				WHERE ID=?');
+				bt_subscribe=?
+				WHERE bt_id=?');
 			$req->execute(array(
-				$commentaire['bt_article_id'],
 				$commentaire['bt_content'],
 				$commentaire['bt_wiki_content'],
 				$commentaire['bt_author'],
@@ -717,16 +724,8 @@ function bdd_commentaire($commentaire, $what) {
 				$commentaire['bt_webpage'],
 				$commentaire['bt_email'],
 				$commentaire['bt_subscribe'],
-				$commentaire['bt_statut'],
-				$commentaire['ID'],
+				$commentaire['bt_id'],
 			));
-
-			// remet à jour le nombre de commentaires associés à l’article.
-			$nb_comments_art = liste_elements_count("SELECT count(*) AS nbr FROM commentaires WHERE bt_article_id=? and bt_statut=1", array($commentaire['bt_article_id']));
-
-			$req2 = $GLOBALS['db_handle']->prepare('UPDATE articles SET bt_nb_comments=? WHERE bt_id=?');
-			$req2->execute( array($nb_comments_art, $commentaire['bt_article_id']) );
-			return TRUE;
 		} catch (Exception $e) {
 			return 'Erreur : '.$e->getMessage();
 		}
@@ -735,15 +734,15 @@ function bdd_commentaire($commentaire, $what) {
 	// SUPPRESSION D'UN COMMENTAIRE
 	elseif ($what == 'supprimer-existant') {
 		try {
-			$req = $GLOBALS['db_handle']->prepare('DELETE FROM commentaires WHERE ID=?');
-			$req->execute(array($commentaire['ID']));
+			// get article_id
+			$req = $GLOBALS['db_handle']->prepare("SELECT bt_article_id FROM commentaires WHERE bt_id=?");
+			$req->execute(array($commentaire['bt_id']));
+			$result = $req->fetch();
+			$article_id = $result['bt_article_id'];
 
-			// remet à jour le nombre de commentaires associés à l’article.
-			$nb_comments_art = liste_elements_count("SELECT count(*) AS nbr FROM commentaires WHERE bt_article_id=? and bt_statut=1", array($commentaire['bt_article_id']));
-			$req2 = $GLOBALS['db_handle']->prepare('UPDATE articles SET bt_nb_comments=? WHERE bt_id=?');
+			$req = $GLOBALS['db_handle']->prepare('DELETE FROM commentaires WHERE bt_id=?');
+			$req->execute(array($commentaire['bt_id']));
 
-			$req2->execute( array($nb_comments_art, $commentaire['bt_article_id']) );
-			return TRUE;
 		} catch (Exception $e) {
 			return 'Erreur : '.$e->getMessage();
 		}
@@ -752,17 +751,31 @@ function bdd_commentaire($commentaire, $what) {
 	// CHANGEMENT STATUS COMMENTAIRE
 	elseif ($what == 'activer-existant') {
 		try {
-			$req = $GLOBALS['db_handle']->prepare('UPDATE commentaires SET bt_statut=ABS(bt_statut-1) WHERE ID=?');
-			$req->execute(array($commentaire['ID']));
+			// get article_id
+			$req = $GLOBALS['db_handle']->prepare("SELECT bt_article_id FROM commentaires WHERE bt_id=?");
+			$req->execute(array($commentaire['bt_id']));
+			$result = $req->fetch();
+			$article_id = $result['bt_article_id'];
 
-			// remet à jour le nombre de commentaires associés à l’article.
-			$nb_comments_art = liste_elements_count("SELECT count(*) AS nbr FROM commentaires WHERE bt_article_id=? and bt_statut=1", array($commentaire['bt_article_id']));
-			$req2 = $GLOBALS['db_handle']->prepare('UPDATE articles SET bt_nb_comments=? WHERE bt_id=?');
-			$req2->execute( array($nb_comments_art, $commentaire['bt_article_id']) );
-			return TRUE;
+			$req = $GLOBALS['db_handle']->prepare('UPDATE commentaires SET bt_statut=ABS(bt_statut-1) WHERE bt_id=?');
+			$req->execute(array($commentaire['bt_id']));
+
 		} catch (Exception $e) {
 			return 'Erreur : '.$e->getMessage();
 		}
+	}
+
+
+	// After new comm, activate_comm & suppr_comm, update nb_comm in articles.
+	try {
+		// remet à jour le nombre de commentaires associés à l’article.
+		$nb_comments_art = liste_elements_count("SELECT count(*) AS nbr FROM commentaires WHERE bt_article_id=? and bt_statut=1", array($article_id));
+		$req2 = $GLOBALS['db_handle']->prepare('UPDATE articles SET bt_nb_comments=? WHERE bt_id=?');
+		$req2->execute( array($nb_comments_art, $article_id) );
+
+		return TRUE;
+	} catch (Exception $e) {
+		return 'Erreur 248959 : mise à jour nb_comm() 248959 : '.$e->getMessage();
 	}
 }
 

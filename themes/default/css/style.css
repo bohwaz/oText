@@ -3,23 +3,27 @@
   font-family: "Roboto";
   font-style: normal;
   font-weight: 300;
-  src: local('Roboto Light'), local('Roboto-Light'), url("roboto-300.woff") format("woff");
+  src: local('Roboto Light'), local('Roboto-Light'), url("../fonts/roboto-300.woff") format("woff");
 }
 
 @font-face {
   font-family: "Roboto";
   font-style: normal;
   font-weight: 400;
-  src: local('Roboto'), local('Roboto-Regular'), url("roboto-400.woff") format("woff");
+  src: local('Roboto'), local('Roboto-Regular'), url("../fonts/roboto-400.woff") format("woff");
 }
 
 @font-face {
   font-family: "Roboto";
   font-style: normal;
   font-weight: 700;
-  src: local('Roboto Bold'), local('Roboto-Bold'), url("roboto-700.woff") format("woff");
+  src: local('Roboto Bold'), local('Roboto-Bold'), url("../fonts/roboto-700.woff") format("woff");
 }
 
+@font-face {
+  font-family: "icon";
+  src: url("../fonts/icons.woff") format("woff");
+}
 
 /* GENERAL PAGE LAYOUT
 ------------------------------------------------------------ */
@@ -125,7 +129,7 @@ q, blockquote {
 	overflow: hidden;
 	border: 12px solid #263238;
 	padding: 0;
-	background: #263238 url(sprites.png) no-repeat -186px -126px / 640px 400px;
+	background: #263238 url(../imgs/sprites.png) no-repeat -186px -126px / 640px 400px;
 	color: transparent;
 	box-sizing: border-box;
 	box-shadow: 0 0 1px silver inset;
@@ -213,7 +217,7 @@ q, blockquote {
 }
 
 #search button {
-	background: url(sprites.png) no-repeat 7px -40px / 640px 400px;
+	background: url(../imgs/sprites.png) no-repeat 7px -40px / 640px 400px;
 	color: transparent;
 	width: 40px;
 	height: 40px;
@@ -372,7 +376,7 @@ q, blockquote {
 #alltags > ul a:last-of-type {
 	width: 16px;
 	height: 20px;
-	background: transparent url(sprites.png) no-repeat -116px -168px / 640px 400px;
+	background: transparent url(../imgs/sprites.png) no-repeat -116px -168px / 640px 400px;
 	border-left: 1px solid transparent;
 }
 
@@ -384,7 +388,7 @@ q, blockquote {
 ------------------------------------------------------------------------ */
 #head-main-wrapper > header {
 	text-align: center;
-	background: transparent url("header-bg.jpg") no-repeat scroll center center / cover;
+	background: transparent url("../imgs/header-bg.jpg") no-repeat scroll center center / cover;
 	height: 300px;
 	font-size: 1.7em;
 	color: white;
@@ -439,6 +443,18 @@ q, blockquote {
 .post-title > h1 > a {
 	color: inherit;
 }
+.post-title > h1 > a+a {
+	color: white;
+	margin: 0 5px;
+	border: 1px solid gray;
+	padding: 5px 15px;
+	font-size: .8em;
+	border-radius: 10px;
+	background: silver;
+	text-shadow: 1px 1px 0px black;
+	box-shadow: 1px 1px 0 black;
+}
+
 .post-title .date,
 .post-title .author {
 	font-size: .8em;
@@ -668,48 +684,67 @@ q, blockquote {
 	border: 0;
 }
 
+
 /* Boutons de formatage  */
 p.formatbut {
-	height: 30px;
-	width: 100%;
-	line-height: 28px;
-	margin: 0; padding: 0;
+	line-height: 36px;
+	margin: 0; padding: 0px 5px;
 	background: #f5f5f5;
+	height: 40px;
 }
-.formatbut button {
+
+.formatbut .but {
 	padding: 0;
+	display: inline-block;
+	text-align: center;
 	vertical-align: middle;
 	background: rgba(0, 0, 0, 0);
-	height: 24px; width: 24px;
+	height: 32px;
+	width: 32px;
+	line-height: 32px;
 	border: 1px solid transparent;
 	border-radius: 4px;
+	box-sizing: border-box;
 }
-.formatbut button:hover {
+
+.formatbut .but:hover {
+	transition: border-color .3s;
 	border-color: silver;
 }
-.formatbut button:active {
+
+.formatbut .but:active {
 	border-color: gray;
 	background: #cde6ff;
 	background: linear-gradient(to top, white, #d6d6d6);
 }
-.formatbut button span {
+
+
+.formatbut span.spacer {
+	margin: 0 10px;
+	border-left: 1px solid #ddd;
+	border-right: 1px solid #fff;
+	height: 30px;
 	display: inline-block;
-	width: 16px;
-	height: 24px;
+	vertical-align: middle;
 }
-.formatbut .spacer {
-	width: 2px;
-	margin: 0 4px;
-	border-left: 1px solid #e5e5e5;
-	border-right: 1px solid #fafafa
+
+.formatbut > .but::before {
+	font-size: 1.6em;
+	height: 32px;
+	width: 32px;
+	display: block;
+	line-height: inherit;
+	font-family: "icon"!important;
 }
-#button01 span { background: no-repeat -4px   -1px url(format.png); }
-#button02 span { background: no-repeat -4px  -21px url(format.png); }
-#button03 span { background: no-repeat -4px  -42px url(format.png); }
-#button04 span { background: no-repeat -4px  -82px url(format.png); }
-#button09 span { background: no-repeat -4px  -62px url(format.png); }
-#button10 span { background: no-repeat -4px -102px url(format.png); }
-#button12 span { background: no-repeat -4px -122px url(format.png); }
+
+
+#button01::before { content: "\e94c"; } /* bold */
+#button02::before { content: "\e94d"; } /* ital */
+#button03::before { content: "\e94e"; } /* underline */
+#button04::before { content: "\e94f"; } /* strike */
+#button09::before { content: "\e95b"; } /* link */
+#button10::before { content: "\e95c"; } /* quote */
+#button12::before { content: "\e95e"; } /* code */
 
 
 /* textarea field in comments */

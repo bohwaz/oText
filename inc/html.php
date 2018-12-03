@@ -12,11 +12,11 @@ function afficher_html_head($titre, $page_css_class) {
 	$html .= '<html>'."\n";
 	$html .= '<head>'."\n";
 	$html .= "\t".'<meta charset="UTF-8" />'."\n";
-	$html .= "\t".'<link type="text/css" rel="stylesheet" href="style/style.css.php" />'."\n";
-	$html .= "\t".'<meta name="viewport" content="initial-scale=1.0, user-scalable=yes" />'."\n";
 	$html .= "\t".'<title>'.$titre.' | '.BLOGOTEXT_NAME.'</title>'."\n";
+	$html .= "\t".'<meta name="viewport" content="initial-scale=1.0, user-scalable=yes" />'."\n";
+	$html .= "\t".'<link type="text/css" rel="stylesheet" href="style/style.css.php" />'."\n";
 	$html .= '</head>'."\n";
-	$html .= '<body id="body" class="'.$page_css_class.'">'."\n\n";
+	$html .= '<body id="body" class="'.$page_css_class.'">'."\n";
 	echo $html;
 }
 
@@ -43,25 +43,25 @@ function afficher_topnav($titre, $html_sub_menu) {
 	// TOP MENU
 
 	$html = '<div id="header">'."\n";
-	$html .= '<div id="top">'."\n";
+	$html .= "\t".'<div id="top">'."\n";
 
 	// left nav
-	$html .= "\t".'<div id="nav">'."\n";
-	$html .= "\t\t".'<ul>'."\n";
-	$html .= "\t\t\t".'<li><a href="index.php" id="lien-index">'.$GLOBALS['lang']['label_resume'].'</a></li>'."\n";
-	$html .= "\t\t\t".'<li><a href="articles.php" id="lien-liste">'.$GLOBALS['lang']['mesarticles'].'</a></li>'."\n";
-	$html .= "\t\t\t".'<li><a href="ecrire.php" id="lien-nouveau">'.$GLOBALS['lang']['nouveau'].'</a></li>'."\n";
-	$html .= "\t\t\t".'<li><a href="commentaires.php" id="lien-lscom">'.$GLOBALS['lang']['titre_commentaires'].'</a></li>'."\n";
-	$html .= "\t\t\t".'<li><a href="fichiers.php" id="lien-fichiers">'.ucfirst($GLOBALS['lang']['label_fichiers']).'</a></li>'."\n";
-	$html .= "\t\t\t".'<li><a href="links.php" id="lien-links">'.ucfirst($GLOBALS['lang']['label_links']).'</a></li>'."\n";
-	$html .= "\t\t\t".'<li><a href="notes.php" id="lien-notes">'.ucfirst($GLOBALS['lang']['label_notes']).'</a></li>'."\n";
-	$html .= "\t\t\t".'<li><a href="feed.php" id="lien-rss">'.ucfirst($GLOBALS['lang']['label_feeds']).'</a></li>'."\n";
-	$html .= "\t\t\t".'<li><a href="agenda.php" id="lien-agenda">'.ucfirst($GLOBALS['lang']['label_agenda']).'</a></li>'."\n";
-	$html .= "\t\t".'</ul>'."\n";
-	$html .= "\t".'</div>'."\n";
+	$html .= "\t\t".'<div id="nav">'."\n";
+	$html .= "\t\t\t".'<ul>'."\n";
+	$html .= "\t\t\t\t".'<li><a href="index.php" id="lien-index">'.$GLOBALS['lang']['label_resume'].'</a></li>'."\n";
+	$html .= "\t\t\t\t".'<li><a href="articles.php" id="lien-liste">'.$GLOBALS['lang']['mesarticles'].'</a></li>'."\n";
+	$html .= "\t\t\t\t".'<li><a href="ecrire.php" id="lien-nouveau">'.$GLOBALS['lang']['nouveau'].'</a></li>'."\n";
+	$html .= "\t\t\t\t".'<li><a href="commentaires.php" id="lien-lscom">'.$GLOBALS['lang']['titre_commentaires'].'</a></li>'."\n";
+	$html .= "\t\t\t\t".'<li><a href="fichiers.php" id="lien-fichiers">'.ucfirst($GLOBALS['lang']['label_fichiers']).'</a></li>'."\n";
+	$html .= "\t\t\t\t".'<li><a href="links.php" id="lien-links">'.ucfirst($GLOBALS['lang']['label_links']).'</a></li>'."\n";
+	$html .= "\t\t\t\t".'<li><a href="notes.php" id="lien-notes">'.ucfirst($GLOBALS['lang']['label_notes']).'</a></li>'."\n";
+	$html .= "\t\t\t\t".'<li><a href="feed.php" id="lien-rss">'.ucfirst($GLOBALS['lang']['label_feeds']).'</a></li>'."\n";
+	$html .= "\t\t\t\t".'<li><a href="agenda.php" id="lien-agenda">'.ucfirst($GLOBALS['lang']['label_agenda']).'</a></li>'."\n";
+	$html .= "\t\t\t".'</ul>'."\n";
+	$html .= "\t\t".'</div>'."\n";
 
 	// h1 title
-	$html .=  "\t".'<h1 id="titre-page"><a href="'.$tab.'">'.$titre.'</a></h1>'."\n";
+	$html .=  "\t\t".'<h1 id="titre-page"><a href="'.$tab.'">'.$titre.'</a></h1>'."\n";
 
 	// search field
 	if (!in_array($tab, array('preferences.php', 'ecrire.php', 'maintenance.php'))) {
@@ -72,15 +72,15 @@ function afficher_topnav($titre, $html_sub_menu) {
 	$html .= get_notifications();
 
 	// right nav
-	$html .= "\t".'<div id="nav-acc">'."\n";
-	$html .= "\t\t".'<ul>'."\n";
-	$html .= "\t\t\t".'<li><a href="preferences.php" id="lien-preferences">'.$GLOBALS['lang']['preferences'].'</a></li>'."\n";
-	$html .= "\t\t\t".'<li><a href="'.$GLOBALS['racine'].'" id="lien-site">'.$GLOBALS['lang']['lien_blog'].'</a></li>'."\n";
-	$html .= "\t\t\t".'<li><a href="logout.php" id="lien-deconnexion">'.$GLOBALS['lang']['deconnexion'].'</a></li>'."\n";
-	$html .= "\t\t".'</ul>'."\n";
-	$html .= "\t".'</div>'."\n";
+	$html .= "\t\t".'<div id="nav-acc">'."\n";
+	$html .= "\t\t\t".'<ul>'."\n";
+	$html .= "\t\t\t\t".'<li><a href="preferences.php" id="lien-preferences">'.$GLOBALS['lang']['preferences'].'</a></li>'."\n";
+	$html .= "\t\t\t\t".'<li><a href="'.$GLOBALS['racine'].'" id="lien-site">'.$GLOBALS['lang']['lien_blog'].'</a></li>'."\n";
+	$html .= "\t\t\t\t".'<li><a href="logout.php" id="lien-deconnexion">'.$GLOBALS['lang']['deconnexion'].'</a></li>'."\n";
+	$html .= "\t\t\t".'</ul>'."\n";
+	$html .= "\t\t".'</div>'."\n";
 
-	$html .= '</div>'."\n";
+	$html .= "\t".'</div>'."\n";
 
 	// SECONDS MENU BAR (for RSS, notes, agenda…)
 	$html .= $html_sub_menu;
@@ -97,7 +97,7 @@ function afficher_topnav($titre, $html_sub_menu) {
 		$html .= '<div class="no_confirmation">'.$message.'</div>'."\n";
 	}
 
-	$html .= '</div>'."\n\n";
+	$html .= '</div>'."\n";
 
 	echo $html;
 }
@@ -134,22 +134,22 @@ function get_notifications() {
 	// get near events
 	if (isset($_COOKIE['lastAccessAgenda']) and is_numeric($_COOKIE['lastAccessAgenda'])) {
 		$query = 'SELECT count(ID) AS nbr FROM agenda WHERE bt_date >=? AND bt_date <=?';
-		$array = array( date('YmdHis', $_COOKIE['lastAccessAgenda']), date('YmdHis', ($_COOKIE['lastAccessAgenda']+24*60*60)) );
+		$array = array( date('YmdHis', time()), date('YmdHis', (time()+24*60*60)) );
 		$nb_new = liste_elements_count($query, $array);
 		if ($nb_new > 0) {
 			$hasNotifs += $nb_new;
-			$lis .= "\t\t\t".'<li><a href="agenda.php">'.$nb_new .' near events</a></li>'."\n";
+			$lis .= "\t\t\t\t".'<li><a href="agenda.php">'.$nb_new .' near events</a></li>'."\n";
 		}
 	}
 
-	$lis .= ($lis) ? '' : "\t\t\t".'<li>'.$GLOBALS['lang']['note_no_notifs'].'</li>'."\n";
+	$lis .= ($lis) ? '' : "\t\t\t\t".'<li>'.$GLOBALS['lang']['note_no_notifs'].'</li>'."\n";
 
 
-	$html .= "\t".'<div id="notif-icon"'.($hasNotifs ? ' class="hasNotifs" data-nb-notifs="'.$hasNotifs.'"' : '').'>'."\n";
-	$html .= "\t\t".'<ul>'."\n";
+	$html .= "\t\t".'<div id="notif-icon"'.($hasNotifs ? ' class="hasNotifs" data-nb-notifs="'.$hasNotifs.'"' : '').'>'."\n";
+	$html .= "\t\t\t".'<ul>'."\n";
 	$html .= $lis;
-	$html .= "\t\t".'</ul>'."\n";
-	$html .= "\t".'</div>'."\n";
+	$html .= "\t\t\t".'</ul>'."\n";
+	$html .= "\t\t".'</div>'."\n";
 
 	return $html;
 }
@@ -172,14 +172,13 @@ function moteur_recherche() {
 	if (isset($_GET['q'])) {
 		$requete = htmlspecialchars(stripslashes($_GET['q']));
 	}
-	$return = "\t".'<form action="?" method="get" id="search">'."\n";
-	$return .= "\t\t".'<input id="q" name="q" type="search" size="20" value="'.$requete.'" placeholder="'.$GLOBALS['lang']['placeholder_search'].'" accesskey="f" />'."\n";
-	$return .= "\t\t".'<label id="label_q" for="q">'.$GLOBALS['lang']['rechercher'].'</label>'."\n";
-	$return .= "\t\t".'<button id="input-rechercher" type="submit">'.$GLOBALS['lang']['rechercher'].'</button>'."\n";
-	if (isset($_GET['mode'])) {
-		$return .= "\t\t".'<input id="mode" name="mode" type="hidden" value="'.htmlspecialchars(stripslashes($_GET['mode'])).'"/>'."\n";
-	}
-	$return .= "\t".'</form>'."\n";
+	$return  = "\t\t".'<form action="?" method="get" id="search">'."\n";
+	$return .= "\t\t\t".'<input id="q" name="q" type="search" size="20" value="'.$requete.'" placeholder="'.$GLOBALS['lang']['placeholder_search'].'" accesskey="f" />'."\n";
+	$return .= "\t\t\t".'<label id="label_q" for="q">'.$GLOBALS['lang']['rechercher'].'</label>'."\n";
+	$return .= "\t\t\t".'<button id="input-rechercher" type="submit">'.$GLOBALS['lang']['rechercher'].'</button>'."\n";
+	if (isset($_GET['mode']))
+	$return .= "\t\t\t".'<input id="mode" name="mode" type="hidden" value="'.htmlspecialchars(stripslashes($_GET['mode'])).'"/>'."\n";
+	$return .= "\t\t".'</form>'."\n";
 	return $return;
 }
 

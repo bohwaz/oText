@@ -21,7 +21,8 @@ function afficher_lien($link) {
 	$list .= "\t".'<div class="item-menu-options">';
 	$list .= "\t\t".'<ul>'."\n";
 	$list .= "\t\t\t".'<li><a href="'.basename($_SERVER['SCRIPT_NAME']).'?id='.$link['bt_id'].'">'.$GLOBALS['lang']['editer'].'</a></li>'."\n";
-	$list .= ($link['bt_statut'] == '1') ? "\t\t\t".'<li><a href="'.$GLOBALS['racine'].'?mode=links&amp;id='.$link['bt_id'].'">'.$GLOBALS['lang']['voir_sur_le_blog'].'</a></li>'."\n" : "";
+	if ($link['bt_statut'] == '1')
+	$list .= "\t\t\t".'<li><a href="'.$GLOBALS['racine'].'?mode=links&amp;id='.$link['bt_id'].'">'.$GLOBALS['lang']['voir_sur_le_blog'].'</a></li>'."\n";
 	$list .= "\t\t".'</ul>'."\n";
 	$list .= "\t".'</div>'."\n";
 	$list .=  '</div>'."\n";

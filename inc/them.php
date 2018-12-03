@@ -159,9 +159,15 @@ function conversions_theme_commentaire($texte, $commentaire) {
 
 // Article
 function conversions_theme_article($texte, $billet) {
-	$texte = str_replace($GLOBALS['balises']['form_commentaire'], $GLOBALS['form_commentaire'], $texte);
 	$texte = str_replace($GLOBALS['balises']['rss_comments'], 'rss.php?id='.$billet['bt_id'], $texte);
-	$texte = str_replace($GLOBALS['balises']['article_titre'], $billet['bt_title'], $texte);
+	// if Admin : add "edit" link to post-title
+	if (!empty($_SESSION['user_id'])) {
+		$edit = '<a href="'.(str_replace(BT_ROOT, "", DIR_ADMIN)).'ecrire.php?post_id='.$billet['bt_id'].'">Édit</a>';
+	} else {
+		$edit = '';
+	}
+
+	$texte = str_replace($GLOBALS['balises']['article_titre'], $billet['bt_title'].$edit, $texte);
 	$detected_images = html_get_image_from_article($billet['bt_content']);
 	$texte = str_replace($GLOBALS['balises']['article_illustration'], $detected_images[0], $texte);
 
@@ -226,7 +232,7 @@ function extract_boucles($texte, $balise, $incl) {
 }
 
 // only used by the main page of the blog (not on admin) : shows main blog page.
-function afficher_index($tableau, $type) {
+function afficher_index($tableau, $type, $erreurs_form) {
 	$HTML = '';
 	if (!($theme_page = file_get_contents($GLOBALS['theme_liste']))) die($GLOBALS['lang']['err_theme_introuvable']);
 	if (!($theme_post = file_get_contents($GLOBALS['theme_post_post']))) die($GLOBALS['lang']['err_theme_introuvable']);
@@ -272,6 +278,9 @@ function afficher_index($tableau, $type) {
 		$billet['illustration_image'] = html_get_image_from_article($billet['bt_content']);
 		// parse & apply template article
 		$HTML_article = conversions_theme_article($theme_post, $billet);
+		// add form commentaire
+		$HTML_article = str_replace($GLOBALS['balises']['form_commentaire'], afficher_form_commentaire($billet['bt_id'], 'public', $erreurs_form, ''), $HTML_article);
+
 
 		// parse & apply templace commentaires
 		$HTML_comms = '';

@@ -424,8 +424,8 @@ function feed2array($feed_content, $feedlink) {
 			$flux['infos']['version']=$feed_obj->attributes()->version;
 			if (!empty($feed_obj->channel->title)) { $flux['infos']['title'] = (string)$feed_obj->channel->title; }
 			if (!empty($feed_obj->title)) {          $flux['infos']['title'] = (string)$feed_obj->title; }
-			if (!empty($feed_obj->channel->link)) { $flux['infos']['link'] = (string)$feed_obj->channel->link; }
-			if (!empty($feed_obj->link)) {          $flux['infos']['link'] = (string)$feed_obj->link; }
+			if (!empty($feed_obj->channel->link)) {  $flux['infos']['link'] = (string)$feed_obj->channel->link; }
+			if (!empty($feed_obj->link)) {           $flux['infos']['link'] = (string)$feed_obj->link; }
 
 			if (!empty($feed_obj->channel->item)){ $items = $feed_obj->channel->item; }
 			if (!empty($feed_obj->entry)){ $items = $feed_obj->entry; }
@@ -453,9 +453,9 @@ function feed2array($feed_content, $feedlink) {
 				$flux['items'][$c]['bt_id'] = hash('crc32', $flux['items'][$c]['bt_id']);
 
 				// date
-				if (!empty($item->updated)) {       $flux['items'][$c]['bt_date'] = date('YmdHis', strtotime((string)$item->updated)); }
-				if (!empty($item->pubDate)) {       $flux['items'][$c]['bt_date'] = date('YmdHis', strtotime((string)$item->pubDate)); }
-				if (!empty($item->published)) {     $flux['items'][$c]['bt_date'] = date('YmdHis', strtotime((string)$item->published)); }
+				if (!empty($item->updated)) {   $flux['items'][$c]['bt_date'] = date('YmdHis', strtotime((string)$item->updated)); }
+				if (!empty($item->pubDate)) {   $flux['items'][$c]['bt_date'] = date('YmdHis', strtotime((string)$item->pubDate)); }
+				if (!empty($item->published)) { $flux['items'][$c]['bt_date'] = date('YmdHis', strtotime((string)$item->published)); }
 				if (empty($flux['items'][$c]['bt_date'])) {
 					$flux['items'][$c]['bt_date'] = date('YmdHis');
 				}
@@ -512,12 +512,11 @@ function send_rss_json($rss_entries, $enclose_in_script_tag) {
 			'"feedhash":'.json_encode(crc32($entry['bt_feed'])).', '.
 			'"statut":'.$entry['bt_statut'].', '.
 			'"fav":'.$entry['bt_bookmarked'].', '.
-			'"title":'.json_encode($entry['bt_title']).', '.
+			'"title":'.json_encode($entry['bt_title'], JSON_UNESCAPED_UNICODE).', '.
 			'"link":'.json_encode($entry['bt_link']).', '.
-			'"sitename":'.json_encode($GLOBALS['liste_flux'][$entry['bt_feed']]['title']).', '.
+			'"sitename":'.json_encode($GLOBALS['liste_flux'][$entry['bt_feed']]['title'], JSON_UNESCAPED_UNICODE).', '.
 			'"folder":'.json_encode($GLOBALS['liste_flux'][$entry['bt_feed']]['folder']).', '.
-			'"content":'.json_encode($entry['bt_content']).''.
-//			'"content":'.json_encode('').''.
+			'"content":'.json_encode($entry['bt_content'], JSON_UNESCAPED_UNICODE).''.
 		'}'.(($count==$i) ? '' :',')."\n";
 	}
 	$out .= ']';

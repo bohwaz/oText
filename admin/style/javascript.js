@@ -150,7 +150,6 @@ function insertChar(e, ch) {
 	field.scrollTop = scroll;
 }
 
-
 /*
 	Used in file upload: converts bytes to kB, MB, GB…
 */
@@ -235,83 +234,49 @@ function reply(code) {
 
 /*
 	unfold comment edition bloc.
+	(using a floating #div that we attach to a comment)
 */
 
-function unfold(button) {
-	var elemOnForground = document.querySelector('.commentbloc.foreground');
-	var elemToForground = document.getElementById(button.dataset.comDomAnchor);
+function unfold(e) {
+	// the comment form
+	var theForm = document.getElementById('form-commentaire');
 
-	if (elemOnForground == elemToForground) {
-		elemOnForground.classList.remove('foreground');
-		return false;
+	// get the parent node where the from should be placed
+	var theComm = e.parentNode;
+	while (!theComm.classList.contains('comm-main-frame')) { theComm = theComm.parentNode; }
+
+	// if the form is allready opened, we put it back at the bottom of the page
+	if (e.classList.contains('button-cancel')) {
+		theComm = document.getElementById('post-nv-commentaire');
 	}
 
-	elemToForground.classList.add('foreground');
-	elemToForground.getElementsByTagName('textarea')[0].focus();
+	// attach the form to the comm.
+	theComm.appendChild(theForm);
+
+	// update the from data
+	var comm_data = JSON.parse(theComm.querySelector('input[name="comm_data"]').value);
+	theForm.querySelector('[name="commentaire"]').value = comm_data.wiki;
+	theForm.querySelector('[name="auteur"]').value = comm_data.auth;
+	theForm.querySelector('[name="email"]').value = comm_data.mail;
+	theForm.querySelector('[name="webpage"]').value = comm_data.webp;
+	theForm.querySelector('[name="comment_id"]').value = comm_data.btid;
+
+
 	return false;
 }
 
 
-// deleting a comment
-function suppr_comm(button) {
-	var notifDiv = document.createElement('div');
-	var reponse = window.confirm(BTlang.questionSupprComment);
-	var div_bloc = document.getElementById(button.dataset.comDomAnchor);
-
-	if (reponse == true) {
-		div_bloc.classList.add('ajaxloading');
-		var xhr = new XMLHttpRequest();
-		xhr.open('POST', 'commentaires.php', true);
-
-		xhr.onprogress = function() {
-			div_bloc.classList.add('ajaxloading');
-		}
-
-		xhr.onload = function() {
-			var resp = this.responseText;
-			if (resp.indexOf("Success") == 0) {
-				csrf_token = resp.substr(7, 40);
-				div_bloc.classList.add('deleteFadeOut');
-				div_bloc.addEventListener('animationend', function(event){event.target.parentNode.removeChild(event.target);}, false);
-				// adding notif
-				notifDiv.textContent = BTlang.confirmCommentSuppr;
-				notifDiv.classList.add('confirmation');
-				document.getElementById('top').appendChild(notifDiv);
-			} else {
-				// adding notif
-				notifDiv.textContent = this.responseText;
-				notifDiv.classList.add('no_confirmation');
-				document.getElementById('top').appendChild(notifDiv);
-			}
-			div_bloc.classList.remove('ajaxloading');
-		};
-		xhr.onerror = function(e) {
-			notifDiv.textContent = BTlang.errorCommentSuppr + e.target.status;
-			notifDiv.classList.add('no_confirmation');
-			document.getElementById('top').appendChild(notifDiv);
-			div_bloc.classList.remove('ajaxloading');
-		};
-
-		// prepare and send FormData
-		var formData = new FormData();
-		formData.append('token', csrf_token);
-		formData.append('_verif_envoi', 1);
-		formData.append('com_supprimer', button.dataset.commId);
-		formData.append('com_article_id', button.dataset.commArtId);
-
-		xhr.send(formData);
-
+function commAction(action, button) {
+	if (action == 'delete') {
+		var reponse = window.confirm(BTlang.questionSupprComment);
+		if (reponse == false) { return; }
 	}
-	return reponse;
-}
 
-
-// hide/unhide a comm
-function activate_comm(button) {
 	var notifDiv = document.createElement('div');
-	var div_bloc = document.getElementById(button.dataset.comDomAnchor);
-	div_bloc.classList.toggle('ajaxloading');
+	var div_bloc = button.parentNode;
+	while (!div_bloc.classList.contains('commentbloc')) { div_bloc = div_bloc.parentNode; }
 
+	div_bloc.classList.add('ajaxloading');
 	var xhr = new XMLHttpRequest();
 	xhr.open('POST', 'commentaires.php', true);
 
@@ -323,18 +288,26 @@ function activate_comm(button) {
 		var resp = this.responseText;
 		if (resp.indexOf("Success") == 0) {
 			csrf_token = resp.substr(7, 40);
-			button.textContent = ((button.textContent === BTlang.activer) ? BTlang.desactiver : BTlang.activer );
-			div_bloc.classList.toggle('privatebloc');
-
+			if (action == 'delete') {
+				div_bloc.classList.add('deleteFadeOut');
+				div_bloc.addEventListener('animationend', function(event){event.target.parentNode.removeChild(event.target);}, false);
+				notifDiv.textContent = BTlang.confirmCommentSuppr;
+				notifDiv.classList.add('confirmation');
+				document.getElementById('top').appendChild(notifDiv);
+			}
+			button.textContent = ((button.textContent === BTlang.activer) ? BTlang.desactiver : BTlang.activer );			
+			div_bloc.classList.toggle('privatebloc');			
+			// adding notif
 		} else {
-			notifDiv.textContent = BTlang.errorCommentValid + ' ' + resp;
+			// adding notif
+			notifDiv.textContent = this.responseText;
 			notifDiv.classList.add('no_confirmation');
 			document.getElementById('top').appendChild(notifDiv);
 		}
 		div_bloc.classList.remove('ajaxloading');
 	};
 	xhr.onerror = function(e) {
-		notifDiv.textContent = BTlang.errorCommentSuppr + ' ' + e.target.status + ' (#com-activ-H28)';
+		notifDiv.textContent = BTlang.errorCommentSuppr + ' ' + e.target.status;
 		notifDiv.classList.add('no_confirmation');
 		document.getElementById('top').appendChild(notifDiv);
 		div_bloc.classList.remove('ajaxloading');
@@ -345,18 +318,108 @@ function activate_comm(button) {
 	formData.append('token', csrf_token);
 	formData.append('_verif_envoi', 1);
 
-	formData.append('com_activer', button.dataset.commId);
-	formData.append('com_bt_id', button.dataset.commBtid);
-	formData.append('com_article_id', button.dataset.commArtId);
+	if (action == 'delete') {
+		formData.append('com_supprimer', button.dataset.commBtid);
+	}
+	else if (action == 'activate') {
+		formData.append('com_activer', button.dataset.commBtid);
+	}
 
 	xhr.send(formData);
 
-	return false;
+	return reponse;
 }
 
 
+/**************************************************************************************************************************************
+	***********    *********   *********      ***   *********      ***********   
+	***********   **********   **********     ***   **********     ***********   
+	***           ****         ***     ***          ***     ***    ***           
+ 	***           ***          ***     ***    ***   ***     ***    ***           
+	******        ***          **********     ***   **********     ******        
+	******        ***          *********      ***   *********      ******        
+	***           ***          ***   ****     ***   ***   ****     ***           
+	***           ****         ***    ***     ***   ***    ***     ***           
+	***********   **********   ***     ***    ***   ***     ***    ***********   
+	***********    *********   ***     ****   ***   ***     ****   ***********   
+
+	LINKS AND ARTICLE FORMS : TAGS HANDLING
+**************************************************************************************************************************************/
 
 
+function writeForm() {
+	var _this = this;
+
+	/* misc DOM Nodes */
+
+	// Getting the entire form
+	this.formatbutNode = document.querySelector('.formatbut');
+	var form = this.formatbutNode.parentNode;
+	while (form.tagName !== "FORM") { form = form.parentNode;}
+	this.theForm = form;
+
+	// getting the textarea field were the tags have to be put.
+	var field = this.formatbutNode.nextSibling;
+	while (field.tagName !== "TEXTAREA") { field = field.nextSibling; }
+	this.theTargetField = field;
+
+
+	this.insertTag = function () {
+		// the button we did click
+		var button = this;
+
+		// the bars with all the buttons
+		var bar = _this.formatbutNode
+		// the textarea field were the tags have to be put.
+		var targetField = _this.theTargetField;
+
+		// the tags
+		var x = button.dataset.tag.indexOf('|');//      ↓ if no "|" is found         ↓ unescape \n
+		var startTag = button.dataset.tag.substring(0, ((x === -1) ? undefined : x)).replace(/\\n/g, "\n") || "";
+		var endTag = button.dataset.tag.substring((x+1 || button.dataset.tag.length)).replace(/\\n/g, "\n") || "";
+
+		// the real job is done here
+		var scroll = targetField.scrollTop;
+		targetField.focus();
+		var beforeSelection  = targetField.value.substring(0, targetField.selectionStart);
+		var currentSelection = targetField.value.substring(targetField.selectionStart, targetField.selectionEnd);
+		var afterSelection   = targetField.value.substring(targetField.selectionEnd);
+
+		if (currentSelection.length == 0) {
+			if (endTag != "") {
+				currentSelection = "TEXT";
+			}
+		}
+		targetField.value = beforeSelection + startTag + currentSelection + endTag + afterSelection;
+
+		targetField.focus();
+		targetField.setSelectionRange(beforeSelection.length + startTag.length, beforeSelection.length + startTag.length + currentSelection.length);
+		targetField.scrollTop = scroll;
+	}
+
+
+	this.buttons = this.theForm.querySelectorAll('.formatbut button:not(.js-action)');
+
+	for (var button of this.buttons) {
+		button.addEventListener('click', _this.insertTag);
+	}
+
+	if (this.theForm.querySelector('.formatbut .toggleAutoCorrect')) {
+		this.theForm.querySelector('.formatbut .toggleAutoCorrect').addEventListener('click', function() {
+			if (_this.theForm.spellcheck != true) {
+				_this.theForm.setAttribute('spellcheck', true);
+			}
+			else {
+				_this.theForm.setAttribute('spellcheck', false);
+			}
+		});
+	}
+
+	this.theForm.addEventListener('submit', function() {
+		this.removeAttribute('data-edited');
+	});
+
+}
 
 
 
@@ -381,6 +444,7 @@ function activate_comm(button) {
 /* Adds a tag to the list when we hit "enter" */
 /* validates the tag and move it to the list */
 function moveTag() {
+	console.log("SUBMIT");
 	var iField = document.getElementById('type_tags');
 	var oField = document.getElementById('selected');
 	var fField = document.getElementById('categories');
@@ -392,13 +456,13 @@ function moveTag() {
 		iField.blur(); // blur+focus needed in Firefox 48 for some reason…
 		iField.focus();
 		return false;
-		}
+	}
 	// else : real submit : seek in the list of tags, extract the tags and submit these.
 	else {
 		var liste = oField.getElementsByTagName('li');
 		var len = liste.length;
 		var iTag = '';
-		for (var i = 0 ; i<len ; i++) { iTag += liste[i].getElementsByTagName('span')[0].innerHTML+", "; }
+		for (var i = 0 ; i<len ; i++) { iTag += liste[i].getElementsByTagName('span')[0].textContent+", "; }
 		fField.value = iTag.substr(0, iTag.length-2);
 		return true;
 	}
@@ -409,6 +473,14 @@ function removeTag(tag) {
 	tag.parentNode.removeChild(tag);
 	return false;
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -461,53 +533,60 @@ function scrollingFabHideShow() {
 **************************************************************************************************************************************/
 
 /* Drag and drop event handlers */
-function handleDragEnd(e) {
+function handleDragEnd() {
 	document.getElementById('dragndrop-area').classList.remove('fullpagedrag');
 }
 
 function handleDragLeave(e) {
-	if ('WebkitAppearance' in document.documentElement.style) { // Chromium old bug #131325 since 2013.
-		if (e.pageX > 0 && e.pageY > 0) {
-			return false;
-		}
+	console.log('leave');
+	if (document.getElementById('dragndrop-area').classList.contains('fullpagedrag')) {
+		document.getElementById('dragndrop-area').classList.remove('fullpagedrag');
 	}
-	document.getElementById('dragndrop-area').classList.remove('fullpagedrag');
 }
 
 function handleDragOver(e) {
-	var dndArea = document.getElementById('dragndrop-area');
-//	if (e.dataTransfer.files) {
-		dndArea.classList.add('fullpagedrag');
-//	} else {
-//		dndArea.classList.remove('fullpagedrag');
-//	}
+	e.preventDefault();
+}
+
+function handleDragEnter(e) {
+	e.preventDefault();
+
+    if (e.dataTransfer.types) {
+        for (var i=0; i<e.dataTransfer.types.length; i++) {
+            if (e.dataTransfer.types[i] == "Files") {
+				document.getElementById('dragndrop-area').classList.add('fullpagedrag');
+                return true;
+            }
+        }
+    }
+    
+    return false;
 
 }
 
 // process bunch of files
 function handleDrop(event) {
 	event.preventDefault();
+	console.log('drag drop')
+	document.getElementById('dragndrop-area').classList.remove('fullpagedrag');
 	// detects if drag contains files.
-	if (!event.dataTransfer.files) {
-		console.log('no-files');
-		return false;
-	}
-	else {
-		console.log('files');
-	}
+	if (!event.dataTransfer.files  || !event.dataTransfer.files.length) return false;
+	var filelist = event.dataTransfer.files;
+
 	var result = document.getElementById('result');
 	document.getElementById('dragndrop-area').classList.remove('fullpagedrag');
 
 	if (nbDraged === false) { nbDone = 0; }
 
-	var filelist = event.dataTransfer.files;
-	if (!filelist || !filelist.length) { return false; }
 
 	for (var i = 0, nbFiles = filelist.length ; i < nbFiles && i < 500; i++) { // limit is for not having an infinite loop
 		var rand = 'i_'+Math.random()
 		filelist[i].locId = rand;
 		list.push(filelist[i]);
 		var div = document.createElement('div');
+			div.classList.add('pending');
+			div.classList.add('fileinfostatus');
+			div.id = rand;
 		var fname = document.createElement('span');
 		    fname.classList.add('filename');
 		    fname.textContent = escape(filelist[i].name);
@@ -516,7 +595,6 @@ function handleDrop(event) {
 		var fsize = document.createElement('span');
 		    fsize.classList.add('filesize');
 		    fsize.textContent = '('+humanFileSize(filelist[i].size)+')';
-
 		var fstat = document.createElement('span');
 		    fstat.classList.add('uploadstatus');
 		    fstat.textContent = 'Ready';
@@ -525,9 +603,6 @@ function handleDrop(event) {
 		div.appendChild(flink);
 		div.appendChild(fsize);
 		div.appendChild(fstat);
-		div.classList.add('pending');
-		div.classList.add('fileinfostatus');
-		div.id = rand;
 
 		result.appendChild(div);
 	}
@@ -546,72 +621,6 @@ function submitdnd(event) {
 	}
 }
 
-// upload file
-function uploadFile(file) {
-	// prepare XMLHttpRequest
-	var xhr = new XMLHttpRequest();
-	xhr.open('POST', '_files.ajax.php');
-
-	xhr.onload = function() {
-		var respdiv = document.getElementById(file.locId);
-		// need "try/catch/finally" because of "JSON.parse", that might return errors (but should not, since backend is clean)
-		try {
-			var resp = JSON.parse(this.responseText);
-			respdiv.classList.remove('pending');
-
-			if (resp !== null) {
-				// renew token
-				document.getElementById('token').value = resp.token;
-
-				respdiv.querySelector('.uploadstatus').innerHTML = resp.status;
-
-				if (resp.status == 'success') {
-					respdiv.classList.add('success');
-					respdiv.querySelector('.filelink').href = resp.url;
-					respdiv.querySelector('.uploadstatus').innerHTML = 'Uploaded';
-					// replace file name with a link
-					respdiv.querySelector('.filelink').innerHTML = respdiv.querySelector('.filename').innerHTML;
-					respdiv.removeChild(respdiv.querySelector('.filename'));
-				}
-				else {
-					respdiv.classList.add('failure');
-					respdiv.querySelector('.uploadstatus').innerHTML = 'Upload failed';
-				}
-
-				nbDone++;
-				document.getElementById('count').innerHTML = +nbDone+'/'+nbDraged;
-			} else {
-				respdiv.classList.add('failure');
-				respdiv.querySelector('.uploadstatus').innerHTML = 'PHP or Session error';
-			}
-
-		} catch(e) {
-			console.log(e);
-		} finally {
-			uploadNext();
-		}
-
-	};
-
-	xhr.onerror = function() {
-		uploadNext();
-	};
-
-	// prepare and send FormData
-	var formData = new FormData();
-	formData.append('token', document.getElementById('token').value);
-	formData.append('do', 'upload');
-	formData.append('upload', '1');
-
-	formData.append('fichier', file);
-	formData.append('statut', ((document.getElementById('statut').checked === false) ? '' : 'on'));
-
-	formData.append('description', document.getElementById('description').value);
-	formData.append('nom_entree', document.getElementById('nom_entree').value);
-	formData.append('dossier', document.getElementById('dossier').value);
-	xhr.send(formData);
-}
-
 
 // upload next file
 function uploadNext() {
@@ -627,7 +636,72 @@ function uploadNext() {
 		} else {
 			var respdiv = document.getElementById(nextFile.locId);
 			respdiv.querySelector('.uploadstatus').textContent = 'Uploading';
-			uploadFile(nextFile);
+
+			// prepare XMLHttpRequest
+			var xhr = new XMLHttpRequest();
+			xhr.open('POST', '_files.ajax.php');
+
+			// if request itself is OK
+			xhr.onload = function() {
+				var respdiv = document.getElementById(nextFile.locId);
+				// need "try/catch/finally" because of "JSON.parse", that might return errors (but should not, since backend is clean)
+				try {
+					var resp = JSON.parse(this.responseText);
+					respdiv.classList.remove('pending');
+
+					if (resp !== null) {
+						// renew token
+						document.getElementById('token').value = resp.token;
+
+						respdiv.querySelector('.uploadstatus').innerHTML = resp.status;
+						respdiv.classList.add(resp.status);
+
+						if (resp.status == 'success') {
+							respdiv.querySelector('.filelink').href = resp.url;
+							respdiv.querySelector('.uploadstatus').innerHTML = 'Uploaded';
+							// replace file name with a link
+							respdiv.querySelector('.filelink').innerHTML = respdiv.querySelector('.filename').innerHTML;
+							respdiv.removeChild(respdiv.querySelector('.filename'));
+						}
+						/*
+						else {
+							respdiv.querySelector('.uploadstatus').innerHTML = 'Upload failed';
+						}
+						*/
+						nbDone++;
+						document.getElementById('count').innerHTML = +nbDone+'/'+nbDraged;
+					} else {
+						respdiv.classList.add('failure');
+						respdiv.querySelector('.uploadstatus').innerHTML = 'PHP or Session error';
+					}
+
+				} catch(e) {
+					console.log(e);
+				} finally {
+					uploadNext();
+				}
+
+			};
+
+			// if request is failed, proeced to next file
+			xhr.onerror = function() {
+				uploadNext();
+			};
+
+			// prepare and send FormData
+			var formData = new FormData();
+			formData.append('token', document.getElementById('token').value);
+			formData.append('do', 'upload');
+			formData.append('upload', '1'); // ?
+
+			formData.append('fichier', nextFile);
+			formData.append('statut', ((document.getElementById('statut').checked === false) ? '' : 'on'));
+
+			formData.append('description', document.getElementById('description').value);
+			formData.append('nom_entree', document.getElementById('nom_entree').value);
+			formData.append('dossier', document.getElementById('dossier').value);
+			xhr.send(formData);
+
 		}
 	} else {
 		document.getElementById('count').classList.remove('spinning');
@@ -636,6 +710,7 @@ function uploadNext() {
 		document.getElementById('fichier').required = true;
 	}
 }
+
 
 
 /* switches between the FILE upload, URL upload and Drag'n'Drop */
@@ -734,7 +809,7 @@ function imgListWall() {
 
 			var btnShow = document.createElement('a')
 			btnShow.classList.add('vignetteAction', 'imgShow');
-			btnShow.href = item.absPath;
+			btnShow.href = item.absPath + item.fileName;
 			spanBtns.appendChild(btnShow);
 
 			var btnEdit = document.createElement('a')
@@ -744,7 +819,7 @@ function imgListWall() {
 
 			var btnDL = document.createElement('a')
 			btnDL.classList.add('vignetteAction', 'imgDL');
-			btnDL.href = item.absPath;
+			btnDL.href = item.absPath + item.fileName;
 			btnDL.download = item.fileName;
 			spanBtns.appendChild(btnDL);
 
@@ -891,7 +966,7 @@ function docListWall() {
 			var cellDwnd = document.createElement('td');
 			var fileDL = document.createElement('a');
 			fileDL.appendChild(document.createTextNode('DL'));
-			fileDL.href = item.absPath;
+			fileDL.href = item.absPath + item.fileName;
 			fileDL.download = item.fileName;
 			cellDwnd.appendChild(fileDL);
 			row.appendChild(cellDwnd);
@@ -1015,6 +1090,18 @@ function RssReader() {
 	this.refreshButton = document.getElementById('refreshAll');
 	this.refreshButton.addEventListener('click', function(){ _this.refreshAllFeeds(); });
 
+	// init the « list all feeds » button
+	this.globalCounter = document.getElementById('global-post-counter');
+	this.globalCounter.addEventListener('click', function(){ _this.sortAll(); });
+
+	// init the « list today posts » button
+	this.todayCounter = document.getElementById('today-post-counter');
+	this.todayCounter.addEventListener('click', function() { _this.sortToday(); });
+
+	// init the « list favorits posts » button
+	this.favsCounter = document.getElementById('favs-post-counter');
+	this.favsCounter.addEventListener('click', function() { _this.sortFavs(); });
+
 	// init the « delete old » button event
 	this.deleteButton = document.getElementById('deleteOld');
 	this.deleteButton.addEventListener('click', function(){ _this.deleteOldFeeds(); });
@@ -1022,6 +1109,19 @@ function RssReader() {
 	// init the « add new feed » button event
 	this.fabButton = document.getElementById('fab');
 	this.fabButton.addEventListener('click', function(){ _this.addNewFeed(); });
+
+	// add click events on Sites
+	this.allSites = this.feedsList.querySelectorAll('.feed-site');
+	for (var liSite of this.allSites) { liSite.addEventListener('click', function(e){ _this.sortItemsBySite(e); } )};
+
+	// add click events on Folders
+	this.allFolders = this.feedsList.querySelectorAll('.feed-folder');
+	for (var liFolder of this.allFolders) { liFolder.addEventListener('click', function(e){ _this.sortItemsByFolder(e); } )};
+
+	// add click events on "open-folder" button
+	this.allUnfoldButton = this.feedsList.querySelectorAll('.feed-folder > .unfold');
+	for (var button of this.allUnfoldButton) { button.addEventListener('click', function(e){ _this.openFolder(e);} )};
+
 
 	// Global Page listeners
 	// onkeydown : detect "open next/previous" action with keyboard
@@ -1056,7 +1156,7 @@ function RssReader() {
 			var li = document.createElement("li");
 			li.id = 'i_'+item.id;
 			li.dataset.sitehash = item.feedhash;
-//			li.dataset.postdate = item.datetime;
+			//li.dataset.postdate = item.datetime;
 			if (0 === item.statut) { li.classList.add('read'); }
 
 			// li-head: head-block
@@ -1248,13 +1348,21 @@ function RssReader() {
 		}
 	}
 
+	// open Folder
+	this.openFolder = function(e) {
+		e.stopPropagation();
+		e.target.parentNode.classList.toggle('open');
+	}
+
 
 
 	/***********************************
 	** Methods to "sort" elements (by site, folder, favs…)
 	*/
 	// create list of items matching the selected site
-	this.sortItemsBySite = function(theSite) {
+	this.sortItemsBySite = function(e) {
+		e.stopPropagation();
+		var theSite = e.target.getAttribute('data-feed-hash');
 		var newList = new Array();
 		for (var i = 0, len = this.feedList.length ; i < len ; i++) {
 			if (this.feedList[i].feedhash == theSite) { // if match
@@ -1268,11 +1376,12 @@ function RssReader() {
 		window.location.hash = '';
 		this.rebuiltTree(newList);
 		this.openAllButton.classList.remove('unfold');
-		return false;
 	}
 
 	// create list of items matching the selected folder
-	this.sortItemsByFolder = function(theFolder) {
+	this.sortItemsByFolder = function(e) {
+		e.stopPropagation();
+		var theFolder = e.target.getAttribute('data-folder');
 		var newList = new Array();
 		for (var i = 0, len = this.feedList.length ; i < len ; i++) {
 			if (this.feedList[i].folder == theFolder) {
@@ -1286,9 +1395,7 @@ function RssReader() {
 		window.location.hash = '';
 		this.rebuiltTree(newList);
 		this.openAllButton.classList.remove('unfold');
-		return false;
 	}
-
 
 	// rebuilt the list with all the items
 	this.sortAll = function() {
@@ -1302,7 +1409,6 @@ function RssReader() {
 		this.openAllButton.classList.remove('unfold');
 		return false;
 	}
-
 
 	// Create list with the favs
 	this.sortFavs = function() {
@@ -1322,7 +1428,6 @@ function RssReader() {
 		this.openAllButton.classList.remove('unfold');
 		return false;
 	}
-
 
 	// Create list with today's posts
 	this.sortToday = function() {
@@ -1385,27 +1490,29 @@ function RssReader() {
 				sitesInFolder[i].dataset.nbrun = 0;
 			}
 
-			// mark items as read in list
+			// mark items as "read" in list
 			for (var i = 0, len = this.feedList.length ; i < len ; i++) {
 				if (this.feedList[i].folder == folder) {
 					this.feedList[i].statut = 0;
 				}
 			}
 
-			this.sortItemsByFolder(folder);
+			// mark items as "read" on screen
+			for (var node of this.postsList.querySelectorAll('#post-list > li')) {
+				node.classList.add('read');
+			}
+
 		}
 
 		// else… mark one SITE as read
 		else if (markWhat.classList.contains('feed-site')) {
 			var siteHash = markWhat.dataset.feedHash;
-			var site = this.feedsList.querySelector('li[data-feed-hash="'+siteHash+'"]').title;
 
 			// send XHR
-			if (!this.markAsReadXHR('site', site)) return false;
+			if (!this.markAsReadXHR('site', siteHash)) return false;
 
 			// update global counter by substracting unread items from the site
-			var gcount = document.getElementById('global-post-counter');
-			gcount.dataset.nbrun -= markWhat.dataset.nbrun;
+			// this.globalCounter.dataset.nbrun -= markWhat.dataset.nbrun;
 
 			// if site is in a folder, update amount of unread for that folder too
 			var parentFolder = markWhat.parentNode.parentNode;
@@ -1413,17 +1520,20 @@ function RssReader() {
 				parentFolder.dataset.nbrun -= markWhat.dataset.nbrun;
 			}
 
-			// mark items as read in list
+			// mark items as "read" in list
 			for (var i = 0, len = this.feedList.length ; i < len ; i++) {
 				if (this.feedList[i].feedhash == siteHash) {
 					this.feedList[i].statut = 0;
 				}
 			}
+			// mark items as "read" on screen
+			for (var node of this.postsList.querySelectorAll('#post-list > li')) {
+				node.classList.add('read');
+			}
 
 			// mark 0 for that folder folder’s unread counters
 			markWhat.dataset.nbrun = markWhat.dataset.nbtoday = 0;
 
-			this.sortItemsBySite(siteHash);
 		}
 	}
 
@@ -1447,8 +1557,8 @@ function RssReader() {
 			}
 		}
 		// decrement global counter
-		var gcount = document.getElementById('global-post-counter');
-		gcount.dataset.nbrun -= 1;
+		// var gcount = document.getElementById('global-post-counter');
+		// gcount.dataset.nbrun -= 1;
 		// decrement site & site.today counter
 		var site = this.feedsList.querySelector('li[data-feed-hash="'+thePost.dataset.sitehash+'"]');
 		site.dataset.nbrun -= 1;
@@ -1459,8 +1569,6 @@ function RssReader() {
 			parentFolder.dataset.nbrun -= 1;
 		}
 	}
-
-
 
 	/***********************************
 	** Methods to init and send the XHR request
@@ -1529,8 +1637,8 @@ function RssReader() {
 
 		// mark as fav on screen and in favCounter
 		thePost.dataset.isFav = 1 - parseInt(thePost.dataset.isFav);
-		var favCounter = document.getElementById('favs-post-counter')
-		favCounter.dataset.nbrun = parseInt(favCounter.dataset.nbrun) + ((thePost.dataset.isFav == 1) ? 1 : -1 );
+		//var favCounter = document.getElementById('favs-post-counter')
+		//favCounter.dataset.nbrun = parseInt(favCounter.dataset.nbrun) + ((thePost.dataset.isFav == 1) ? 1 : -1 );
 		//favCounter.firstChild.nodeValue = '('+favCounter.dataset.nbrun+')';
 
 		// mark as fav in local list

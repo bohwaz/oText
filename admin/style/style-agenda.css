@@ -272,6 +272,7 @@
 	margin-top: 40px;
 	padding: 0;
 	text-align: center;
+	overflow: hidden;
 }
 
 #event-list {
@@ -363,6 +364,7 @@
 	padding: 0;
 	overflow: hidden; /* for rounded corners */
 	animation:  appear .1s;
+	border-radius: 2px;
 
 }
 
@@ -511,7 +513,7 @@
 	font-size: 1.4em;
 	position: absolute;
 	left: 20px;
-	top: 25px;
+	top: 30px;
 	color: rgba(0, 0, 0, .5)
 
 }
@@ -524,17 +526,24 @@
 	display: flex;
 	justify-content: space-between;
 	margin: 0 0 25px 0;
-	line-height:  2em;
 }
 
 #popup.popup-edit-event .event-content-loc .text,
 #popup.popup-edit-event .event-content-descr .text {
-	padding: 5px;
+	padding: 10px 5px;
 	width: 100%;
 }
 
 #popup #allDay+label {
 	flex: 1;
+	line-height: 40px;
 }
 
+#popup #allDay+label::after {
+	top: 9px;
+}
+
+#popup #allDay+label::before {
+	top: 14px;
+}
 

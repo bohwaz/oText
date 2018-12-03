@@ -64,6 +64,7 @@
 	opacity: 0;
 	transition: opacity 0.3s ease-in-out 0s;
 	z-index: -1;
+	border-radius: inherit;
 }
 
 .commentbloc:hover .comm-main-frame::after,
@@ -156,13 +157,6 @@
 	display: block;
 }
 
-.commentbloc .comm-edit-hidden-bloc {
-	opacity: 0;
-	height: 0;
-	overflow: hidden;
-	clear: both;
-}
-
 .commentbloc a {
 	color: inherit;
 	transition: color 0.3s ease-in-out 0s;
@@ -170,7 +164,7 @@
 
 /* com options button */
 .item-menu-options {
-	z-index: 1;
+	z-index: 4;
 	position: absolute;
 	right: 0;
 	top: 0;
@@ -205,7 +199,6 @@
 }
 
 .item-menu-options > ul > li {
-	line-height: 35px;
 	cursor: pointer;
 	white-space: nowrap;
 }
@@ -214,11 +207,15 @@
 	background: #f5f5f5;
 }
 
+.item-menu-options > ul > li > button,
 .item-menu-options > ul > li > a {
 	color: inherit;
 	text-decoration: none;
-	padding: 0 100px 0 40px;
+	padding: 10px 100px 10px 40px;
 	display: block;
+	border: 0;
+	background-color: transparent;
+	font-weight: inherit;
 }
 
 .commentbloc .comm-content p:first-of-type { margin-top: 0; }
@@ -245,15 +242,12 @@
 	color: #45a6ff;
 }
 
-/* Commentbloc on Edit */
-.commentbloc.foreground .comm-edit-hidden-bloc {
-	transition: opacity 1s cubic-bezier(0.175, 0.885, 0.32, 1);
-	opacity: 1;
-	height: auto;
-	padding: 15px;
-}
+/* Comment form */
 
-.form-commentaire .formatbut {
+.comm-main-frame > #form-commentaire {
+	margin: 15px;
+}
+#form-commentaire .formatbut {
 	border: 1px solid silver;
 	position: absolute;
 	left: 0;
@@ -261,17 +255,12 @@
 	z-index: +3;
 }
 
-.commentbloc.foreground .cl-edit { /* hide edit button if already on edit */
-	display: none;
-}
-
-/* textarea field in comments */
-.form-commentaire .field {
+#form-commentaire .field {
 	margin-top: 30px;
 	position: relative;
 }
 
-.form-commentaire textarea.text {
+#form-commentaire textarea.text {
 	border-left: 1px solid silver;
 	border-right: 1px solid silver;
 	padding-top: 47px;
@@ -280,23 +269,23 @@
 	border-bottom: 1px solid silver;
 }*/
 
-.form-commentaire .infos {
+#form-commentaire .infos {
 	margin: 15px auto 0;
-	max-width: 480px;
+	max-width: 660px;
 }
 
-.form-commentaire .infos > span {
+#form-commentaire .infos > span {
 	display: flex;
-	padding-top: 15px;
+	align-items: center;
 }
 
 
-.form-commentaire span > input.text {
+#form-commentaire span > input.text {
 	flex: 1;
-	padding: 0 0 0 1px;
+	padding: 10px 0;
 }
 
-.form-commentaire label:not(.activercomm) {
+#form-commentaire label:not(.activercomm) {
 	padding: 0;
 	width: 28px;
 	height: 28px;
@@ -304,7 +293,7 @@
 	color: rgba(0, 0, 0, .5)
 }
 
-.form-commentaire label:not(.activercomm)::before {
+#form-commentaire label:not(.activercomm)::before {
 	font-size: 1.4em;
 	display: inline-block;
 	width: 28px;
@@ -313,11 +302,11 @@
 	text-align: center;
 }
 
-.form-commentaire label[for^="auteur"]::before  { content: "\e930"; }
-.form-commentaire label[for^="email"]::before   { content: "\e91e"; }
-.form-commentaire label[for^="webpage"]::before { content: "\e901"; }
+#form-commentaire label[for^="auteur"]::before  { content: "\e930"; }
+#form-commentaire label[for^="email"]::before   { content: "\e91e"; }
+#form-commentaire label[for^="webpage"]::before { content: "\e901"; }
 
-.form-commentaire label.activercomm {
+#form-commentaire label.activercomm {
 	text-align: left;
 	display: inline-block;
 	margin-left: 5px;
@@ -330,6 +319,15 @@
 /* New Comment */
 #post-nv-commentaire {
 	margin-top: 35px;
+	padding: 0;
+	border: 1px solid transparent;
+}
+
+#post-nv-commentaire h2 {
+	padding: 15px 15px 0;
+	margin: 0;
+	font-size: 1.1em;
+	text-transform: uppercase;
 }
 
 /* ajax loading animation */

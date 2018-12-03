@@ -113,9 +113,13 @@ else {
 			echo '<div class="graphique" id="articles">'."\n";
 				$table = scaled_size(get_tableau_date('articles'), 150);
 				$table = array_reverse($table);
-				echo '<div class="month"><div class="month-bar" style="height: 151px; margin-top:20px;"></div></div>';
+				echo "\t".'<div class="month"><div class="month-bar" style="height: 151px; margin-top:20px;"></div></div>'."\n";
 				foreach ($table as $i => $data) {
-					echo '<div class="month"><div class="month-bar" style="height: '.$data['nb_scale'].'px; margin-top:'.max(3-$data['nb_scale'], 0).'px"></div><span class="month-nb">'.$data['nb'].'</span><a href="articles.php?filtre='.$data['date'].'"><span class="month-name">'.mb_substr(mois_en_lettres(substr($data['date'],4,2)),0,3)."\n".substr($data['date'],2,2).'</span></a></div>';
+					echo "\t".'<div class="month">'."\n";
+					echo "\t\t".'<div class="month-bar" style="height: '.$data['nb_scale'].'px; margin-top:'.max(3-$data['nb_scale'], 0).'px"></div>'."\n";
+					echo "\t\t".'<span class="month-nb">'.$data['nb'].'</span>'."\n";
+					echo "\t\t".'<a href="articles.php?filtre='.$data['date'].'"><span class="month-name">'.mb_substr(mois_en_lettres(substr($data['date'],4,2)),0,3)."<br/>".substr($data['date'],2,2).'</span></a>'."\n";
+					echo "\t".'</div>'."\n";
 				}
 			echo '</div>'."\n";
 		echo '</div>'."\n";
@@ -131,9 +135,13 @@ else {
 			echo '<div class="graphique" id="commentaires">'."\n";
 				$table = scaled_size(get_tableau_date('commentaires'), 150);
 				$table = array_reverse($table);
-				echo '<div class="month"><div class="month-bar" style="height: 151px; margin-top:20px;"></div></div>';
+				echo "\t".'<div class="month"><div class="month-bar" style="height: 151px; margin-top:20px;"></div></div>'."\n";
 				foreach ($table as $i => $data) {
-					echo '<div class="month"><div class="month-bar" style="height: '.$data['nb_scale'].'px; margin-top:'.max(3-$data['nb_scale'], 0).'px"></div><span class="month-nb">'.$data['nb'].'</span><a href="commentaires.php?filtre='.$data['date'].'"><span class="month-name">'.mb_substr(mois_en_lettres(substr($data['date'],4,2)),0,3)."\n".substr($data['date'],2,2).'</span></a></div>';
+					echo "\t".'<div class="month">'."\n";
+					echo "\t\t".'<div class="month-bar" style="height: '.$data['nb_scale'].'px; margin-top:'.max(3-$data['nb_scale'], 0).'px"></div>'."\n";
+					echo "\t\t".'<span class="month-nb">'.$data['nb'].'</span>'."\n";
+					echo "\t\t".'<a href="commentaires.php?filtre='.$data['date'].'"><span class="month-name">'.mb_substr(mois_en_lettres(substr($data['date'],4,2)),0,3)."<br/>".substr($data['date'],2,2).'</span></a>'."\n";
+					echo "\t".'</div>'."\n";
 				}
 			echo '</div>'."\n";
 		echo '</div>'."\n";
@@ -149,9 +157,13 @@ else {
 			echo '<div class="graphique" id="links">'."\n";
 				$table = scaled_size(get_tableau_date('links'), 150);
 				$table = array_reverse($table);
-				echo '<div class="month"><div class="month-bar" style="height: 151px; margin-top:20px;"></div></div>';
+				echo "\t".'<div class="month"><div class="month-bar" style="height: 151px; margin-top:20px;"></div></div>'."\n";
 				foreach ($table as $i => $data) {
-					echo '<div class="month"><div class="month-bar" style="height: '.$data['nb_scale'].'px; margin-top:'.max(3-$data['nb_scale'], 0).'px"></div><span class="month-nb">'.$data['nb'].'</span><a href="links.php?filtre='.$data['date'].'"><span class="month-name">'.mb_substr(mois_en_lettres(substr($data['date'],4,2)),0,3)."\n".substr($data['date'],2,2).'</span></a></div>';
+					echo "\t".'<div class="month">'."\n";
+					echo "\t\t".'<div class="month-bar" style="height: '.$data['nb_scale'].'px; margin-top:'.max(3-$data['nb_scale'], 0).'px"></div>'."\n";
+					echo "\t\t".'<span class="month-nb">'.$data['nb'].'</span>'."\n";
+					echo "\t\t".'<a href="links.php?filtre='.$data['date'].'"><span class="month-name">'.mb_substr(mois_en_lettres(substr($data['date'],4,2)),0,3)."<br/>".substr($data['date'],2,2).'</span></a>'."\n";
+					echo "\t".'</div>'."\n";
 				}
 			echo '</div>'."\n";
 		echo '</div>'."\n";
@@ -166,9 +178,13 @@ else {
 			echo '<div class="graphique" id="notes">'."\n";
 				$table = scaled_size(get_tableau_date('notes'), 150);
 				$table = array_reverse($table);
-				echo '<div class="month"><div class="month-bar" style="height: 151px; margin-top:20px;"></div></div>';
+				echo "\t".'<div class="month"><div class="month-bar" style="height: 151px; margin-top:20px;"></div></div>'."\n";
 				foreach ($table as $i => $data) {
-					echo '<div class="month"><div class="month-bar" style="height: '.$data['nb_scale'].'px; margin-top:'.max(3-$data['nb_scale'], 0).'px"></div><span class="month-nb">'.$data['nb'].'</span><a href="notes.php?filtre='.$data['date'].'"><span class="month-name">'.mb_substr(mois_en_lettres(substr($data['date'],4,2)),0,3)."\n".substr($data['date'],2,2).'</span></a></div>';
+					echo "\t".'<div class="month">'."\n";
+					echo "\t\t".'<div class="month-bar" style="height: '.$data['nb_scale'].'px; margin-top:'.max(3-$data['nb_scale'], 0).'px"></div>'."\n";
+					echo "\t\t".'<span class="month-nb">'.$data['nb'].'</span>'."\n";
+					echo "\t\t".'<a href="notes.php?filtre='.$data['date'].'"><span class="month-name">'.mb_substr(mois_en_lettres(substr($data['date'],4,2)),0,3)."<br/>".substr($data['date'],2,2).'</span></a>'."\n";
+					echo "\t".'</div>'."\n";
 				}
 			echo '</div>'."\n";
 		echo '</div>'."\n";
@@ -184,9 +200,13 @@ else {
 			echo '<div class="graphique" id="images">'."\n";
 				$table = scaled_size(get_tableau_date('images'), 150);
 				$table = array_reverse($table);
-				echo '<div class="month"><div class="month-bar" style="height: 151px; margin-top:20px;"></div></div>';
+				echo "\t".'<div class="month"><div class="month-bar" style="height: 151px; margin-top:20px;"></div></div>'."\n";
 				foreach ($table as $i => $data) {
-					echo '<div class="month"><div class="month-bar" style="height: '.$data['nb_scale'].'px; margin-top:'.max(3-$data['nb_scale'], 0).'px"></div><span class="month-nb">'.$data['nb'].'</span><a href="fichiers.php?filtre='.$data['date'].'"><span class="month-name">'.mb_substr(mois_en_lettres(substr($data['date'],4,2)),0,3)."\n".substr($data['date'],2,2).'</span></a></div>';
+					echo "\t".'<div class="month">'."\n";
+					echo "\t\t".'<div class="month-bar" style="height: '.$data['nb_scale'].'px; margin-top:'.max(3-$data['nb_scale'], 0).'px"></div>'."\n";
+					echo "\t\t".'<span class="month-nb">'.$data['nb'].'</span>'."\n";
+					echo "\t\t".'<a href="fichiers.php?filtre='.$data['date'].'"><span class="month-name">'.mb_substr(mois_en_lettres(substr($data['date'],4,2)),0,3)."<br/>".substr($data['date'],2,2).'</span></a>'."\n";
+					echo "\t".'</div>'."\n";
 				}
 			echo '</div>'."\n";
 		echo '</div>'."\n";
@@ -202,9 +222,13 @@ else {
 			echo '<div class="graphique" id="feeds">'."\n";
 				$table = scaled_size(get_tableau_date('rss'), 150);
 				$table = array_reverse($table);
-				echo '<div class="month"><div class="month-bar" style="height: 151px; margin-top:20px;"></div></div>';
+				echo "\t".'<div class="month"><div class="month-bar" style="height: 151px; margin-top:20px;"></div></div>'."\n";
 				foreach ($table as $i => $data) {
-					echo '<div class="month"><div class="month-bar" style="height: '.$data['nb_scale'].'px; margin-top:'.max(3-$data['nb_scale'], 0).'px"></div><span class="month-nb">'.$data['nb'].'</span><a href="feed.php?filtre='.$data['date'].'"><span class="month-name">'.mb_substr(mois_en_lettres(substr($data['date'],4,2)),0,3)."\n".substr($data['date'],2,2).'</span></a></div>';
+					echo "\t".'<div class="month">'."\n";
+					echo "\t\t".'<div class="month-bar" style="height: '.$data['nb_scale'].'px; margin-top:'.max(3-$data['nb_scale'], 0).'px"></div>'."\n";
+					echo "\t\t".'<span class="month-nb">'.$data['nb'].'</span>'."\n";
+					echo "\t\t".'<a href="feed.php?filtre='.$data['date'].'"><span class="month-name">'.mb_substr(mois_en_lettres(substr($data['date'],4,2)),0,3)."<br/>".substr($data['date'],2,2).'</span></a>'."\n";
+					echo "\t".'</div>'."\n";
 				}
 			echo '</div>'."\n";
 		echo '</div>'."\n";

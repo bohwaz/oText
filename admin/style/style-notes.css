@@ -55,6 +55,7 @@
 	padding: 0 0 50px;
 	overflow: hidden;
 	text-align: left;
+	border-radius: 2px;
 
 }
 
@@ -171,6 +172,7 @@
 	display: flex;
 	flex-direction: column;
 	animation:  appearSlow .2s;
+	border-radius: 2px;
 }
 
 #popup.popup-note > textarea.content {

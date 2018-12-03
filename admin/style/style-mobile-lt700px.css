@@ -36,14 +36,29 @@
 		bottom: 20px;
 	}
 
-
-	/* page billets */
-	#billets {
+	/* page écrire */
+	#form-ecrire .main-form .formatbut {
+		height: 120px;
+	}
+	#form-ecrire .main-form .formatbut .but-dropdown {
+		position: static;
+	}
+	#form-ecrire .main-form .formatbut > .but-dropdown > .list {
+		top: 34px;
+		right: 0;
+		width: 100%;
 	}
 
-	/* page écrire */
+	#form-ecrire .main-form #contenu {
+		padding-top: 124px;
+	}
+
 	#tag_bloc, #date-and-opts {
 		display: block;
+	}
+	#form-ecrire #date-and-opts {
+		margin-left: 0;
+		margin-top: 15px;
 	}
 	#formdate, #formheure, #formstatut, #formallowcomment {
 		display: block;

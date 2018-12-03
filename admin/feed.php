@@ -24,20 +24,14 @@ function feed_list_html() {
 		$total_today += $feed['nbtoday'];
 	}*/
 
-
 	// first item : special buttons (all feeds ; favs ; today)
-	$html = "\t\t".'<li class="special"><ul>'."\n";
-
-		// all feeds
-		$html .= "\t\t\t".'<li class="all-feeds active-site" id="global-post-counter"><a href="#" onclick="return RssWall.sortAll();">'.$GLOBALS['lang']['rss_label_all_feeds'].'</a></li>'."\n";
-
-		// today items
-		$html .= "\t\t\t".'<li class="today-feeds" id="today-post-counter"><a href="#" onclick="return RssWall.sortToday();">'.$GLOBALS['lang']['rss_label_today_feeds'].'</a></li>'."\n";
-
-		// favorites items
-		$html .= "\t\t\t".'<li class="fav-feeds" id="favs-post-counter"><a href="#" onclick="return RssWall.sortFavs();">'.$GLOBALS['lang']['rss_label_favs_feeds'].'</a></li>'."\n";
-
-	$html .= "\t\t".'</ul></li>'."\n";
+	$html  = "\t\t".'<li class="special">'."\n";
+	$html .= "\t\t\t".'<ul>'."\n";
+	$html .= "\t\t\t\t".'<li class="all-feeds active-site" id="global-post-counter">'.$GLOBALS['lang']['rss_label_all_feeds'].'</li>'."\n";
+	$html .= "\t\t\t\t".'<li class="today-feeds" id="today-post-counter">'.$GLOBALS['lang']['rss_label_today_feeds'].'</li>'."\n";
+	$html .= "\t\t\t\t".'<li class="fav-feeds" id="favs-post-counter">'.$GLOBALS['lang']['rss_label_favs_feeds'].'</li>'."\n";
+	$html .= "\t\t\t".'</ul>'."\n";
+	$html .= "\t\t".'</li>'."\n";
 
 
 	$feed_urls = array();
@@ -51,7 +45,6 @@ function feed_list_html() {
 		$feed['nbrun'] = (isset($feed_urls[$feed['link']]['nbrun']) ? $feed_urls[$feed['link']]['nbrun'] : 0);
 		$folders[$feed['folder']][] = $feed;
 	}
-
 	krsort($folders);
 
 	// creates html : lists RSS feeds without folder separately from feeds with a folder
@@ -60,18 +53,16 @@ function feed_list_html() {
 		$folder_count = 0;
 		$folder_count_today = 0;
 		foreach ($folder as $j => $feed) {
-			$li_html .= "\t\t\t\t".'<li class="feed-site" data-nbrun="'.$feed['nbrun'].'" data-feed-hash="'.crc32($feed['link']).'" title="'.$feed['link'].'">';
-			$li_html .= '<a href="#" '.(($feed['iserror'] > 2) ? 'class="feed-error" ': '' ).'onclick="return RssWall.sortItemsBySite(\''.crc32($feed['link']).'\');" style="background-image: url('.URL_ROOT.'favatar.php?w=favicon&amp;q='.parse_url($feed['link'], PHP_URL_HOST).')">'.htmlspecialchars($feed['title']).'</a>';
-			$li_html .= '</li>'."\n";
+			$t = ($i != '') ? "\t\t" : "";
+
+			$li_html .= $t."\t\t".'<li class="feed-site'.(($feed['iserror'] > 2) ? ' feed-error': '' ).'" data-nbrun="'.$feed['nbrun'].'" data-feed-hash="'.crc32($feed['link']).'" style="background-image: url('.URL_ROOT.'favatar.php?w=favicon&amp;q='.parse_url($feed['link'], PHP_URL_HOST).')">'.htmlspecialchars($feed['title']).'</li>'."\n";
 			$folder_count += $feed['nbrun'];
 		}
 
 		if ($i != '') {
-			$html .= "\t\t".'<li class="feed-folder" data-nbrun="'.$folder_count.'" data-folder="'.$i.'">'."\n";
-			$html .= "\t\t\t".'<span class="feed-folder-title">'."\n";
-			$html .= "\t\t\t\t".'<a href="#" onclick="return hideFolder(this)" class="unfold"></a>'."\n";
-			$html .= "\t\t\t\t".'<a href="#" onclick="return RssWall.sortItemsByFolder(\''.$i.'\');" class="foldername">'.$i.'</a>'."\n";
-			$html .= "\t\t\t".'</span>'."\n";
+			$t = "\t";
+			$html .= "\t\t".'<li class="feed-folder" data-nbrun="'.$folder_count.'" data-folder="'.$i.'">'.$i."\n";
+			$html .= "\t\t\t".'<a class="unfold"></a>'."\n";
 			$html .= "\t\t\t".'<ul>'."\n";
 		}
 		$html .= $li_html;
@@ -239,9 +230,9 @@ if (isset($_GET['config'])) {
 
 else {
 	// list of websites
-	$out_html .= "\t\t".'<ul id="feed-list">'."\n";
+	$out_html .= "\t".'<ul id="feed-list">'."\n";
 	$out_html .= feed_list_html();
-	$out_html .= "\t\t".'</ul>'."\n";
+	$out_html .= "\t".'</ul>'."\n";
 
 	// get list of posts from DB
 	// send to browser

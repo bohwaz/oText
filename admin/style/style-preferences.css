@@ -7,17 +7,19 @@
 
 /* field sets */
 #preferences .pref {
-	padding-bottom: 20px;
-	margin-bottom: 60px;
+	padding: 0 0 20px;
 	margin-top: 40px;
 }
 
 #preferences .form-legend {
-	padding: 0;
+	padding: 20px;
 	font-weight: 500;
 	box-sizing: border-box;
-	transform: translate(-15px, -50px);
 	color: rgba(0, 0, 0, .5);
+	font-size: 1.1em;
+	border-top-left-radius: inherit;
+	border-top-right-radius: inherit;
+	background-color: #eee;
 }
 
 #preferences p {
@@ -35,7 +37,7 @@
 }
 
 #preferences .text {
-	padding: 5px 5px 5px 1px;
+	padding: 10px 5px 10px 1px;
 }
 
 #preferences textarea.text {

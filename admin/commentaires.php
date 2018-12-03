@@ -13,41 +13,47 @@ setcookie('lastAccessComments', time(), time()+365*24*60*60, null, null, true, t
 
 
 function afficher_commentaire($comment) {
-	afficher_form_commentaire($comment['bt_article_id'], 'admin', '', $comment);
+	//afficher_form_commentaire($comment['bt_article_id'], 'admin', '', $comment);
 	echo '<div class="commentbloc'.(!$comment['bt_statut'] ? ' privatebloc' : '').'" id="'.article_anchor($comment['bt_id']).'">'."\n";
 	echo '<div class="comm-side-icon">'."\n";
-		echo "\t".'<div class="comm-title">'."\n";
-		echo "\t\t".'<img class="author-icon" src="'.URL_ROOT.'favatar.php?w=gravatar&amp;q='.md5((!empty($comment['bt_email']) ? $comment['bt_email'] : $comment['bt_author'] )).'&amp;s=48&amp;d=monsterid"/>'."\n";
-		echo "\t\t".'<span class="date">'.date_formate($comment['bt_id']).'<span>'.heure_formate($comment['bt_id']).'</span></span>'."\n" ;
-
-		echo "\t\t".'<span class="reply" onclick="reply(\'[b]@['.str_replace('\'', '\\\'', $comment['bt_author']).'|#'.article_anchor($comment['bt_id']).'] :[/b] \'); ">Reply</span> ';
-		echo (!empty($comment['bt_webpage'])) ? "\t\t".'<span class="webpage"><a href="'.$comment['bt_webpage'].'" title="'.$comment['bt_webpage'].'">'.$comment['bt_webpage'].'</a></span>'."\n" : '';
-		echo (!empty($comment['bt_email'])) ? "\t\t".'<span class="email"><a href="mailto:'.$comment['bt_email'].'" title="'.$comment['bt_email'].'">'.$comment['bt_email'].'</a></span>'."\n" : '';
-		echo "\t".'</div>'."\n";
+	echo "\t".'<div class="comm-title">'."\n";
+	echo "\t\t".'<img class="author-icon" src="'.URL_ROOT.'favatar.php?w=gravatar&amp;q='.md5((!empty($comment['bt_email']) ? $comment['bt_email'] : $comment['bt_author'] )).'&amp;s=48&amp;d=monsterid"/>'."\n";
+	echo "\t\t".'<span class="date">'.date_formate($comment['bt_id']).'<span>'.heure_formate($comment['bt_id']).'</span></span>'."\n" ;
+	echo "\t\t".'<span class="reply" onclick="reply(\'[b]@['.str_replace('\'', '\\\'', $comment['bt_author']).'|#'.article_anchor($comment['bt_id']).'] :[/b] \'); ">Reply</span> ';
+	echo (!empty($comment['bt_webpage'])) ? "\t\t".'<span class="webpage"><a href="'.$comment['bt_webpage'].'" title="'.$comment['bt_webpage'].'">'.$comment['bt_webpage'].'</a></span>'."\n" : '';
+	echo (!empty($comment['bt_email'])) ? "\t\t".'<span class="email"><a href="mailto:'.$comment['bt_email'].'" title="'.$comment['bt_email'].'">'.$comment['bt_email'].'</a></span>'."\n" : '';
+	echo "\t".'</div>'."\n";
 	echo '</div>'."\n";
-	
 	echo '<div class="comm-main-frame">'."\n";
 	echo "\t".'<div class="comm-header">'."\n";
 	echo "\t\t".'<div class="comm-title">'."\n";
 	echo "\t\t\t".'<span class="author"><a href="?filtre=auteur.'.$comment['bt_author'].'" title="'.$GLOBALS['lang']['label_all_comm_by_author'].'">'.$comment['bt_author'].'</a> :</span>'."\n";
 	echo "\t\t".'</div>'."\n";
-
+	if (!isset($_GET['post_id']))
 	echo "\t\t".'<span class="link-article"> '.$GLOBALS['lang']['sur'].' <a href="'.basename($_SERVER['SCRIPT_NAME']).'?post_id='.$comment['bt_article_id'].'">'.$comment['bt_title'].'</a></span>'."\n";
-
 	echo "\t\t".'<div class="item-menu-options">'."\n";
 	echo "\t\t\t".'<ul>'."\n";
-	echo "\t\t\t\t".'<li><a href="#" onclick="return unfold(this);" data-com-dom-anchor="'.article_anchor($comment['bt_id']).'">'.$GLOBALS['lang']['editer'].'</a></li>'."\n";
-	echo "\t\t\t\t".'<li><a href="#" onclick="return activate_comm(this);" data-com-dom-anchor="'.article_anchor($comment['bt_id']).'" data-comm-id="'.$comment['ID'].'" data-comm-btid="'.$comment['bt_id'].'" data-comm-art-id="'.$comment['bt_article_id'].'">'.$GLOBALS['lang'][(!$comment['bt_statut'] ? '' : 'des').'activer'].'</a></li>'."\n";
-	echo "\t\t\t\t".'<li><a href="#" onclick="return suppr_comm(this);" data-comm-id="'.$comment['ID'].'" data-com-dom-anchor="'.article_anchor($comment['bt_id']).'" data-comm-art-id="'.$comment['bt_article_id'].'">'.$GLOBALS['lang']['supprimer'].'</a></li>'."\n";
+	if (isset($_GET['post_id']))
+	echo "\t\t\t\t".'<li><button type="button" onclick="unfold(this)">'.$GLOBALS['lang']['editer'].'</button></li>'."\n";
+	echo "\t\t\t\t".'<li><button type="button" onclick="commAction(\'activate\', this)" data-comm-btid="'.$comment['bt_id'].'">'.$GLOBALS['lang'][(!$comment['bt_statut'] ? '' : 'des').'activer'].'</button></li>'."\n";
+	echo "\t\t\t\t".'<li><button type="button" onclick="commAction(\'delete\', this)" data-comm-btid="'.$comment['bt_id'].'">'.$GLOBALS['lang']['supprimer'].'</button></li>'."\n";
 	echo "\t\t\t".'</ul>'."\n";
 	echo "\t\t".'</div>'."\n";
-
 	echo "\t".'</div>'."\n";
-
 	echo "\t".'<div class="comm-content">'."\n";
 	echo $comment['bt_content'];
 	echo "\t".'</div>'."\n";
-	echo $GLOBALS['form_commentaire'];
+	$arr = array(
+		'auth' => protect($comment['bt_author']),
+		'mail' => protect($comment['bt_email']),
+		'webp' => protect($comment['bt_webpage']),
+		'wiki' => htmlspecialchars($comment['bt_wiki_content']),
+		'btid' => protect($comment['bt_id']),
+	);
+	echo "\t".hidden_input('comm_data', htmlspecialchars(json_encode($arr)));
+
+
+
 
 	echo "\t".'</div>'."\n\n";
 	echo '</div>'."\n\n";
@@ -70,7 +76,7 @@ if (isset($_POST['_verif_envoi'])) {
 		}
 	}
 	else {
-		$comment = init_post_comment($_POST['comment_article_id'], 'admin');
+		$comment = init_post_comment($_GET['post_id'], 'admin');
 		$erreurs_form = valider_form_commentaire($comment, 'admin');
 		if (empty($erreurs_form)) {
 			traiter_form_commentaire($comment, 'admin');
@@ -171,10 +177,19 @@ echo '</div>'."\n";
 
 
 if (!empty($article_id)) {
-	echo '<div id="post-nv-commentaire">'."\n";
-	afficher_form_commentaire($article_id, 'admin', $erreurs_form, '');
+	echo '<div id="post-nv-commentaire" class="comm-main-frame">'."\n";
 	echo '<h2 class="poster-comment">'.$GLOBALS['lang']['comment_ajout'].'</h2>'."\n";
-	echo $GLOBALS['form_commentaire'];
+	$arr = array(
+		'auth' => protect($GLOBALS['auteur']),
+		'mail' => protect($GLOBALS['email']),
+		'webp' => protect($GLOBALS['racine']),
+		'wiki' => "",
+		'btid' => "",
+	);
+	echo "\t".hidden_input('comm_data', htmlspecialchars(json_encode($arr)));
+
+
+	echo afficher_form_commentaire($article_id, 'admin', $erreurs_form, '');
 	echo '</div>'."\n";
 }
 
@@ -182,6 +197,9 @@ echo "\n".'<script src="style/javascript.js" type="text/javascript"></script>'."
 echo '<script type="text/javascript">';
 echo php_lang_to_js(0);
 echo 'var csrf_token = \''.new_token().'\'';
+echo '
+new writeForm();
+';
 echo '</script>';
 
 footer($begin);

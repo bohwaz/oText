@@ -89,7 +89,7 @@ function afficher_form_billet($article, $erreurs) {
 
 		$html .= '<p class="submit-bttns">'."\n";
 		$html .= "\t".'<button class="submit button-cancel" type="button" onclick="goToUrl(\'articles.php\');">'.$GLOBALS['lang']['annuler'].'</button>'."\n";
-		$html .= "\t".'<button class="submit button-submit" type="submit" name="enregistrer" onclick="contenuLoad=document.getElementById(\'contenu\').value" tabindex="70">'.$GLOBALS['lang']['envoyer'].'</button>'."\n";
+		$html .= "\t".'<button class="submit button-submit" type="submit" name="enregistrer" tabindex="70">'.$GLOBALS['lang']['envoyer'].'</button>'."\n";
 		$html .= '</p>'."\n";
 
 		$html .= '<p class="submit-bttns">'."\n";
@@ -97,7 +97,7 @@ function afficher_form_billet($article, $erreurs) {
 			$html .= hidden_input('article_id', $article['bt_id']);
 			$html .= hidden_input('article_date', $article['bt_date']);
 			$html .= hidden_input('ID', $article['ID']);
-			$html .= "\t".'<button class="submit button-delete" type="button" name="supprimer" onclick="contenuLoad = document.getElementById(\'contenu\').value; rmArticle(this)" />'.$GLOBALS['lang']['supprimer'].'</button>'."\n";
+			$html .= "\t".'<button class="submit button-delete" type="button" name="supprimer" onclick="rmArticle(this)" />'.$GLOBALS['lang']['supprimer'].'</button>'."\n";
 		}
 		$html .= '</p>'."\n";
 
@@ -176,15 +176,32 @@ afficher_form_billet($post, $erreurs_form);
 echo "\n".'<script src="style/javascript.js" type="text/javascript"></script>'."\n";
 echo '<script type="text/javascript">';
 echo php_lang_to_js(0);
-echo 'var contenuLoad = document.getElementById("contenu").value;
-window.addEventListener("beforeunload", function (e) {
-	// From https://developer.mozilla.org/en-US/docs/Web/Reference/Events/beforeunload
-	var confirmationMessage = BTlang.questionQuitPage;
-	if(document.getElementById("contenu").value == contenuLoad) { return true; };
-	(e || window.event).returnValue = confirmationMessage || \'\' ;	//Gecko + IE
-	return confirmationMessage;													// Webkit : ignore this.
-});';
+echo '
+new writeForm();
 
+var form = document.getElementById(\'form-ecrire\');
+
+function markAsEdited() {
+	form.dataset.edited = true;
+}
+function markStar() {
+	document.title = \'[*] \' + document.title;
+}
+
+// When edited, place a little « [*] » on the title.
+form.addEventListener(\'input\', markStar, {"once": true});
+form.addEventListener(\'input\', markAsEdited);
+
+// prevent user from loosing data by closing window without saving
+window.addEventListener("beforeunload", function (e) {
+	var confirmationMessage = BTlang.questionQuitPage;
+	if (!form.dataset.edited) { return true; };
+	(e || window.event).returnValue = confirmationMessage || \'\'; //Gecko + IE
+	return confirmationMessage;                                   // Webkit : ignore this.
+});
+
+
+';
 echo '</script>';
 
 

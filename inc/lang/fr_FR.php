@@ -34,6 +34,7 @@ $GLOBALS['lang'] = array(
 'bouton-justify'				=> 'Justifier le texte (aligner des deux côtés)',
 'bouton-liul'					=> 'Insérer une liste à puce',
 'bouton-liol'					=> 'Insérer une liste numérotée',
+'bouton-spellcheck'				=> 'Basculer la vérification orthographique',
 
 // Label avec " : "
 'label_dp_nom'					=> 'Nom : ',
