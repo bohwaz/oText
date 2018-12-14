@@ -111,7 +111,7 @@ if ( isset($_GET['d']) and ( preg_match('#^\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2}#'
 	if ( !empty($billets[0]) ) {
 		// TRAITEMENT new commentaire
 		$erreurs_form = array();
-		if (isset($_POST['_verif_envoi'], $_POST['commentaire'], $_POST['captcha'], $_POST['_token'], $_POST['auteur'], $_POST['email'], $_POST['webpage']) and ($billets[0]['bt_allow_comments'] == '1' )) {
+		if (isset($_POST['_verif_envoi'], $_POST['commentaire'], $_POST['captcha'], $_POST['token'], $_POST['auteur'], $_POST['email'], $_POST['webpage']) and ($billets[0]['bt_allow_comments'] == '1' )) {
 			// COOKIES
 			if (isset($_POST['allowcuki'])) { // si cookies autorisés, conserve les champs remplis
 				if (isset($_POST['auteur'])) {  setcookie('auteur_c', $_POST['auteur'], time() + 365*24*3600, null, null, true, true); }

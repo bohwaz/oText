@@ -25,8 +25,8 @@ function afficher_form_billet($article, $erreurs) {
 
 	if (!empty($article)) {
 		$date_dec = decode_id($article['bt_date']);
-		$defaut_ymd = $date_dec['annee'].'-'.$date_dec['mois'].'-'.$date_dec['jour'];
-		$defaut_his = $date_dec['heure'].':'.$date_dec['minutes'].':'.$date_dec['secondes'];
+		$defaut_ymd = $date_dec['y'].'-'.$date_dec['m'].'-'.$date_dec['d'];
+		$defaut_his = $date_dec['h'].':'.$date_dec['i'].':'.$date_dec['s'];
 		$titredefaut = $article['bt_title'];
 		$chapodefaut = get_entry('articles', 'bt_abstract', $article['bt_id'], 'return');
 		$notesdefaut = $article['bt_notes'];

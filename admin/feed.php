@@ -177,6 +177,9 @@ if (!isset($_GET['config'])) {
 	$html_sub_menu .= "\t\t\t".'<li><button type="button" onclick="goToUrl(\'maintenance.php#form_import\')" title="Import/export"></button></li>'."\n";
 	$html_sub_menu .= "\t\t\t".'<li><button type="button" id="deleteOld" title="'.$GLOBALS['lang']['rss_label_clean'].'"></button></li>'."\n";
 	$html_sub_menu .= "\t\t".'</ul>'."\n";
+//	$html_sub_menu .= "\t\t".'<ul class="rss-menu-tags sub-menu-buttons">'."\n";
+//	$html_sub_menu .= "\t\t\t".'<li>AZE</li>'."\n";
+//	$html_sub_menu .= "\t\t".'</ul>'."\n";
 	$html_sub_menu .= "\t".'</div>'."\n";
 	$html_sub_menu .= "\t".'<button type="button" id="fab" class="add-feed" title="'.$GLOBALS['lang']['rss_label_config'].'">'.$GLOBALS['lang']['rss_label_addfeed'].'</button>'."\n";
 }
@@ -239,9 +242,8 @@ else {
 	$out_html .= send_rss_json($tableau, true);
 	$out_html .= '<div id="rss-list">'."\n";
 	$out_html .= "\t".'<div id="posts-wrapper">'."\n";
-	$out_html .= "\t\t".'<div id="post-list-wrapper">'."\n";
 	$out_html .= "\t\t\t".'<div id="post-list-title">'."\n";
-	$out_html .= "\t\t\t".'<ul class="rss-menu-buttons sub-menu-buttons">'."\n";
+	$out_html .= "\t\t\t".'<ul>'."\n";
 	$out_html .= "\t\t\t\t".'<li><button type="button" id="markasread" title="'.$GLOBALS['lang']['rss_label_markasread'].'"></button></li>'."\n";
 	$out_html .= "\t\t\t\t".'<li><button type="button" id="openallitemsbutton" title="'.$GLOBALS['lang']['rss_label_unfoldall'].'"></button></li>'."\n";
 	$out_html .= "\t\t\t".'</ul>'."\n";
@@ -254,7 +256,6 @@ else {
 	if (empty($GLOBALS['liste_flux'])) {
 		$out_html .= $GLOBALS['lang']['rss_nothing_here_note'].'<a href="maintenance.php#form_import">import OPML</a>.';
 	}
-	$out_html .= "\t\t".'</div>'."\n";
 	$out_html .= "\t".'</div>'."\n";
 	$out_html .= "\t".'<div class="keyshortcut">'.$GLOBALS['lang']['rss_raccourcis_clavier'].'</div>'."\n";
 	$out_html .= '</div>'."\n";

@@ -1,7 +1,6 @@
 /* Agenda CSS
 ------------------------------------------------------------ */
 
-
 /* the head row (with callendar + daily events)
 ------------------------------------------------------- */
 #cal-row {
@@ -68,12 +67,12 @@
 #calendar-table > thead #month {
 	text-align: right;
 }
+
 #calendar-table > thead #month span {
 	width: 110px;
 	display: inline-block;
 	text-align: center;
 }
-
 
 #calendar-table > thead #year {
 	text-align: left;
@@ -110,8 +109,10 @@
 }
 
 #calendar-table #show-full-year::before { content: "\e936"; }
-#calendar-table #next-month::before, #calendar-table #next-year::before { content: "\e92d"; }
-#calendar-table #prev-month::before, #calendar-table #prev-year::before { content: "\e92b"; }
+#calendar-table #next-month::before,
+#calendar-table #next-year::before { content: "\e92d"; }
+#calendar-table #prev-month::before,
+#calendar-table #prev-year::before { content: "\e92b"; }
 
 #calendar-table .dayAbbr th {
 	color: rgba(0, 0, 0, .3);
@@ -156,7 +157,6 @@
 	box-sizing: border-box;
 }
 
-
 #calendar-table > tbody td {
 	padding: 0px;
 	border-radius: 50%;
@@ -194,13 +194,11 @@
 	color: var(--main-md-text-color);
 	font-weight: bold;
 	box-shadow: 0px 2px 2px rgba(0, 0, 0, .3);
-
 }
 #calendar-table td.hasEvent.isPast button {
 	box-shadow: none;
 	opacity: .7;
 }
-
 
 /* the daily shedule list
 -------------------------------*/
@@ -215,9 +213,11 @@
 	font-weight: bold;
 	text-transform: capitalize;
 }
+
 #daily-events {
 	padding: 0;
 }
+
 #daily-events > div {
 	padding: 20px;
 	border-bottom: 1px solid rgba(0, 0, 0, .1);
@@ -230,7 +230,6 @@
 	color: var(--main-md-text-color);
 	background-color: rgba(255, 0, 0, .6);
 	background-color: var(--md-secondary-color);
-
 }
 
 #daily-events > div.pastEvent .eventDate {
@@ -246,7 +245,6 @@
 	text-align: center;
 	text-shadow: 0 0 10px black;
 	color: white;
-
 }
 
 #daily-events > div .eventSummary {
@@ -262,8 +260,6 @@
 #daily-events > div > .eventSummary > div {
 	margin-top: 10px;
 }
-
-
 
 /* the events list
 --------------------------------------------- */
@@ -311,7 +307,6 @@
 	min-width: 150px;
 }
 
-
 #event-list > tbody > tr > td:nth-of-type(3) {
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -358,7 +353,7 @@
 #popup.popup-event,
 #popup.popup-edit-event {
 	min-height: 300px;
-	width: 600px;
+	min-width: 600px;
 	background: white;
 	box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.3), 0 0px 12px 0 rgba(0, 0, 0, 0.3);
 	padding: 0;
@@ -418,7 +413,7 @@
 	content: "\e903";
 	color: white;
 	color: var(--main-md-text-color);
-	height: 40PX;
+	height: 40px;
 	width: 40px;
 	background: var(--md-primary-color);
 	border-radius: 50%;
@@ -509,13 +504,16 @@
 	padding: 20px 20px 20px 60px;
 }
 
+#popup.popup-edit-event .event-content > p:first-of-type {
+	margin-right: 55px;
+}
+
 #popup.popup-edit-event .event-content::before {
 	font-size: 1.4em;
 	position: absolute;
 	left: 20px;
-	top: 30px;
-	color: rgba(0, 0, 0, .5)
-
+	color: rgba(0, 0, 0, .5);
+	padding: 15px 0;
 }
 
 #popup.popup-edit-event .event-content-date::before  { content: "\e908"; }
@@ -525,25 +523,14 @@
 #popup.popup-edit-event .event-content-date p {
 	display: flex;
 	justify-content: space-between;
-	margin: 0 0 25px 0;
 }
 
 #popup.popup-edit-event .event-content-loc .text,
 #popup.popup-edit-event .event-content-descr .text {
-	padding: 10px 5px;
 	width: 100%;
 }
 
 #popup #allDay+label {
 	flex: 1;
-	line-height: 40px;
-}
-
-#popup #allDay+label::after {
-	top: 9px;
-}
-
-#popup #allDay+label::before {
-	top: 14px;
 }
 

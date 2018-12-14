@@ -1,5 +1,6 @@
 /* RSS Reader CSS
 ------------------------------------------------------------ */
+
 #body.feeds #page,
 #body.feeds #axe {
 	padding: 0;
@@ -7,32 +8,6 @@
 
 #body.feeds #header {
 	box-shadow: 280px 1px 8px rgba(0,0,0,.5);
-}
-
-#rss-list {
-	padding: 25px 0 1px;
-	margin-left: 305px;
-}
-
-/* The frame with elements to read + menu */
-#posts-content {
-	min-height: 100%;
-}
-
-/* the top menu of the list */
-.rss-menu-buttons {
-	text-align: right;
-}
-
-.rss-menu-buttons button {
-	background-color: transparent;
-	border: 1px solid transparent;
-	border-radius: 50%;
-	height: 40px;
-	width: 40px;
-	transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
-	padding: 0;
-	color: rgba(0, 0, 0, .6);
 }
 
 #body.feeds #sub-menu::before {
@@ -51,10 +26,13 @@
 #sub-menu .rss-menu-buttons > li:nth-of-type(4) > button::before { content: "\e90f"; }
 #sub-menu #count-posts > button { background-image: none; }
 
+#sub-menu .rss-menu-tags {
+	flex: 1 1 100%;
+	align-content: flex-start;
+}
 
 /* the left sidebar, with the list of feeds */
 #feed-list {
-	box-sizing: border-box;
 	margin: 0 0 20px 0;
 	padding: 0;
 	list-style-type: none;
@@ -62,26 +40,20 @@
 	position: fixed;
 	width: 280px;
 	height: calc(100% - 108px);
-
 }
 
 #feed-list li {
 	position: relative;
 	border-bottom: 1px solid #eee;
 	font-weight: bold;
-
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	padding: 20px 45px;
 	background-repeat: no-repeat;
 	background-position: 15px center;
-	display: block;
-	align-items: center;
 	cursor: pointer;
 }
-
-
 
 #feed-list > li.special {
 	padding: 0;
@@ -110,22 +82,9 @@
 	color: rgba(0, 0, 0, .5);
 }
 
-#feed-list > li.special .all-feeds::before {
-	content: "\e901";
-}
-
-#feed-list > li.special .today-feeds::before {
-	content: "\e918";
-}
-
-#feed-list > li.special .fav-feeds::before {
-	content: "\e90c";
-}
-
-/*#feed-list > li > span,
-#feed-list > li > ul > li > span {
-	padding: 10px 25px 10px 0
-}*/
+#feed-list > li.special .all-feeds::before   { content: "\e901"; }
+#feed-list > li.special .today-feeds::before { content: "\e918"; }
+#feed-list > li.special .fav-feeds::before   { content: "\e90c"; }
 
 #feed-list li.feed-site:not([data-nbrun="0"])::before,
 #feed-list li.feed-folder:not([data-nbrun="0"])::before {
@@ -158,8 +117,6 @@
 }
 
 #feed-list li.feed-folder a.unfold {
-	flex: 0 0 30px;
-	padding: 0px;
 	margin-left: 5px;
 	overflow: visible;
 	transition: transform ease .2s;
@@ -178,7 +135,6 @@
 	border-radius: 50%;
 	padding: 3px;
 }
-
 
 #feed-list li.feed-folder.open a.unfold:focus::before {
 	background: rgba(0, 0, 0, .1);
@@ -203,7 +159,6 @@
 	box-shadow: none;
 }
 
-
 #feed-list li.feed-site:hover,
 #feed-list li.feed-folder:not(.open):hover {
 	box-shadow: 3px 0 0 var(--md-primary-color) inset;
@@ -218,24 +173,51 @@
 	visibility: hidden;
 }
 
-
 /* block with list of elements to read */
-#post-list-title {
-	padding: 5px 20px;
-	display: flex;
+#rss-list {
+	margin-left: 305px;
 }
 
-#post-list-title ul {
-	text-align: left;
+#post-list-title {
+	padding: 30px 15px 15px;
+	display: flex;
+	align-items: center;
+}
+
+#post-list-title > ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	flex: 1;
+}
+
+#post-list-title > ul > li {
+	display: inline;
+}
+
+#post-list-title > ul button {
+	background-color: transparent;
+	border: 1px solid transparent;
+	border-radius: 50%;
+	height: 40px;
+	width: 40px;
+	transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
+	padding: 0;
+	color: rgba(0, 0, 0, .6);
+	font-size: 1.5em;
 }
 
 #post-list-title ul > li:nth-of-type(1) > button::before        { content: "\e91c"; }
 #post-list-title ul > li:nth-of-type(2) > button::before        { content: "\e90a"; }
 #post-list-title ul > li:nth-of-type(2) > button.unfold::before { content: "\e90b"; }
 
+#post-list-title > p {
+	margin: 0;
+}
 
+/* Liste des posts à lire. */
 #post-list {
-	box-sizing: border-box;
+	border-radius: 0;
 	list-style-type: none;
 	padding: 0;
 	margin: 0;
@@ -244,7 +226,6 @@
 #post-list > li {
 	padding: 0px 15px 0px;
 	border-bottom: #F9F9F9 solid 1px;
-	background: white;
 }
 
 #post-list > li:hover {
@@ -270,37 +251,43 @@
 }
 
 /* rss entry title */
-#post-list > li .post-head {
+#post-list > li > .post-head {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	margin: 0;
 	display: flex;
 	min-width: 0;
 	align-items: center;
 }
-#post-list > li .post-head > .post-title {
-	font-weight: bold;
+
+#post-list > li > .post-head a {
+	outline: none;
+}
+
+/* bouton fav */
+#post-list > li > .post-head > .lien-fav {
+	flex: 0 0 32px;
+	margin-right: 10px;
 	text-decoration: none;
-	color: inherit;
-	flex: 1 1 auto;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	padding: 17px 10px 15px 0;
+	color: rgba(0, 0, 0, .4);
+	border-radius: 50%;
+	display: inline-block;
+	line-height: 32px;
+	text-align: center;
 }
 
-#post-list > li .post-head .post-title:hover {
-	text-decoration: underline;
-	flex: 1 0 auto;
+#post-list > li > .post-head > .lien-fav::before {
+	content: "\e942";
+	font-size: 1.3em;
 }
 
-#post-list > li:not(.open-post) .post-head .post-title:hover {
-	text-decoration: none;
+#post-list > li > .post-head > .lien-fav[data-is-fav="1"]::before {
+	content: "\e90c";
+	color: red;
 }
 
-#post-list > li .post-head .site {
-	white-space: nowrap;
+/* le nom du site */
+#post-list > li > .post-head > .site {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	flex: 0 0 125px;
@@ -309,108 +296,54 @@
 	font-size: .9em;
 }
 
-#post-list > li .post-head .date {
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	display: flex;
-	align-items: center;
-	flex: 0 0 auto;
-	min-width: 0;
-	font-size: .9em;
-	color: rgba(0, 0, 0, .5);
-}
-
-#post-list > li .rss-item-content {
-	height: 0;
-	overflow: hidden;
-	opacity: 0;
-}
-
-#post-list > li .rss-item-content * {
-	max-width: 100%;
-}
-
-#post-list > li hr.clearboth {
-	clear: both;
-	margin: 0;
-	height: 0;
-	padding: 0;
-	border: none;
-}
-
-#rss-list > .keyshortcut {
-	clear: both;
-	font-size: .9em;
-	color: gray;
-	margin-top: 20px;
-	text-align: center;
-}
-
-/* opened post */
-#post-list > li.open-post {
-	box-shadow: 4px 0px 0px var(--md-primary-color) inset;
-	color: inherit;
-	cursor: auto;
-	position: relative;
-	padding: 0 15px 15px;
-}
-
-#post-list > li.open-post .rss-item-content {
-	margin-top: 15px;
-	margin-left: 15px;
-	transition: opacity .7s cubic-bezier(0.175, 0.585, 0.32, 1);
-	opacity: 1;
-	height: auto;
-}
-
-#post-list > li .post-head a {
-	outline: none;
-}
-
-#post-list > li .post-head .lien-fav {
-	flex: 0 0 32px;
-	margin-right: 10px;
-	margin-left: 5px;
-	text-decoration: none;
-	color: rgba(0, 0, 0, .4);
-	border-radius: 50%;
-	display: inline-block;
-	height: 32px;
-	line-height: 32px;
-	text-align: center;
-}
-
-#post-list > li .post-head .lien-fav::before {
-	content: "\e942";
-	font-size: 1.3em;
-}
-
-#post-list > li .post-head .lien-fav[data-is-fav="1"]::before {
-	content: "\e90c";
-	color: red;
-}
-
-#post-list > li:hover .post-head .date {
-	display: none;
-}
-
-#post-list > li .post-head .folder {
+/* le dossier */
+#post-list > li > .post-head > .folder {
 	border: 1px solid silver;
 	border-radius: 5px;
 	padding: 0 5px;
 	margin: 0 10px 0 0;
 }
 
-#post-list > li .post-head .share {
+/* le titre */
+#post-list > li > .post-head > .post-title {
+	font-weight: bold;
+	text-decoration: none;
+	color: inherit;
+	flex: 1 1 auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding: 15px 0;
+	margin-right: 10px;
+}
+
+#post-list > li > .post-head > .post-title:hover {
+	text-decoration: underline;
+	flex: 1 0 auto;
+}
+
+#post-list > li:not(.open-post) > .post-head > .post-title:hover {
+	text-decoration: none;
+}
+
+#post-list > li .post-head .date {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	flex: 0 0 auto;
+	min-width: 0;
+	font-size: .9em;
+	color: rgba(0, 0, 0, .5);
+}
+
+#post-list > li > .post-head > .share {
 	display: none;
 }
 
-#post-list > li:hover .post-head .share {
+#post-list > li:hover > .post-head > .share {
 	display: block;
+	flex: 0 0 auto;
 }
 
-#post-list > li .post-head .share a {
+#post-list > li > .post-head > .share > a {
 	margin-left: 5px;
 	text-decoration: none;
 	color: rgba(0, 0, 0, .4);
@@ -423,61 +356,109 @@
 	font-size: 1.3em;
 }
 
+#post-list > li > .post-head > .share > .lien-share::before { content: "\e910"; }
+#post-list > li > .post-head > .share > .lien-open::before  { content: "\e94a"; }
+#post-list > li > .post-head > .share > .lien-tweet::before { content: "\e94b"; }
+#post-list > li > .post-head > .share > .lien-mail::before  { content: "\e91e"; }
+#post-list > li > .post-head > .share > .lien-gplus::before { content: "\e94c"; }
 
-
-
-#post-list > li .post-head .lien-share::before {
-	content: "\e910";
-}
-#post-list > li .post-head .lien-open::before {
-	content: "\e94a";
-}
-#post-list > li .post-head .lien-tweet::before {
-	content: "\e94b";
-}
-#post-list > li .post-head .lien-mail::before {
-	content: "\e91e";
-}
-#post-list > li .post-head .lien-gplus::before {
-	content: "\e94c";
-}
-
-#post-list > li .post-head .share a:hover,
-#post-list > li .post-head .lien-fav:hover {
+#post-list > li > .post-head > .share a:hover,
+#post-list > li > .post-head > .lien-fav:hover {
 	background: rgba(0,0,0, .1);
 	color: rgba(0, 0, 0, .6);
+}
+
+#post-list > li > .rss-item-content {
+	height: 0;
+	overflow: hidden;
+	opacity: 0;
+}
+
+#post-list > li > .rss-item-content * {
+	max-width: 100%;
+}
+
+/* opened post */
+#post-list > li.open-post {
+	box-shadow: 4px 0px 0px var(--md-primary-color) inset;
+	cursor: auto;
+}
+
+#post-list > li.open-post .rss-item-content {
+	margin-left: 10px;
+	transition: opacity .7s cubic-bezier(0.175, 0.585, 0.32, 1);
+	opacity: 1;
+	height: auto;
+	margin-bottom: 15px;
+}
+
+#post-list > li > hr.clearboth {
+	clear: both;
+	margin: 0;
+	height: 0;
+	padding: 0;
+	border: none;
+}
+
+#rss-list > .keyshortcut {
+	color: gray;
+	margin-top: 20px;
+	text-align: center;
 }
 
 /* RSS Config Page -------------------- */
 #form-rss-config {
 	margin: 30px 0;
+	text-align: center;
 }
 
 #form-rss-config > .feed-item {
-	margin: 0 12px 25px;
+	margin: 25px;
 	display: inline-block;
-	width: 300px;
+	max-width: 300px;
 }
 
-#form-rss-config .feed-error {
+#form-rss-config > .feed-item.feed-error {
 	color: red;
 }
 
-#form-rss-config p {
+#form-rss-config > .feed-item > p {
 	margin: 0;
 	display: flex;
+	position: relative;
+	align-items: center;
 }
 
-#form-rss-config p:first-of-type input { /* name */
+#form-rss-config > .feed-item > p > label {
+	flex: 0 0 0;
+	font-size: 0;
+}
+
+#form-rss-config > .feed-item > p > label::before {
+	content: "\e901";
+	font-size: initial;
+	color: rgba(0, 0, 0, .5);
+	margin-left: -16px;
+	margin-right: -25px;
+	vertical-align: middle;
+	position: relative;
+	left: 16px;
+	z-index: 3;
+}
+
+#form-rss-config > .feed-item > p > label[for^="i_"]::before { content: "\e903"; }
+#form-rss-config > .feed-item > p > label[for^="j_"]::before { content: "\e926"; }
+#form-rss-config > .feed-item > p > label[for^="l_"]::before { content: "\e91a"; }
+
+#form-rss-config > .feed-item > p:first-of-type input { /* name */
 	font-weight: bold;
-	-moz-appearance: none;
 }
 
-#form-rss-config p:nth-of-type(2) input { /* url */
+#form-rss-config > .feed-item > p:nth-of-type(2) input { /* url */
 	text-overflow: ellipsis;
 }
 
-#form-rss-config p:last-of-type { /* buttons */
+#form-rss-config > .feed-item > p:last-of-type { /* buttons */
 	margin-top: 15px;
 	justify-content: flex-end;
 }
@@ -486,26 +467,10 @@
 	display: none;
 }
 
-#form-rss-config label {
-	flex: 0 0 24px;
-	height: 38px;
-	overflow: hidden;
-	line-height: 38px;
-}
-
-#form-rss-config label::before {
-	content: "\e901";
-	font-size: 1.3em;
-	color: rgba(0, 0, 0, .5);
-}
-
-#form-rss-config label[for^="i_"]::before { content: "\e903"; }
-#form-rss-config label[for^="j_"]::before { content: "\e926"; }
-#form-rss-config label[for^="l_"]::before { content: "\e91a"; }
-
 #form-rss-config input.text {
 	flex: 1;
 	border-bottom-color: transparent;
+	padding-left: 40px;
 }
 
 #form-rss-config button.button-delete {
@@ -516,24 +481,27 @@
 	color: #f44336;
 	box-shadow: none;
 }
+
 #form-rss-config button.button-delete:hover {
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
+
 #form-rss-config button.button-delete:active {
 	box-shadow: none;
 }
 
-#form-rss-config .to-remove {
+#form-rss-config > .feed-item.to-remove {
 	background-color: rgb(250, 250, 250);
 }
 
-#form-rss-config .to-remove > p .button-cancel {
+#form-rss-config > .feed-item.to-remove > p .button-cancel {
 	display: inline;
 	text-decoration: none;
 }
 
-#form-rss-config .to-remove label,
-#form-rss-config .to-remove input,
-#form-rss-config .to-remove .button-delete {
+#form-rss-config > .feed-item.to-remove label,
+#form-rss-config > .feed-item.to-remove input,
+#form-rss-config > .feed-item.to-remove .button-delete {
 	opacity: .2;
 }
+

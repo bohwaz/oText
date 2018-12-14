@@ -298,7 +298,8 @@ function afficher_form_link($step, $erreurs, $editlink='') {
 
 			// Image
 			if (strpos($cnt_type, 'image/') === 0) {
-				$title = $GLOBALS['lang']['label_image'];
+				$filename = basename(parse_url($url, PHP_URL_PATH));
+				$title = $filename.' ('.$GLOBALS['lang']['label_image'].')';
 				if (list($width, $height) = @getimagesize($url)) {
 					$fdata = $url;
 					$type = 'image';
@@ -318,11 +319,11 @@ function afficher_form_link($step, $erreurs, $editlink='') {
 				libxml_use_internal_errors(true);
 				$dom = new DOMDocument();
 				$dom->strictErrorChecking = FALSE;
-//				$dom->loadHTML(mb_convert_encoding($ext_file['body'], 'HTML-ENTITIES',  'UTF-8'));
+				//$dom->loadHTML(mb_convert_encoding($ext_file['body'], 'HTML-ENTITIES',  'UTF-8'));
 				$dom->loadHTML($ext_file['body']);
 				$elements = $dom->getElementsByTagName('title');
 				if ($elements->length > 0) {
-					$title = $elements->item(0)->textContent;
+					$title = trim($elements->item(0)->textContent);
 				}
 				libxml_use_internal_errors(false);
 			}
@@ -333,10 +334,8 @@ function afficher_form_link($step, $erreurs, $editlink='') {
 
 		$link = array('title' => htmlspecialchars($title), 'url' => htmlspecialchars($url));
 		$form .= "\t".'<input type="text" name="title" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_titre']).'" required="" value="'.$link['title'].'" size="50" class="text" autofocus />'."\n";
-		$form .= "\t".'<span id="description-box">'."\n";
-		$form .= ($type == 'image') ? "\t\t".'<span id="img-container"><img src="'.$fdata.'" alt="img" class="preview-img" height="'.$height.'" width="'.$width.'"/></span>' : '';
-		$form .= "\t\t".'<textarea class="text description" name="description" cols="40" rows="7" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_description']).'"></textarea>'."\n";
-		$form .= "\t".'</span>'."\n";
+
+		$form .= "\t".'<textarea class="text description" name="description" cols="40" rows="7" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_description']).'"></textarea>'."\n";
 
 		$form .= "\t".'<div id="tag_bloc">'."\n";
 		$form .= form_categories_links('links', '');
@@ -344,12 +343,18 @@ function afficher_form_link($step, $erreurs, $editlink='') {
 		$form .= "\t".'<input type="hidden" id="categories" name="categories" value="" />'."\n";
 		$form .= "\t".'</div>'."\n";
 
-		$form .= "\t".'<input type="checkbox" name="statut" id="statut" class="checkbox" />'.'<label class="forcheckbox" for="statut">'.$GLOBALS['lang']['label_lien_priv'].'</label>'."\n";
+		$form .= "\t".'<p>'."\n";
+		$form .= "\t\t".'<input type="checkbox" name="statut" id="statut" class="checkbox" />'.'<label class="forcheckbox" for="statut">'.$GLOBALS['lang']['label_lien_priv'].'</label>'."\n";
+		$form .= "\t".'</p>'."\n";
 		if ($type == 'image' or $type == 'file') {
 			// download of file is asked
-			$form .= ($GLOBALS['dl_link_to_files'] == 2) ? "\t".'<input type="checkbox" name="add_to_files" id="add_to_files" class="checkbox" />'.'<label class="forcheckbox" for="add_to_files">'.$GLOBALS['lang']['label_dl_fichier'].'</label>'."\n" : '';
+			$form .= "\t".'<p>'."\n";
+			if ($GLOBALS['dl_link_to_files'] == 2)
+			$form .= "\t\t".'<input type="checkbox" name="add_to_files" id="add_to_files" class="checkbox" />'.'<label class="forcheckbox" for="add_to_files">'.$GLOBALS['lang']['label_dl_fichier'].'</label>'."\n";
 			// download of file is systematic
-			$form .= ($GLOBALS['dl_link_to_files'] == 1) ? hidden_input('add_to_files', 'on') : '';
+			elseif ($GLOBALS['dl_link_to_files'] == 1)
+			$form .= hidden_input('add_to_files', 'on');
+			$form .= "\t".'</p>'."\n";
 		}
 		$form .= "\t".'<p class="submit-bttns">'."\n";
 		$form .= "\t\t".'<button class="submit button-cancel" type="button" onclick="goToUrl(\'links.php\');">'.$GLOBALS['lang']['annuler'].'</button>'."\n";
@@ -365,16 +370,15 @@ function afficher_form_link($step, $erreurs, $editlink='') {
 		$form = '<form method="post" onsubmit="return moveTag();" id="post-lien" action="'.basename($_SERVER['SCRIPT_NAME']).'?id='.$editlink['bt_id'].'">'."\n";
 		$form .= "\t".'<input type="text" name="url" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_url']).'" required="" value="'.$editlink['bt_link'].'" size="70" class="text readonly-like" /></label>'."\n";
 		$form .= "\t".'<input type="text" name="title" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_titre']).'" required="" value="'.$editlink['bt_title'].'" size="70" class="text" autofocus /></label>'."\n";
-		$form .= "\t".'<div id="description-box">'."\n";
-		$form .= "\t\t".'<textarea class="description text" name="description" cols="70" rows="7" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_description']).'" >'.$editlink['bt_wiki_content'].'</textarea>'."\n";
-		$form .= "\t".'</div>'."\n";
+		$form .= "\t".'<textarea class="description text" name="description" cols="70" rows="7" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_description']).'" >'.$editlink['bt_wiki_content'].'</textarea>'."\n";
 		$form .= "\t".'<div id="tag_bloc">'."\n";
 		$form .= form_categories_links('links', $editlink['bt_tags']);
 		$form .= "\t\t".'<input list="htmlListTags" type="text" class="text" id="type_tags" name="tags" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_tags']).'"/>'."\n";
 		$form .= "\t\t".'<input type="hidden" id="categories" name="categories" value="" />'."\n";
 		$form .= "\t".'</div>'."\n";
-		$form .= "\t".'<input type="checkbox" name="statut" id="statut" class="checkbox" '.(($editlink['bt_statut'] == 0) ? 'checked ' : '').'/>'.'<label class="forcheckbox" for="statut">'.$GLOBALS['lang']['label_lien_priv'].'</label>'."\n";
-
+		$form .= "\t".'<p>'."\n";
+		$form .= "\t\t".'<input type="checkbox" name="statut" id="statut" class="checkbox" '.(($editlink['bt_statut'] == 0) ? 'checked ' : '').'/>'.'<label class="forcheckbox" for="statut">'.$GLOBALS['lang']['label_lien_priv'].'</label>'."\n";
+		$form .= "\t".'</p>'."\n";
 		$form .= "\t".'<p class="submit-bttns">'."\n";
 		$form .= "\t\t".'<button class="submit button-delete" type="button" name="supprimer" onclick="rmArticle(this)">'.$GLOBALS['lang']['supprimer'].'</button>'."\n";
 		$form .= "\t\t".'<button class="submit button-cancel" type="button" onclick="goToUrl(\'links.php\');">'.$GLOBALS['lang']['annuler'].'</button>'."\n";
@@ -399,6 +403,10 @@ function form_formatting_toolbar($extended=FALSE) {
 	$html .= "\t".'<button id="button02" class="but" type="button" title="'.$GLOBALS['lang']['bouton-ital'].'" data-tag="[i]|[/i]"></button>'."\n";
 	$html .= "\t".'<button id="button03" class="but" type="button" title="'.$GLOBALS['lang']['bouton-soul'].'" data-tag="[u]|[/u]"></button>'."\n";
 	$html .= "\t".'<button id="button04" class="but" type="button" title="'.$GLOBALS['lang']['bouton-barr'].'" data-tag="[s]|[/s]"></button>'."\n";
+	$html .= "\t".'<span class="spacer"></span>'."\n";
+	$html .= "\t".'<button id="button09" class="but" type="button" title="'.$GLOBALS['lang']['bouton-lien'].'" data-tag="[||http://]"></button>'."\n";
+	$html .= "\t".'<button id="button10" class="but" type="button" title="'.$GLOBALS['lang']['bouton-cita'].'" data-tag="[quote]|[/quote]"></button>'."\n";
+	$html .= "\t".'<button id="button12" class="but" type="button" title="'.$GLOBALS['lang']['bouton-code'].'" data-tag="[code]|[/code]"></button>'."\n";
 
 	if ($extended) {
 		$html .= "\t".'<span class="spacer"></span>'."\n";
@@ -436,13 +444,9 @@ function form_formatting_toolbar($extended=FALSE) {
 		$html .= "\t".'<button id="button17" class="but" type="button" title="'.$GLOBALS['lang']['bouton-liol'].'" data-tag="\n\n## element 1\n## element 2\n"></button>'."\n";
 		$html .= "\t".'<span class="spacer"></span>'."\n";
 		$html .= "\t".'<button id="button18" class="but js-action toggleAutoCorrect" type="button" title="'.$GLOBALS['lang']['bouton-spellcheck'].'"></button>'."\n";
+		$html .= "\t".'<button id="button19" class="but js-action toggleFullScreen" type="button" title="'.$GLOBALS['lang']['bouton-fullscreen'].'"></button>'."\n";
 
 	}
-
-	$html .= "\t".'<span class="spacer"></span>'."\n";
-	$html .= "\t".'<button id="button09" class="but" type="button" title="'.$GLOBALS['lang']['bouton-lien'].'" data-tag="[||http://]"></button>'."\n";
-	$html .= "\t".'<button id="button10" class="but" type="button" title="'.$GLOBALS['lang']['bouton-cita'].'" data-tag="[quote]|[/quote]"></button>'."\n";
-	$html .= "\t".'<button id="button12" class="but" type="button" title="'.$GLOBALS['lang']['bouton-code'].'" data-tag="[code]|[/code]"></button>'."\n";
 
 	$html .= '</p>'."\n";
 

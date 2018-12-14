@@ -220,11 +220,27 @@ function liste_themes() {
 // à partir de l’extension du fichier, trouve le "type" correspondant.
 // les "type" et le tableau des extensions est le $GLOBALS['files_ext'] dans conf.php
 function detection_type_fichier($extension) {
+	$filetypes = array(
+		'archive'      => array('zip', '7z', 'rar', 'tar', 'gz', 'bz', 'bz2', 'xz', 'lzma'),
+		'executable'   => array('exe', 'e', 'bin', 'run'),
+		'android-apk'  => array('apk'),
+		'html-xml'     => array('html', 'htm', 'xml', 'mht'),
+		'image'        => array('png', 'gif', 'bmp', 'jpg', 'jpeg', 'ico', 'svg', 'tif', 'tiff'),
+		'music'        => array('mp3', 'wave', 'wav', 'ogg', 'wma', 'flac', 'aac', 'mid', 'midi', 'm4a'),
+		'presentation' => array('ppt', 'pptx', 'pps', 'ppsx', 'odp'),
+		'pdf'          => array('pdf', 'ps', 'psd'),
+		'spreadsheet'  => array('xls', 'xlsx', 'xlt', 'xltx', 'ods', 'ots', 'csv'),
+		'text_document'=> array('doc', 'docx', 'rtf', 'odt', 'ott'),
+		'text-code'    => array('txt', 'css', 'py', 'c', 'cpp', 'dat', 'ini', 'inf', 'text', 'conf', 'sh'),
+		'video'        => array('mp4', 'ogv', 'avi', 'mpeg', 'mpg', 'flv', 'webm', 'mov', 'divx', 'rm', 'rmvb', 'wmv'),
+		'other'        => array(''), // default
+	);
+
 	$good_type = 'other'; // par défaut
-	foreach($GLOBALS['files_ext'] as $type => $exts) {
+	foreach($filetypes as $type => $exts) {
 		if ( in_array($extension, $exts) ) {
 			$good_type = $type;
-			break; // sort du foreach au premier 'match'
+			break;
 		}
 	}
 	return $good_type;

@@ -354,6 +354,8 @@ function writeForm() {
 
 	// Getting the entire form
 	this.formatbutNode = document.querySelector('.formatbut');
+	if (null === this.formatbutNode) return;
+
 	var form = this.formatbutNode.parentNode;
 	while (form.tagName !== "FORM") { form = form.parentNode;}
 	this.theForm = form;
@@ -412,6 +414,14 @@ function writeForm() {
 			else {
 				_this.theForm.setAttribute('spellcheck', false);
 			}
+			_this.theTargetField.focus();
+		});
+	}
+
+	if (this.theForm.querySelector('.formatbut .toggleFullScreen')) {
+		this.theForm.querySelector('.formatbut .toggleFullScreen').addEventListener('click', function() {
+			_this.theForm.classList.toggle('fullscreen_text');
+			_this.theTargetField.focus();
 		});
 	}
 
@@ -1196,12 +1206,6 @@ function RssReader() {
 			titleLink.addEventListener('click', function(e){ if(!_this.openThisItem(document.getElementById(this.dataset.id))) e.preventDefault(); } );
 			postHead.appendChild(titleLink);
 
-			// post date
-			var date = document.createElement("div");
-			date.classList.add('date');
-			date.appendChild(document.createTextNode(DateTimeFormat.format(Date.dateFromYMDHIS(item.datetime))));
-			postHead.appendChild(date);
-
 			// hover buttons (share link, tweet…)
 			var share = document.createElement("div");
 			share.classList.add('share');
@@ -1233,6 +1237,12 @@ function RssReader() {
 
 			postHead.appendChild(share);
 			li.appendChild(postHead);
+
+			// post date
+			var date = document.createElement("div");
+			date.classList.add('date');
+			date.appendChild(document.createTextNode(DateTimeFormat.format(Date.dateFromYMDHIS(item.datetime))));
+			postHead.appendChild(date);
 
 			// bloc with main content of feed in a comment (it’s uncomment when open, to defer media loading).
 			var content = document.createElement("div");

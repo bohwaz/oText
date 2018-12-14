@@ -20,8 +20,10 @@ function afficher_commentaire($comment) {
 	echo "\t\t".'<img class="author-icon" src="'.URL_ROOT.'favatar.php?w=gravatar&amp;q='.md5((!empty($comment['bt_email']) ? $comment['bt_email'] : $comment['bt_author'] )).'&amp;s=48&amp;d=monsterid"/>'."\n";
 	echo "\t\t".'<span class="date">'.date_formate($comment['bt_id']).'<span>'.heure_formate($comment['bt_id']).'</span></span>'."\n" ;
 	echo "\t\t".'<span class="reply" onclick="reply(\'[b]@['.str_replace('\'', '\\\'', $comment['bt_author']).'|#'.article_anchor($comment['bt_id']).'] :[/b] \'); ">Reply</span> ';
-	echo (!empty($comment['bt_webpage'])) ? "\t\t".'<span class="webpage"><a href="'.$comment['bt_webpage'].'" title="'.$comment['bt_webpage'].'">'.$comment['bt_webpage'].'</a></span>'."\n" : '';
-	echo (!empty($comment['bt_email'])) ? "\t\t".'<span class="email"><a href="mailto:'.$comment['bt_email'].'" title="'.$comment['bt_email'].'">'.$comment['bt_email'].'</a></span>'."\n" : '';
+	if (!empty($comment['bt_webpage']))
+	echo "\t\t".'<span class="webpage"><a href="'.$comment['bt_webpage'].'" title="'.$comment['bt_webpage'].'">'.$comment['bt_webpage'].'</a></span>'."\n";
+	if (!empty($comment['bt_email']))
+	echo "\t\t".'<span class="email"><a href="mailto:'.$comment['bt_email'].'" title="'.$comment['bt_email'].'">'.$comment['bt_email'].'</a></span>'."\n";
 	echo "\t".'</div>'."\n";
 	echo '</div>'."\n";
 	echo '<div class="comm-main-frame">'."\n";
@@ -51,10 +53,6 @@ function afficher_commentaire($comment) {
 		'btid' => protect($comment['bt_id']),
 	);
 	echo "\t".hidden_input('comm_data', htmlspecialchars(json_encode($arr)));
-
-
-
-
 	echo "\t".'</div>'."\n\n";
 	echo '</div>'."\n\n";
 }
@@ -177,7 +175,7 @@ echo '</div>'."\n";
 
 
 if (!empty($article_id)) {
-	echo '<div id="post-nv-commentaire" class="comm-main-frame">'."\n";
+	echo '<div id="post-nv-commentaire">'."\n";
 	echo '<h2 class="poster-comment">'.$GLOBALS['lang']['comment_ajout'].'</h2>'."\n";
 	$arr = array(
 		'auth' => protect($GLOBALS['auteur']),

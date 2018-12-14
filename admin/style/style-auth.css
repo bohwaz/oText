@@ -18,70 +18,66 @@
 
 #auth p {
 	display: flex;
-	justify-content: center;
-	padding: 5px 0;
-}
-
-#install p {
-	width: 240px;
-	text-align: left;
-	margin: 15px auto;
+	align-items: center;
 }
 
 #auth p label:not([for="stay_logged"]) {
-	width: 24px;
-	height: 1.7em;
-	box-sizing: border-box;
+	width: 0px;
 	overflow: hidden;
-	display: inline-block;
 	color: rgba(0, 0, 0, .5);
 	font-size: 1.7em;
+	padding-left: 40px;
+	margin-right: -40px;
+	z-index: 3;
+	height: 40px;
 }
 
 #auth p label:not([for="stay_logged"])::before {
-	height: 1.7em;
-	line-height: 1.7em;
+	margin-left: -40px;
+	width: 40px;
+	display: inline-block;
 }
 
-#install p label,
-#install p input.text {
-	min-height: 30px;
-	box-sizing: border-box;
-	display: inline-block;
-	vertical-align: middle;
+#auth p input.text {
+	flex: 1;
+	padding-left: 40px;
+}
+
+#auth p input#stay_logged {
+	margin: 20px 5px;
+}
+
+/* formulaire d’installation */
+#install p {
+	text-align: left;
 }
 
 #install p label {
 	display: block;
 	text-align: left;
-	line-height: 2em;
+	padding-left: 5px;
 }
 
-#auth input.text,
-#install input.text {
-	width: 200px;
-	padding: 0 5px;
-	line-height: 1.7em;
-}
-
-#install input.text {
-	width: 240px;
-	padding: 0;
+#install p input.text {
+	display: inline-block;
+	padding-left: 5px;
+	padding-right: 5px;
+	width: 100%;
 }
 
 #install #mdp,
 #install #mysql_password {
-	width: 210px;
+	padding-right: 35px;
 }
+
 #install .unveilmdp {
-	vertical-align: middle;
 	border: none;
-	width: 30px;
-	display: inline-block;
-	height: 30px;
 	background: none;
-	padding: 0;
-	border-bottom: 1px solid silver;
+	padding: 10px 0;
+	margin-right: -30px;
+	margin-left: -30px;
+	position: relative;
+	z-index: 2;
 }
 
 #install .unveilmdp::before {
@@ -96,7 +92,6 @@
 #auth p label[for="user"]::before     { content: "\e930"; }
 #auth p label[for="password"]::before { content: "\e93d"; }
 #auth p label[for="word"]::before     { content: "\e93b"; }
-
 
 #auth .button-submit,
 #install .button-submit {
@@ -113,10 +108,6 @@
 #pageauth h1#step { /* install */
 	font-size: 1.8em;
 	color: #999;
-}
-
-#freecap {
-	border: 1px dashed silver;
 }
 
 #pageauth label {

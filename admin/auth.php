@@ -66,15 +66,15 @@ if (isset($_POST['_verif_envoi']) and valider_form() === TRUE) { // OK : getting
 		echo '<div id="axe">'."\n";
 		echo '<div id="pageauth">'."\n";
 		echo '<h1>'.BLOGOTEXT_NAME.'</h1>'."\n";
-		echo '<form method="post" action="auth.php">'."\n";
 		echo '<div id="auth">'."\n";
+		echo '<form method="post" action="auth.php">'."\n";
 		echo '<p><label for="user">'.ucfirst($GLOBALS['lang']['label_dp_identifiant']).'</label><input class="text" type="text"  autocomplete="off" id="user" name="nom_utilisateur" placeholder="John Doe" value="" /></p>'."\n";
 		echo '<p><label for="password">'.ucfirst($GLOBALS['lang']['label_dp_motdepasse']).'</label><input class="text" id="password" type="password" placeholder="••••••••••••" name="mot_de_passe" value="" /></p>'."\n";
 		echo '<p><input type="checkbox" id="stay_logged" name="stay_logged" checked class="checkbox" /><label for="stay_logged">'.$GLOBALS['lang']['label_stay_logged'].'</label></p>'."\n";
 		echo '<button class="submit button-submit" type="submit" name="submit">'.$GLOBALS['lang']['connexion'].'</button>'."\n";
 		echo '<input type="hidden" name="_verif_envoi" value="1" />'."\n";
-		echo '</div>'."\n";
 		echo '</form>'."\n";
+		echo '</div>'."\n";
 }
 
 function valider_form() {

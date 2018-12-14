@@ -1,25 +1,17 @@
-/* COMMENTAIRES */
+/* COMMENTAIRES
+-------------------------------------------------------------------------------- */
 
-#liste-commentaires {
-	padding: .1px 0 0; /* firefix (parent + padding-top:0) + (child with margin-top) « bug » */
-}
-
-.commentbloc,
-.linkbloc {
-	position: relative;
-	z-index: 1;
-	color: #444;
-	margin: 20px auto;
-	padding: 0;
-	page-break-inside: avoid;
-	-webkit-column-break-inside: avoid;
-}
 
 .commentbloc {
-	border-bottom: 1px solid #eee;
-	margin: 0 0 25px 0;
-	padding: 0;
+	margin: 20px auto;
+	page-break-inside: avoid;
+	-webkit-column-break-inside: avoid;
 	display: flex;
+}
+
+.commentbloc:target {
+	padding-top: 84px;
+	margin-top: -84px;
 }
 
 .commentbloc .comm-side-icon {
@@ -40,9 +32,8 @@
 }
 
 .commentbloc .comm-side-icon img {
-	display: block;
-	margin: 5px auto 10px;
-	border-radius: 48px;
+	margin: 10px auto;
+	border-radius: 50%;
 	box-shadow: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.24);
 	width: 48px;
 }
@@ -54,8 +45,7 @@
 	min-width: 0;
 }
 
-.comm-main-frame::after,
-.linkbloc::after {
+.comm-main-frame::after {
 	content: "";
 	position: absolute;
 	top: 0; left: 0;
@@ -67,42 +57,26 @@
 	border-radius: inherit;
 }
 
-.commentbloc:hover .comm-main-frame::after,
-.linkbloc:hover::after {
+.commentbloc:hover .comm-main-frame::after {
   opacity: 1;
 }
 
-.commentbloc:hover,
-.linkbloc:hover {
-	color: #333;
-	z-index: 10;
-}
-
-.linkbloc .link-header,
-.linkbloc .link-content,
-.linkbloc .link-footer,
 .commentbloc .comm-header,
 .commentbloc .comm-content,
 .commentbloc .comm-comment {
 	padding: 15px;
 }
 
-.commentbloc .comm-header,
-.linkbloc .link-header {
+.commentbloc .comm-header {
 	display: flex;
-	align-items: center;
 	padding-right: 50px;
 	border-bottom: 1px solid #eee;
-}
-
-.commentbloc .reply {
-	cursor: pointer;
 }
 
 .commentbloc .webpage a,
 .commentbloc .email a,
 .commentbloc .reply {
-	vertical-align: middle;
+	cursor: pointer;
 	text-decoration: none;
 	display: inline-block;
 	width: 20px;
@@ -139,8 +113,7 @@
 	text-decoration: none;
 }
 
-.commentbloc .comm-header .link-article,
-.linkbloc .date {
+.commentbloc .comm-header .link-article {
 	flex: 1 1 auto;
 	text-align: right;
 	color: gray;
@@ -243,12 +216,13 @@
 }
 
 /* Comment form */
-
 .comm-main-frame > #form-commentaire {
 	margin: 15px;
 }
+
 #form-commentaire .formatbut {
 	border: 1px solid silver;
+	border-bottom: 0;
 	position: absolute;
 	left: 0;
 	right: 0;
@@ -256,18 +230,14 @@
 }
 
 #form-commentaire .field {
-	margin-top: 30px;
 	position: relative;
 }
 
 #form-commentaire textarea.text {
 	border-left: 1px solid silver;
 	border-right: 1px solid silver;
-	padding-top: 47px;
+	padding-top: 57px;
 }
-/*.form-commentaire textarea.text:not(:invalid) {
-	border-bottom: 1px solid silver;
-}*/
 
 #form-commentaire .infos {
 	margin: 15px auto 0;
@@ -277,28 +247,29 @@
 #form-commentaire .infos > span {
 	display: flex;
 	align-items: center;
+	flex-direction: row-reverse;
 }
-
 
 #form-commentaire span > input.text {
 	flex: 1;
-	padding: 10px 0;
+	padding: 10px 0 10px 40px;
+	margin-left: -40px;
 }
 
-#form-commentaire label:not(.activercomm) {
-	padding: 0;
-	width: 28px;
-	height: 28px;
+#form-commentaire label {
 	overflow: hidden;
-	color: rgba(0, 0, 0, .5)
+	color: rgba(0, 0, 0, .5);
+	font-size: 0;
+	position: relative;
+	z-index: 2;
 }
 
-#form-commentaire label:not(.activercomm)::before {
-	font-size: 1.4em;
+#form-commentaire label::before {
+	font-size: 1.4rem;
 	display: inline-block;
-	width: 28px;
-	height: 28px;
-	line-height: 28px;
+	width: 40px;
+	height: 40px;
+	line-height: 40px;
 	text-align: center;
 }
 
@@ -306,28 +277,19 @@
 #form-commentaire label[for^="email"]::before   { content: "\e91e"; }
 #form-commentaire label[for^="webpage"]::before { content: "\e901"; }
 
-#form-commentaire label.activercomm {
-	text-align: left;
-	display: inline-block;
-	margin-left: 5px;
-	vertical-align: middle;
-	margin-top: 15px;
-	padding-left: 24px;
-}
-
-
 /* New Comment */
 #post-nv-commentaire {
 	margin-top: 35px;
-	padding: 0;
-	border: 1px solid transparent;
 }
 
 #post-nv-commentaire h2 {
-	padding: 15px 15px 0;
 	margin: 0;
 	font-size: 1.1em;
 	text-transform: uppercase;
+}
+
+#post-nv-commentaire #form-commentaire {
+	margin-top: 15px;
 }
 
 /* ajax loading animation */
@@ -338,6 +300,7 @@
 	top: 0; left: 0; right: 0; bottom: 0;
 	background: rgba(255, 255, 255, .5);
 }
+
 .ajaxloading .comm-main-frame::after {
 	content: "";
 	z-index: +1;
@@ -352,17 +315,15 @@
 	left: calc(50% - 15px);
 }
 
-
 /* Ajax removing comment animation (vertical) */
 .deleteFadeOut {
 	opacity: 1;
 	animation: disapear .6s;
-	-webkit-animation: disapear .6s;
 }
 
 /* Ajax removing comment animation (Horizontal) */
 .deleteFadeOutH {
 	opacity: 1;
 	animation: disapearH .6s;
-	-webkit-animation: disapearH .6s;
 }
+

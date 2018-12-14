@@ -239,36 +239,35 @@ function afficher_index($tableau, $type, $erreurs_form) {
 
 	if ($type == 'list') {
 		$HTML_elmts = '';
-		$data = array();
 		if (!empty($tableau)) {
-			if (count($tableau)==1 and !empty($tableau[0]['bt_title']) and $tableau[0]['bt_type'] == 'article') {
-				redirection($tableau[0]['bt_link']);
-				exit;
-			} else {
-				if (count($tableau)==1 and ($tableau[0]['bt_type'] == 'link' or $tableau[0]['bt_type'] == 'note') ) {
-					$data = $tableau[0];
-				}
-				if ($tableau[0]['bt_type'] == 'article') {
+			// get template file based on article type.
+			switch ($tableau[0]['bt_type']) {
+				case 'article':
 					if (!($theme_article = file_get_contents($GLOBALS['theme_post_artc']))) die($GLOBALS['lang']['err_theme_introuvable']);
 					$conversion_theme_fonction = 'conversions_theme_article';
-				}
-				if ($tableau[0]['bt_type'] == 'comment') {
+					break;
+				case 'comments':
 					if (!($theme_article = file_get_contents($GLOBALS['theme_post_comm']))) die($GLOBALS['lang']['err_theme_introuvable']);
 					$conversion_theme_fonction = 'conversions_theme_commentaire';
-				}
-				if ($tableau[0]['bt_type'] == 'link' or $tableau[0]['bt_type'] == 'note') {
+					break;
+				case 'link':
+				case 'note':
 					if (!($theme_article = file_get_contents($GLOBALS['theme_post_link']))) die($GLOBALS['lang']['err_theme_introuvable']);
 					$conversion_theme_fonction = 'conversions_theme_lien';
-				}
-				foreach ($tableau as $element) {
-					$HTML_elmts .=  $conversion_theme_fonction($theme_article, $element);
-				}
-				$HTML = str_replace(extract_boucles($theme_page, $GLOBALS['boucles']['posts'], 'incl'), $HTML_elmts, $theme_page);
-				$HTML = conversions_theme($HTML, $data, 'post');
+					break;				
+				default:
+					die('Wrong data type');
+					break;
 			}
+			// convert templates to HTML filled with data
+			foreach ($tableau as $element) {
+				$HTML_elmts .=  $conversion_theme_fonction($theme_article, $element);
+			}
+			$HTML = str_replace(extract_boucles($theme_page, $GLOBALS['boucles']['posts'], 'incl'), $HTML_elmts, $theme_page);
+			$HTML = conversions_theme($HTML, array(), 'post');
 		}
 		else {
-			$HTML_article = conversions_theme($theme_page, $data, 'list');
+			$HTML_article = conversions_theme($theme_page, array(), 'list');
 			$HTML = str_replace(extract_boucles($theme_page, $GLOBALS['boucles']['posts'], 'incl'), $GLOBALS['lang']['note_no_article'], $HTML_article);
 		}
 	}
@@ -307,7 +306,7 @@ function afficher_index($tableau, $type, $erreurs_form) {
 	echo $HTML;
 }
 
-// Affiche la liste des articles, avec le &liste dans l’url
+// Affiche la liste des articles, avec le ?liste dans l’url
 function afficher_liste($tableau) {
 	$HTML_elmts = '';
 	if (!($theme_page = file_get_contents($GLOBALS['theme_liste']))) die($GLOBALS['lang']['err_theme_introuvable']);

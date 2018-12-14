@@ -40,12 +40,10 @@ function afficher_topnav($titre, $html_sub_menu) {
 	$tab = pathinfo($_SERVER['SCRIPT_NAME'], PATHINFO_BASENAME);
 	if (strlen($titre) == 0) $titre = BLOGOTEXT_NAME;
 
-	// TOP MENU
+	$html = '<header id="header">'."\n";
 
-	$html = '<div id="header">'."\n";
 	$html .= "\t".'<div id="top">'."\n";
 
-	// left nav
 	$html .= "\t\t".'<div id="nav">'."\n";
 	$html .= "\t\t\t".'<ul>'."\n";
 	$html .= "\t\t\t\t".'<li><a href="index.php" id="lien-index">'.$GLOBALS['lang']['label_resume'].'</a></li>'."\n";
@@ -60,10 +58,9 @@ function afficher_topnav($titre, $html_sub_menu) {
 	$html .= "\t\t\t".'</ul>'."\n";
 	$html .= "\t\t".'</div>'."\n";
 
-	// h1 title
 	$html .=  "\t\t".'<h1 id="titre-page"><a href="'.$tab.'">'.$titre.'</a></h1>'."\n";
 
-	// search field
+	// search form
 	if (!in_array($tab, array('preferences.php', 'ecrire.php', 'maintenance.php'))) {
 		$html .= moteur_recherche();
 	}
@@ -82,9 +79,8 @@ function afficher_topnav($titre, $html_sub_menu) {
 
 	$html .= "\t".'</div>'."\n";
 
-	// SECONDS MENU BAR (for RSS, notes, agenda…)
+	// Sub-menu-bar (for RSS, notes, agenda…)
 	$html .= $html_sub_menu;
-
 
 	// Popup node
 	if (isset($_GET['msg']) and array_key_exists($_GET['msg'], $GLOBALS['lang']) ) {
@@ -97,7 +93,7 @@ function afficher_topnav($titre, $html_sub_menu) {
 		$html .= '<div class="no_confirmation">'.$message.'</div>'."\n";
 	}
 
-	$html .= '</div>'."\n";
+	$html .= '</header>'."\n";
 
 	echo $html;
 }
@@ -108,6 +104,9 @@ function get_notifications() {
 	$html = '';
 	$lis = '';
 	$hasNotifs = 0;
+
+	$html .= "\t\t".'<div id="notif-icon"'.($hasNotifs ? ' class="hasNotifs" data-nb-notifs="'.$hasNotifs.'"' : '').'>'."\n";
+	$html .= "\t\t\t".'<ul>'."\n";
 
 	// get last RSS posts
 	if (isset($_COOKIE['lastAccessRss']) and is_numeric($_COOKIE['lastAccessRss'])) {
@@ -132,22 +131,21 @@ function get_notifications() {
 	}
 
 	// get near events
-	if (isset($_COOKIE['lastAccessAgenda']) and is_numeric($_COOKIE['lastAccessAgenda'])) {
-		$query = 'SELECT count(ID) AS nbr FROM agenda WHERE bt_date >=? AND bt_date <=?';
-		$array = array( date('YmdHis', time()), date('YmdHis', (time()+24*60*60)) );
-		$nb_new = liste_elements_count($query, $array);
-		if ($nb_new > 0) {
-			$hasNotifs += $nb_new;
-			$lis .= "\t\t\t\t".'<li><a href="agenda.php">'.$nb_new .' near events</a></li>'."\n";
-		}
+	//if (isset($_COOKIE['lastAccessAgenda']) and is_numeric($_COOKIE['lastAccessAgenda'])) {
+	$query = 'SELECT count(ID) AS nbr FROM agenda WHERE bt_date >=? AND bt_date <=?';
+	$array = array( date('YmdHis', time()), date('YmdHis', (time()+24*60*60)) );
+	$nb_new = liste_elements_count($query, $array);
+	if ($nb_new > 0) {
+		$hasNotifs += $nb_new;
+		$lis .= "\t\t\t\t".'<li><a href="agenda.php">'.$nb_new .' near events</a></li>'."\n";
 	}
+//}
 
 	$lis .= ($lis) ? '' : "\t\t\t\t".'<li>'.$GLOBALS['lang']['note_no_notifs'].'</li>'."\n";
 
 
-	$html .= "\t\t".'<div id="notif-icon"'.($hasNotifs ? ' class="hasNotifs" data-nb-notifs="'.$hasNotifs.'"' : '').'>'."\n";
-	$html .= "\t\t\t".'<ul>'."\n";
 	$html .= $lis;
+
 	$html .= "\t\t\t".'</ul>'."\n";
 	$html .= "\t\t".'</div>'."\n";
 
@@ -222,7 +220,7 @@ function encart_categories($mode) {
 
 		// create the <UL> with "tags (nb) "
 		foreach($liste as $tag => $nb) {
-			if ($tag != '' and $nb[1] > 1) {
+			if ($tag != '' and $nb[1] > 2) {
 				$uliste .= "\t".'<li><a href="?tag='.urlencode(trim($tag)).$ampmode.'" rel="tag">'.ucfirst($tag).' ('.$nb[1].')</a><a href="rss.php?tag='.urlencode($tag).$ampmode.'" rel="alternate"></a></li>'."\n";
 			}
 		}

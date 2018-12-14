@@ -443,17 +443,6 @@ q, blockquote {
 .post-title > h1 > a {
 	color: inherit;
 }
-.post-title > h1 > a+a {
-	color: white;
-	margin: 0 5px;
-	border: 1px solid gray;
-	padding: 5px 15px;
-	font-size: .8em;
-	border-radius: 10px;
-	background: silver;
-	text-shadow: 1px 1px 0px black;
-	box-shadow: 1px 1px 0 black;
-}
 
 .post-title .date,
 .post-title .author {
@@ -469,6 +458,19 @@ q, blockquote {
 	font-size: 1.5em;
 	margin: .7em .3em 1em;
 }
+
+.article .post-title > h1 > a+a {
+	color: white;
+	margin: 0 5px;
+	border: 1px solid gray;
+	padding: 5px 15px;
+	font-size: .8em;
+	border-radius: 10px;
+	background: silver;
+	text-shadow: 1px 1px 0px black;
+	box-shadow: 1px 1px 0 black;
+}
+
 
 .post-content {
 	padding: 15px;
@@ -764,10 +766,11 @@ p.formatbut {
 	margin: 15px auto 0;
 	max-width: 480px;
 }
-.form-commentaire > .infos label {
-	display: block;
+.form-commentaire > .infos > span {
+	display: flex;
 	text-align: right;
 	padding: 5px 0;
+	flex-direction: row-reverse;
 }
 
 .form-commentaire > .infos input {
@@ -815,6 +818,9 @@ p.formatbut {
 	box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+.form-commentaire .submit.button-cancel {
+	display: none;
+}
 /* mode "liste tous les articles" */
 #liste-all-articles {
 	padding: 20px 50px;

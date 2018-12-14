@@ -49,7 +49,7 @@ if (isset($_GET['id'])) {
 				$xml .= '<title>'.$comment['bt_author'].'</title>'."\n";
 				$xml .= '<guid isPermaLink="false">'.$comment['bt_link'].'</guid>'."\n";
 				$xml .= '<link>'.$comment['bt_link'].'</link>'."\n";
-				$xml .= '<pubDate>'.date('r', mktime($dec['heure'], $dec['minutes'], $dec['secondes'], $dec['mois'], $dec['jour'], $dec['annee'])).'</pubDate>'."\n";
+				$xml .= '<pubDate>'.date('r', mktime($dec['h'], $dec['i'], $dec['s'], $dec['m'], $dec['d'], $dec['y'])).'</pubDate>'."\n";
 				$xml .= '<description><![CDATA['.($comment['bt_content']).']]></description>'."\n";
 			$xml .= '</item>'."\n";
 		}

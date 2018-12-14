@@ -131,15 +131,15 @@ function afficher_form_1($erreurs='') {
 		die;
 	}
 
-	echo '<form method="post" action="install.php">'."\n";
 	echo '<div id="install">'."\n";
+	echo '<form method="post" action="install.php">'."\n";
 	echo '<p>';
 	form_langue_install('Choisissez votre langue / Choose your language: ');
 	echo hidden_input('verif_envoi_1', '1');
 	echo '</p>';
 	echo '<button class="submit button-submit" type="submit" name="enregistrer">Ok</button>'."\n";
-	echo '<div>'."\n";
 	echo '</form>'."\n";
+	echo '<div>'."\n";
 }
 
 // form pour login + mdp + url
@@ -150,8 +150,8 @@ function afficher_form_2($erreurs='') {
 	echo '<h1>'.BLOGOTEXT_NAME.'</h1>'."\n";
 	echo '<h1 id="step">'.$GLOBALS['lang']['install'].'</h1>'."\n";
 	echo erreurs($erreurs);
-	echo '<form method="post" action="install.php?s='.$GLOBALS['step'].'&amp;l='.$GLOBALS['lang']['id'].'">'."\n".'<div id="erreurs_js" class="erreurs"></div>'."\n";
 	echo '<div id="install">'."\n";
+	echo '<form method="post" action="install.php?s='.$GLOBALS['step'].'&amp;l='.$GLOBALS['lang']['id'].'">'."\n".'<div id="erreurs_js" class="erreurs"></div>'."\n";
 	echo '<p>';
 	echo '<label for="identifiant">'.$GLOBALS['lang']['install_id'].' </label><input type="text" name="identifiant" id="identifiant" size="30" value="" class="text" placeholder="John Doe" required />'."\n";
 	echo '</p>'."\n";
@@ -166,8 +166,8 @@ function afficher_form_2($erreurs='') {
 	echo hidden_input('langue', $GLOBALS['lang']['id']);
 	echo hidden_input('verif_envoi_2', '1');
 	echo '<button class="submit button-submit" type="submit" name="enregistrer">Ok</button>'."\n";
-	echo '</div>'."\n";
 	echo '</form>'."\n";
+	echo '</div>'."\n";
 }
 
 
@@ -180,8 +180,8 @@ function afficher_form_3($erreurs='') {
 	echo '<h1>'.BLOGOTEXT_NAME.'</h1>'."\n";
 	echo '<h1 id="step">'.$GLOBALS['lang']['install'].'</h1>'."\n";
 	echo erreurs($erreurs);
-	echo '<form method="post" action="'.basename($_SERVER['SCRIPT_NAME']).'?'.$_SERVER['QUERY_STRING'].'">'."\n";
 	echo '<div id="install">'."\n";
+	echo '<form method="post" action="'.basename($_SERVER['SCRIPT_NAME']).'?'.$_SERVER['QUERY_STRING'].'">'."\n";
 	echo '<p><label>'.$GLOBALS['lang']['install_choose_sgdb'].'</label>';
 	echo '<select id="sgdb" name="sgdb" onchange="show_mysql_form()">'."\n";
 	if (extension_loaded('pdo_sqlite')) {
@@ -209,8 +209,8 @@ function afficher_form_3($erreurs='') {
 	echo hidden_input('verif_envoi_3', '1');
 	echo '<button class="submit button-submit" type="submit" name="enregistrer">Ok</button>'."\n";
 
-	echo '</div>'."\n";
 	echo '</form>'."\n";
+	echo '</div>'."\n";
 
 }
 

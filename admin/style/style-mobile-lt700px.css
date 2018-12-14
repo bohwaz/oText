@@ -1,34 +1,28 @@
 @media (max-width: 700px) {
+	#header {
+		position: relative;
+	}
+
 	#axe {
 		padding: 10px 2px;
 	}
-	#subnav form select {
-		max-width: 35px;
-		padding-right: 30px;
-		margin-right: 0;
-		position: relative;
-		background: transparent;
-		box-shadow: none;
-	}
-
-	#subnav form {
-		flex: 0 0 50px;
-	}
-
-	#subnav #form-filtre {
-		display: inline-block;
-		background: #fafafa;
-		margin-right: 5px;
-		box-shadow: 0px 0px 2px rgba(0, 0, 0, .2);
-	}
 
 	#subnav #form-filtre::before {
-		content: "\e941";
 		position: relative;
 		font-size: 2em;
 		display: inline-block;
 		width: 0;
 		left: 5px;
+	}
+
+	#subnav form select {
+		width: 0;
+		background-color: white;
+		padding-left: 80px;
+		background-position: 80% 50%;
+		background-size: 40px;
+		border-radius: 5px;
+		box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0,0,0,0.2), 0 1px 5px 0 rgba(0,0,0,0.12);
 	}
 
 	#fab {
@@ -40,61 +34,72 @@
 	#form-ecrire .main-form .formatbut {
 		height: 120px;
 	}
+
 	#form-ecrire .main-form .formatbut .but-dropdown {
 		position: static;
 	}
+
 	#form-ecrire .main-form .formatbut > .but-dropdown > .list {
-		top: 34px;
-		right: 0;
-		width: 100%;
+		right: 5px;
+		left: 5px;
+		width: auto;
 	}
 
 	#form-ecrire .main-form #contenu {
-		padding-top: 124px;
+		padding-top: 134px;
 	}
 
-	#tag_bloc, #date-and-opts {
-		display: block;
-	}
 	#form-ecrire #date-and-opts {
 		margin-left: 0;
 		margin-top: 15px;
 	}
-	#formdate, #formheure, #formstatut, #formallowcomment {
-		display: block;
-		margin: 8px 5px;
-	}
-	#opts {
-		text-align: left;
-	}
 
-	.submit-bttns {
-		padding: 0;
-	}
 	.button-delete, .button-submit, .button-cancel {
 		min-width: 0;
 		padding: 5px;
 	}
 
 	/* comms */
+	.commentbloc {
+		flex-direction: column;
+	}
+
+	.commentbloc > .comm-side-icon {
+		flex: 0 0 auto;
+		z-index: 1;
+	}
+
+	.commentbloc .comm-title {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.commentbloc .comm-title > img {
+		margin: 0;
+	}
+
+	.commentbloc .webpage a,
+	.commentbloc .email a,
+	.commentbloc .reply {
+		opacity: 1;
+	}
+
+	.commentbloc .comm-main-frame {
+		margin-left: 25px;
+	}
+
 	.commentbloc .comm-options,
 	.commentbloc .webpage a,
 	.commentbloc .email a,
 	.commentbloc .reply {
 		visibility: visible;
 	}
-	.commentbloc .comm-header {
-		display: block;
-	}
-	.commentbloc .comm-side-icon {
-		flex: 0 0 75px;
-	}
+
 	.commentbloc .comm-side-icon .date {
 		font-size: .6em;
 	}
-	.commentbloc.foreground .comm-side-icon {
-		display: none;
-	}
+
 	.commentbloc .comm-content blockquote {
 		margin: auto 5px;
 	}
@@ -103,9 +108,11 @@
 	.linkbloc .link-header, .linkbloc .link-footer {
 		display: block;
 	}
+
 	#post-new-lien, #post-new-note {
 		margin: 30px auto 50px;
 	}
+
 	/* file edit */
 	#fichier-meta-info {
 		margin: 20px 0;
@@ -116,11 +123,20 @@
 	/* preferences */
 	#preferences p {
 		display: block;
+		margin: 15px;
 	}
+
 	#preferences label {
-		width: auto;
+		width: 195px;
 		text-align: left;
+		display: inline-block;
 	}
+
+	#preferences select {
+		max-width: 90px;
+		padding: 15px 10px 15px 0;
+	}
+
 	#preferences .text,
 	#preferences textarea.text {
 		width: 100%;
@@ -131,6 +147,7 @@
 	#maintenance-form fieldset {
 		max-width: 100%;
 	}
+
 	#maintenance-form p > label {
 		display: inline;
 		width: auto;
@@ -138,25 +155,24 @@
 		padding-right: 0;
 	}
 
-
 	/* paged des RSS */
 	#sub-menu {
 		padding: 0 10px;
 	}
-	#post-list-title {
-		padding: 5px;
+
+	#rss-list {
+		padding-left: 25px;
+		margin: auto 0;
 	}
-	#posts-menu {
-		text-align: left;
-		border-left: none;
-		display: block;
-	}
+
 	#posts-menu ul {
 		margin: 7px 0px;
 	}
+
 	#posts-menu button {
 		margin: 0px;
 	}
+
 	#feed-list {
 		transform: translateX(-100%) translateX(10px);
 		padding-right: 12px;
@@ -166,18 +182,20 @@
 		max-width: 80%;
 		overflow: visible;
 		transition: transform .5s ease-in-out .15s;
-		
 	}
+
 	#feed-list:hover {
 		transform: translateX(0);
 	}
-	#rss-list {
-		padding-right: 0%;
-		padding-left: 25px;
-		margin: auto 0;
+
+	#post-list > li > .post-head > .site {
+		display: none;
 	}
-	#post-list > li {
-		padding: 10px;
+
+	#post-list > li > .post-head .date {
+		white-space: normal;
+		text-align: center;
+		flex-basis: 70px;
 	}
 
 	/* page fichiers */
@@ -196,10 +214,10 @@
 	#event-list > tbody > tr > td:nth-of-type(2) {
 		width: auto;
 	}
+
 	#event-list > tbody > tr > td:nth-of-type(3),
 	#event-list > thead > tr > th:nth-of-type(3) {
 	    display: none;
 	}
 }
-
 

@@ -70,8 +70,6 @@
 
 #form-ecrire {
 	display: flex;
-	flex-direction: row;
-	margin-bottom: 40px;
 }
 
 #form-ecrire textarea {
@@ -84,11 +82,9 @@
 #form-ecrire .main-form {
 	flex: 1 1 auto;
 	padding: 0;
-	border-radius: 15px;
 }
 #form-ecrire .main-form .text {
 	width: 100%;
-	padding: 12px;
 }
 
 #titre {
@@ -117,7 +113,6 @@
 
 #type_tags,
 #mots_cles {
-	padding: 0 10px;
 	border-bottom-left-radius: inherit;
 	border-bottom-right-radius: inherit;
 }
@@ -131,12 +126,12 @@
 	position: relative;
 	z-index: 1;
 }
+
 /* Boutons de formatage  */
 p.formatbut {
-	line-height: 36px;
-	margin: 0; padding: 0px 5px;
+	margin: 0;
+	padding: 5px;
 	background: #f5f5f5;
-	height: 40px;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -150,12 +145,8 @@ p.formatbut {
 	text-align: center;
 	vertical-align: middle;
 	background: rgba(0, 0, 0, 0);
-	height: 32px;
-	width: 32px;
-	line-height: 32px;
 	border: 1px solid transparent;
 	border-radius: 4px;
-	box-sizing: border-box;
 }
 
 .formatbut .but:hover {
@@ -169,7 +160,6 @@ p.formatbut {
 	background: linear-gradient(to top, white, #d6d6d6);
 }
 
-
 .formatbut span.spacer {
 	margin: 0 10px;
 	border-left: 1px solid #ddd;
@@ -180,13 +170,10 @@ p.formatbut {
 }
 
 .formatbut > .but::before {
-	font-size: 1.6em;
-	height: 32px;
-	width: 32px;
+	font-size: 1.4em;
 	display: block;
-	line-height: inherit;
+	padding: 5px;
 }
-
 
 #button01::before { content: "\e94c"; } /* bold */
 #button02::before { content: "\e94d"; } /* ital */
@@ -206,6 +193,9 @@ p.formatbut {
 #button16::before { content: "\e959"; } /* ul list */
 #button17::before { content: "\e95a"; } /* ol list */
 #button18::before { content: "\e95d"; } /* autocorrect */
+#button19::before { content: "\e951"; } /* autocorrect */
+
+#button19 { float: right; }
 
 .but-dropdown {
 	position: relative;
@@ -217,9 +207,6 @@ p.formatbut {
 	background-color: white;
 	width: 140px;
 	position: absolute;
-	top: 30px;
-	left: 0px;
-	line-height: 24px;
 	box-shadow: 0px 4px 8px rgba(0, 0, 0, .3);
 }
 
@@ -248,30 +235,17 @@ p.formatbut {
 
 /* list sizes */
 .but-dropdown .list-size {
-	text-align: left;
-	width: 160px;
-	padding: 3px 0;
+	width: 180px;
+	padding-left: 0;
+	padding-right: 0;
 }
 
 .but-dropdown .list-size button {
-	color: black;
-	padding: 2px;
+	padding: 10px;
 	text-align: left;
-	display: inline-block;
 	background: white;
-	margin: 0;
-	width: 160px;
-	height: 28px;
-	margin-top: 3px;
-	border: 1px solid transparent;
-}
-
-.but-dropdown .list-size button:first-of-type {
-	height: 23px;
-}
-
-.but-dropdown .list-size button:last-of-type {
-	height: 33px;
+	width: 100%;
+	border: 0px solid transparent;
 }
 
 .but-dropdown .list-size button:hover {
@@ -279,7 +253,6 @@ p.formatbut {
 }
 
 /* list caractères unicodes */
-
 .but-dropdown .list-spechr {
 	text-align: left;
 	width: 364px;
@@ -302,7 +275,38 @@ p.formatbut {
 }
 
 #form-ecrire .main-form #contenu {
-	padding-top: 44px;
+	padding-top: 57px;
+}
+
+/* fullscreen textarea */
+#form-ecrire.fullscreen_text #content_format {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 100;
+	height: 100%;
+}
+
+#form-ecrire.fullscreen_text #content_format .formatbut {
+	text-align: center;
+	background-color: white;
+	color: rgba(0, 0, 0, .4);
+}
+
+#form-ecrire.fullscreen_text #content_format #button19::before {
+	content: "\e95f";
+}
+
+#form-ecrire.fullscreen_text #content_format .formatbut:hover {
+	color: rgba(0, 0, 0, .7);
+}
+
+#form-ecrire.fullscreen_text #content_format #contenu {
+	font-size: 1.3em;
+	padding: 80px 40px 40px;
+	height: 100%;
 }
 
 /* tags
@@ -313,55 +317,54 @@ p.formatbut {
 }
 
 #tag_bloc {
-	flex: 0;
-	margin: 0;
 	display: flex;
+	border-bottom: 1px solid silver;
+	align-items: center;
 }
 
-#selected { /* <ul> */
+#selected {
 	margin: 0;
 	padding: 0;
 	list-style-type: none;
-	box-shadow: 0 -1px 0 #dadada inset, 1px 0 0 #dadada;
 }
-
 
 #selected > li {
 	display:inline-block;
-	padding: 0 10px 0 7px;
+	padding: 5px 10px;
 	color: #333;
 	background: #eee;
-	border: 0;
-	margin: 0 -3px 0 0;
-	box-shadow: 1px 0px 0 #dadada inset, 0px -1px 0px #dadada inset;
-	box-sizing: border-box;
-	display: inline-flex;
-	align-items: center;
-	height: 100%;
+	border: 1px solid silver;
+	border-radius: 20px;
+	margin: 5px;
+}
 
+#selected li:first-of-type {
+	margin-left: 15px;
 }
 
 #selected > li > a {
-	display: inline-block;
 	color: inherit;
-	margin: 0px 5px 0px 8px;
+	margin-left: 8px;
 	text-decoration: none;
-	font-weight: bold;
+}
+
+#selected > li:hover > a {
+	color: crimson;
 }
 
 #type_tags {
 	flex: 1 1 100px;
 	justify-content: flex-start;
+	border: none;
 }
-
 
 /* boutons d’options et date */
 #form-ecrire #date-and-opts {
-	border-radius: 15px;
 	flex: 0 0 300px;
 	margin-left: 20px;
 	display: flex;
 	flex-direction: column;
+	text-align: right;
 }
 
 #date-and-opts > div:last-of-type {
@@ -370,28 +373,22 @@ p.formatbut {
 
 #datetime input {
 	background: #FAFAFA;
-	padding: 11px 5px;
 	box-shadow: 0 0 2px rgba(0, 0, 0, .2);
 	border: 0;
-	text-align: center;
-	margin-left: 3px;
 }
-
 
 #date-and-opts > div > span {
 	display: block;
 	margin: 0 5px 30px;
 }
 
-#formstatut label,
-#formallowcomment label {
-	display: inline;
+#formstatut > select {
+	margin-right: 0;
 }
 
-
 #date-and-opts > div > span::before {
-	vertical-align: middle;
 	font-size: 1.4em;
+	margin-right: 15px;
 }
 
 #formdate::before {
@@ -415,15 +412,20 @@ p.formatbut {
 }
 
 #form-ecrire .submit-bttns {
-	text-align: left;
 	padding: 0;
 	display: flex;
-	justify-content: space-around;
+	justify-content: space-between;
 }
 
+#form-ecrire .button-delete {
+	min-width: 100px;
+	float: none;
+	background-color: rgba(244, 67, 54, .1);
+}
 
 #form-ecrire:invalid .button-submit {
 	color: #aaa;
 	background: #ddd;	
 	box-shadow: none;
 }
+

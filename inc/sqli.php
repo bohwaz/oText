@@ -268,7 +268,7 @@ function init_list_comments($comment) {
 		if (isset($comment['bt_title'])) {
 			$comment['bt_link'] = get_blogpath($comment['bt_article_id'], $comment['bt_title']).'#'.$comment['anchor'];
 		}
-		$comment = array_merge($comment, decode_id($comment['bt_id']));
+		//$comment = array_merge($comment, decode_id($comment['bt_id']));
 	return $comment;
 }
 
@@ -896,9 +896,9 @@ function rss_list_guid() {
 /* FOR RSS : RETUNS nb of articles per feed */
 function rss_count_feed() {
 	$result = array();
-	$query = "SELECT bt_feed, SUM(bt_statut) AS nbrun, SUM(bt_bookmarked) AS nbfav, SUM(CASE WHEN bt_date >= 20180527000000 AND bt_statut = 1 THEN 1 ELSE 0 END) AS nbtoday FROM rss GROUP BY bt_feed";
+	//$query = "SELECT bt_feed, SUM(bt_statut) AS nbrun, SUM(bt_bookmarked) AS nbfav, SUM(CASE WHEN bt_date >= ".date('Ymd').'000000'." AND bt_statut = 1 THEN 1 ELSE 0 END) AS nbtoday FROM rss GROUP BY bt_feed";
 
-	//$query = "SELECT bt_feed, SUM(bt_statut) AS nbrun, SUM(bt_bookmarked) AS nbfav FROM rss GROUP BY bt_feed";
+	$query = "SELECT bt_feed, SUM(bt_statut) AS nbrun FROM rss GROUP BY bt_feed";
 	try {
 		$result = $GLOBALS['db_handle']->query($query)->fetchAll(PDO::FETCH_ASSOC);
 		return $result;

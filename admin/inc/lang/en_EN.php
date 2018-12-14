@@ -17,7 +17,6 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'connexion' 					=> 'Connection',
 'enregistrer' 					=> 'Save',
 'valider'	 					=> 'Submit',
-'annuler'	 					=> 'Cancel',
 'editer' 						=> 'Edit',
 'activer'	 					=> 'Activate',
 'desactiver'	 				=> 'Desactivate',

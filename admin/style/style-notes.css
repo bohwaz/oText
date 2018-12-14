@@ -1,21 +1,8 @@
 /* NOTES
 ------------------------------------------------------------ */
-.notes-menu-buttons {
-	margin: 2px 0;
-	padding: 0;
-	text-align: right;
-}
-
-.notes-menu-buttons > li {
-	display: inline-block;
-}
 
 .notes-menu-buttons button::before {
 	font-size: 1.6em;
-}
-
-.notes-menu-buttons button {
-	vertical-align: middle;
 }
 
 #list-notes {
@@ -40,23 +27,16 @@
 }
 
 .notebloc {
-	box-sizing: border-box;
 	max-height: 300px;
 	width: 240px;
-	word-wrap: break-word;
-	position: relative;
-	z-index: 1;
 	vertical-align: text-top;
 	display: inline-flex; 
 	flex-direction: column;
-	background-color: #fafaba;
 	transition: box-shadow .2s ease-in;
 	margin: 10px;
 	padding: 0 0 50px;
-	overflow: hidden;
 	text-align: left;
-	border-radius: 2px;
-
+	border-radius: 5px;
 }
 
 .notebloc:hover {
@@ -85,11 +65,8 @@
 }
 
 .noteCtrls {
-	position: relative;
-	margin: 0;
 	padding: 0 5px 5px;
 	display: flex;
-	align-items: center;
 }
 
 .noteCtrls > button {
@@ -156,9 +133,7 @@
 	border-color: transparent;
 }
 
-
 /* on popup display */
-
 #popup.popup-note {
 	min-height: 300px;
 	min-width: 360px;
@@ -173,6 +148,7 @@
 	flex-direction: column;
 	animation:  appearSlow .2s;
 	border-radius: 2px;
+	position: relative;
 }
 
 #popup.popup-note > textarea.content {
@@ -189,8 +165,6 @@
 	color: #666;
 }
 #popup.popup-note .submit-bttns {
-	width: auto;
-	flex: 1;
 	padding: 0;
 	margin: 5px 10px;
 }
@@ -205,3 +179,4 @@
 #popup.popup-note .noteCtrls .button-cancel {
 	background: transparent;
 }
+

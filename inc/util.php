@@ -15,12 +15,12 @@ function redirection($url) {
 
 function decode_id($id) {
 	$retour = array(
-		'annee' => substr($id, 0, 4),
-		'mois' => substr($id, 4, 2),
-		'jour' => substr($id, 6, 2),
-		'heure' => substr($id, 8, 2),
-		'minutes' => substr($id, 10, 2),
-		'secondes' => substr($id, 12, 2)
+		'y' => substr($id, 0, 4),
+		'm' => substr($id, 4, 2),
+		'd' => substr($id, 6, 2),
+		'h' => substr($id, 8, 2),
+		'i' => substr($id, 10, 2),
+		's' => substr($id, 12, 2)
 		);
 	return $retour;
 }
@@ -31,7 +31,7 @@ function get_blogpath($id, $titre) {
 
 	if (strlen($id) === 14 and preg_match('#\d{14}#', $id)) {
 		$date = decode_id($id);
-		$path = $GLOBALS['racine'].'?d='.$date['annee'].'/'.$date['mois'].'/'.$date['jour'].'/'.$date['heure'].'/'.$date['minutes'].'/'.$date['secondes'].'-'.titre_url($titre);
+		$path = $GLOBALS['racine'].'?d='.$date['y'].'/'.$date['m'].'/'.$date['d'].'/'.$date['h'].'/'.$date['i'].'/'.$date['s'].'-'.titre_url($titre);
 	}
 	else {
 		$path = $GLOBALS['racine'].'?d='.$id.'--'.trim(diacritique($titre), '-');

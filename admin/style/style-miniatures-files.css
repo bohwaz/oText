@@ -2,18 +2,12 @@
 ---------------------------------------------------------------------------------- */
 
 
-#form-image {
-	box-sizing: border-box;
-	margin: 0px;
-}
-
 /* IMAGES : DnD area */
-
 #form-image #dragndrop-area {
 	background: #f5f5f5;
 	border: 1px dashed gray;
-	padding: 10px;
-	border-radius: 3px;
+	padding: 15px;
+	border-radius: 6px;
 	color: rgba(0, 0, 0, .4);
 }
 
@@ -66,11 +60,7 @@
 	margin: 40px auto 20px;
 	display: flex;
 	justify-content: center;
-	align-items: center;
 }
-#form-image #file-input-wrapper > label {
-}
-
 #form-image #fichier {
 	order: 1;
 }
@@ -85,7 +75,7 @@
 	display: block;
 	box-shadow: 1px 1px 2px rgba(0, 0, 0, .3);
 	text-align: center;
-	font-size: 24px;
+	font-size: 1.6em;
 	line-height: 40px;
 	cursor: pointer;
 }
@@ -113,9 +103,12 @@
 	width: 60%;
 }
 
-
 #form-image #fichier[type="url"] + label {
 	display: none;
+}
+
+#click-change-form {
+	text-transform: none;
 }
 
 /* IMAGES : transfert progression box */
@@ -135,29 +128,29 @@
 	animation: spinnerLoading 0.6s infinite linear;
 }
 
-
 /* IMAGES : name, descr, album, private info-fields */
-
 #img-others-infos p:not(.submit-bttns) {
 	display: flex;
-	max-width: 660px;
+	width: 660px;
+	max-width: 100%;
 	margin: auto;
-	padding-top: 15px;
-	align-items: center;
+	flex-direction: row-reverse;
 }
 
 #img-others-infos label:not([for="statut"]) {
-	width: 40px;
-	height: 40px;
 	overflow: hidden;
-	text-align: center;
+	color: rgba(0, 0, 0, .5);
+	font-size: 0;
+	z-index: 2;
 }
 
 #img-others-infos label:not([for="statut"])::before {
-	font-size: 1.4em;
-	color: rgba(0, 0, 0, .5);
-	line-height: 40px;
+	font-size: 1.4rem;
 	display: inline-block;
+	width: 40px;
+	height: 40px;
+	line-height: 40px;
+	text-align: center;
 }
 
 #img-others-infos label[for^="nom_entree"]::before  { content: "\e903"; }
@@ -165,28 +158,19 @@
 #img-others-infos label[for^="dossier"]::before     { content: "\e91a"; }
 
 #img-others-infos label[for="statut"] {
-	margin-left: 55px;
+	margin: 20px;
 }
 
 #img-others-infos .text {
-	flex: 1 1 0%;
-	padding: 10px 5px;
+	flex: 1;
+	padding: 10px 0 10px 40px;
+	min-width: 0;
+	margin-left: -40px;
 }
 
 #onclicshow {
 	display: none;
 }
-.specify-link {
-	color: gray;
-	font-weight: bold;
-	vertical-align: middle;
-	padding: 6px 12px;
-	border-radius: 2px;
-	border: 0px solid transparent;
-	min-width: 100px;
-
-}
-
 
 /* IMAGES : on edit page : forms */
 #form-image .display-media {
@@ -234,17 +218,20 @@
 #result .fileinfostatus .filelink:not([href]) {
 	display: none;
 }
+
 #result .fileinfostatus .filename,
 #result .fileinfostatus .filelink {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	flex: 100 1 0;
 }
+
 #result .fileinfostatus > span,
 #result .fileinfostatus > a {
 	margin: 5px;
 	white-space: nowrap;
 }
+
 #result .fileinfostatus .uploadstatus {
 	font-weight: bold;
 }
@@ -262,7 +249,6 @@
 }
 
 /* IMAGES : Liste des images : sous la forme d’un mur d’images */
-
 #image-section,
 #files-section {
 	margin-top: 40px;
@@ -288,15 +274,12 @@
 	position: absolute;
 	right: 0; left: 0; top: 0; bottom: 0;
 	background: linear-gradient(to bottom, rgba(0, 0, 0, 1) , transparent );
-
 	opacity: 0;
 	transition: opacity .3s;
-
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
 }
-
 
 #image-wall .image_bloc > span > .vignetteAction {
 	cursor: pointer;
@@ -309,7 +292,6 @@
 	text-align: center;
 	justify-content: center;
 	text-decoration: none;
-
 }
 
 #image-wall .image_bloc > span > .vignetteAction::before {
@@ -319,16 +301,14 @@
 	text-shadow: 0 0 10px black, 0 0 20px black;
 }
 
-#image-wall .image_bloc > span > .vignetteAction.imgShow::before { content: "\e933"; }
-#image-wall .image_bloc > span > .vignetteAction.imgEdit::before { content: "\e903"; }
-#image-wall .image_bloc > span > .vignetteAction.imgDL::before   { content: "\e938"; }
+#image-wall .image_bloc > span > .vignetteAction.imgShow::before  { content: "\e933"; }
+#image-wall .image_bloc > span > .vignetteAction.imgEdit::before  { content: "\e903"; }
+#image-wall .image_bloc > span > .vignetteAction.imgDL::before    { content: "\e938"; }
 #image-wall .image_bloc > span > .vignetteAction.imgSuppr::before { content: "\e90f"; }
-
 
 #image-wall .image_bloc:hover > span {
 	opacity: 1;
 }
-
 
 #image-wall .image_bloc img {
 	height: 100%;
@@ -351,7 +331,7 @@
 }
 
 #file-list thead th {
-	padding: 15px 5px 5px;
+	padding: 5px;
 	text-align: left;
 }
 

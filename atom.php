@@ -44,12 +44,12 @@ if (isset($_GET['id'])) {
 
 		foreach ($liste as $comment) {
 			$dec = decode_id($comment['bt_id']);
-			$tag = 'tag:'.parse_url($GLOBALS['racine'], PHP_URL_HOST).''.$dec['annee'].'-'.$dec['mois'].'-'.$dec['jour'].':'.$comment['bt_id'];
+			$tag = 'tag:'.parse_url($GLOBALS['racine'], PHP_URL_HOST).''.$dec['y'].'-'.$dec['m'].'-'.$dec['d'].':'.$comment['bt_id'];
 			$xml .= '<entry>'."\n";
 				$xml .= '<title>'.$comment['bt_author'].'</title>'."\n";
 				$xml .= '<link href="'.$comment['bt_link'].'"/>'."\n";
 				$xml .= '<id>'.$tag.'</id>'."\n";
-				$xml .= '<updated>'.date('c', mktime($dec['heure'], $dec['minutes'], $dec['secondes'], $dec['mois'], $dec['jour'], $dec['annee'])).'</updated>'."\n";
+				$xml .= '<updated>'.date('c', mktime($dec['h'], $dec['i'], $dec['s'], $dec['m'], $dec['d'], $dec['y'])).'</updated>'."\n";
 				$xml .= '<content type="html">'.htmlspecialchars($comment['bt_content']).'</content>'."\n";
 			$xml .= '</entry>'."\n";
 		}

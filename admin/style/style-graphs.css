@@ -1,30 +1,27 @@
-/* GRAPHS */
+/* GRAPHS
+-------------------------------------------------------------------------------- */
+
 
 #graphs {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-between;
 	margin-top: 40px;
-
 }
+
 #graphs .graph {
-	padding-bottom: 20px;
 	margin-bottom: 60px;
 	flex: 0 1 calc( 50% - 40px );
 	width: calc(50% - 40px );
-	border-radius: 15px;
 }
 
 #graphs .graph .form-legend {
-	padding: 0;
 	font-weight: 500;
-	box-sizing: border-box;
-	transform: translate(-15px, -50px);
 	color: rgba(0, 0, 0, .5);
+	margin-bottom: 20px;
 }
 
 .graph-container {
-	position: relative;
 	height: 180px;
 }
 
@@ -38,7 +35,6 @@
 	height: 180px;
 	padding: 30px 0 0;
 	text-align: center;
-	line-height: 20px;
 	direction: rtl;
 	overflow: hidden;
 }
@@ -55,6 +51,12 @@
 	padding-bottom: 50px;
 	width: 30px;
 	position: relative;
+	opacity: 0;
+}
+
+.graph:hover .graph-container .month {
+	opacity: 1;
+	transition: .5s opacity ease;
 }
 
 .graph-container .month:first-of-type {
@@ -130,6 +132,7 @@
 #resultat-recherche li {
 	display: inline-block;
 }
+
 #resultat-recherche a {
 	text-decoration: none;
 	color: inherit;
@@ -145,3 +148,4 @@
 #resultat-recherche a:hover {
 	background-color: rgba(0, 0, 0, .05);
 }
+

@@ -180,7 +180,7 @@ function creer_fich_html() {
 	$html .= '<TITLE>Blogotext links export '.date('Y-M-D').'</TITLE><H1>Blogotext links export</H1>'."\n";
 	foreach ($list as $n => $link) {
 		$dec = decode_id($link['bt_id']);
-		$timestamp = mktime($dec['heure'], $dec['minutes'], $dec['secondes'], $dec['mois'], $dec['jour'], $dec['annee']); // HISMDY : wtf!
+		$timestamp = mktime($dec['h'], $dec['i'], $dec['s'], $dec['m'], $dec['d'], $dec['y']); // HISMDY : wtf!
 		$html .= '<DT><A HREF="'.$link['bt_link'].'" ADD_DATE="'.$timestamp.'" PRIVATE="'.abs(1-$link['bt_statut']).'" TAGS="'.$link['bt_tags'].'">'.$link['bt_title'].'</A>'."\n";
 		$html .= '<DD>'.strip_tags($link['bt_wiki_content'])."\n";
 	}

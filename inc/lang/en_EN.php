@@ -18,6 +18,7 @@ $GLOBALS['lang'] = array(
 'rechercher' 						=> 'Search',
 'succes'							=> 'Success',
 'echec'								=> 'Fail',
+'annuler'	 						=> 'Cancel',
 
 // Boutons formatage commentaires
 'bouton-gras'						=> 'Bold',
@@ -35,6 +36,7 @@ $GLOBALS['lang'] = array(
 'bouton-liul'						=> 'Insert a list',
 'bouton-liol'						=> 'Insert a ordered list',
 'bouton-spellcheck'					=> 'Toggle spellcheck',
+'bouton-fullscreen'					=> 'Toggle full-screen',
 
 // Label avec ": "
 'label_dp_nom'						=> 'Name: ',

@@ -10,55 +10,57 @@ else {
 
 header("Content-type: text/css; charset: UTF-8");
 
+echo '@charset "utf-8";'."\n";
+
 /* FOR MAINTENANCE: CSS FILES ARE SPLITED IN MULTIPLE FILES
 -------------------------------------------------------------*/
 
-echo '/* General styles (layout, forms, multi-pages elements…) */'."\n";
+/* General styles (layout, forms, multi-pages elements…) */
 readfile('style-style.css');
 
-echo '/* Auth page */'."\n";
+/* Auth page */
 readfile('style-auth.css');
 
-echo '/* Home page, with graphs */'."\n";
+/* Home page, with graphs */
 readfile('style-graphs.css');
 
-echo '/* Article lists page */'."\n";
+/* Article lists page */
 readfile('style-articles.css');
 
-echo '/* Write page: new article form */'."\n";
+/* Write page: new article form */
 readfile('style-ecrire.css');
 
-echo '/* Comments page: forms+comm list */'."\n";
+/* Comments page: forms+comm list */
 readfile('style-commentaires.css');
 
-echo '/* Images and files: form + listing */'."\n";
+/* Images and files: form + listing */
 readfile('style-miniatures-files.css');
 
-echo '/* Links page: form + listing. */'."\n";
+/* Links page: form + listing. */
 readfile('style-liens.css');
 
-echo '/* RSS page: listing + forms */'."\n";
+/* RSS page: listing + forms */
 readfile('style-rss.css');
 
-echo '/* Notes page */'."\n";
+/* Notes page */
 readfile('style-notes.css');
 
-echo '/* Agenda page */'."\n";
+/* Agenda page */
 readfile('style-agenda.css');
 
-echo '/* Prefs + maintainance pages */'."\n";
+/* Prefs + maintainance pages */
 readfile('style-preferences.css');
 
-echo '/* Media-queries < 1100px */'."\n";
+/* Media-queries < 1100px */
 readfile('style-mobile-lt1100px.css');
 
-echo '/* Media-queries < 850px */'."\n";
+/* Media-queries < 850px */
 readfile('style-mobile-lt850px.css');
 
-echo '/* Media-queries < 700px */'."\n";
+/* Media-queries < 700px */
 readfile('style-mobile-lt700px.css');
 
+/* Custon UserCSS */
 if (is_file('../../config/custom-styles.css')) {
-	echo '/* User-Custom CSS */'."\n";
 	readfile('../../config/custom-styles.css');
 }

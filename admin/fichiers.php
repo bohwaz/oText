@@ -65,7 +65,7 @@ function afficher_form_fichier($erreurs, $fichiers, $what) { // ajout d’un fic
 			$form .= "\t".'</div>'."\n";
 			$form .= "\t".'<p>'.$GLOBALS['lang']['ou'].'</p>';
 			$form .= "\t".'<div id="file-input-wrapper"><input name="fichier" id="fichier" class="text" type="file" required="" /><label for="fichier"></label></div>'."\n";
-			$form .= "\t".'<button type="button" class="specify-link button-cancel" id="click-change-form" onclick="return switchUploadForm();" data-lang-url="'.$GLOBALS['lang']['img_specifier_url'].'" data-lang-file="'.$GLOBALS['lang']['img_upload_un_fichier'].'">'.$GLOBALS['lang']['img_specifier_url'].'</button>'."\n";
+			$form .= "\t".'<button type="button" class="specify-link button-cancel submit" id="click-change-form" onclick="return switchUploadForm();" data-lang-url="'.$GLOBALS['lang']['img_specifier_url'].'" data-lang-file="'.$GLOBALS['lang']['img_upload_un_fichier'].'">'.$GLOBALS['lang']['img_specifier_url'].'</button>'."\n";
 			$form .= '</div>'."\n";
 			$form .= '<div id="count"></div>'."\n";
 			$form .= '<div id="result"></div>'."\n";
@@ -73,11 +73,11 @@ function afficher_form_fichier($erreurs, $fichiers, $what) { // ajout d’un fic
 
 		$form .= '<div id="img-others-infos">'."\n";
 
-		$form .= "\t".'<p><label for="nom_entree">'.$GLOBALS['lang']['label_dp_nom'].'</label><input type="text" id="nom_entree" name="nom_entree" placeholder="'.$GLOBALS['lang']['placeholder_nom_fichier'].'" value="" size="60" class="text" /></p>'."\n";
-		$form .= "\t".'<p><label for="description">'.$GLOBALS['lang']['label_dp_description'].'</label><textarea class="text" id="description" name="description" cols="60" rows="5" placeholder="'.$GLOBALS['lang']['placeholder_description'].'" ></textarea></p>'."\n";
-		$form .= "\t".'<p><label for="dossier">'.$GLOBALS['lang']['label_dp_dossier'].'</label><input type="text" id="dossier" name="dossier" placeholder="'.$GLOBALS['lang']['placeholder_folder'].'" value="" size="60" class="text" /></p>'."\n";
-		$form .= hidden_input('token', new_token(), 'id');
+		$form .= "\t".'<p><input type="text" id="nom_entree" name="nom_entree" placeholder="'.$GLOBALS['lang']['placeholder_nom_fichier'].'" value="" size="60" class="text" /><label for="nom_entree">'.$GLOBALS['lang']['label_dp_nom'].'</label></p>'."\n";
+		$form .= "\t".'<p><textarea class="text" id="description" name="description" cols="60" rows="5" placeholder="'.$GLOBALS['lang']['placeholder_description'].'" ></textarea><label for="description">'.$GLOBALS['lang']['label_dp_description'].'</label></p>'."\n";
+		$form .= "\t".'<p><input type="text" id="dossier" name="dossier" placeholder="'.$GLOBALS['lang']['placeholder_folder'].'" value="" size="60" class="text" /><label for="dossier">'.$GLOBALS['lang']['label_dp_dossier'].'</label></p>'."\n";
 		$form .= "\t".'<p><input type="checkbox" id="statut" name="statut" class="checkbox" /><label for="statut">'.$GLOBALS['lang']['label_file_priv'].'</label></p>';
+		$form .= hidden_input('token', new_token(), 'id');
 		$form .= hidden_input('_verif_envoi', '1');
 
 		$form .= "\t".'<p class="submit-bttns"><button class="submit button-submit" type="submit" name="upload">'.$GLOBALS['lang']['img_upload'].'</button></p>'."\n";
@@ -101,25 +101,21 @@ function afficher_form_fichier($erreurs, $fichiers, $what) { // ajout d’un fic
 
 		// codes d’intégrations pour les médias
 		// Video
-		if ($myfile['bt_type'] == 'video') {
-			$form .= '<div class="display-media"><video class="media" src="../'.$relativeFilePath.'" type="video/'.$myfile['bt_fileext'].'" load controls="controls"></video></div>'."\n";
-		}
+		if ($myfile['bt_type'] == 'video')
+		$form .= '<div class="display-media"><video class="media" src="../'.$relativeFilePath.'" type="video/'.$myfile['bt_fileext'].'" load controls="controls"></video></div>'."\n";
 		// image
-		if ($myfile['bt_type'] == 'image') {
-			$form .= '<div class="display-media"><a href="../'.$relativeFilePath.'"><img class="media" src="../'.$relativeFilePath.'" alt="'.$myfile['bt_filename'].'" width="'.$myfile['bt_dim_w'].'" height="'.$myfile['bt_dim_h'].'" /></a></div>'."\n";
-		}
+		if ($myfile['bt_type'] == 'image')
+		$form .= '<div class="display-media"><a href="../'.$relativeFilePath.'"><img class="media" src="../'.$relativeFilePath.'" alt="'.$myfile['bt_filename'].'" width="'.$myfile['bt_dim_w'].'" height="'.$myfile['bt_dim_h'].'" /></a></div>'."\n";
 		// audio
-		if ($myfile['bt_type'] == 'music') {
-			$form .= '<div class="display-media"><audio class="media" src="../'.$relativeFilePath.'" type="audio/'.$myfile['bt_fileext'].'" load controls="controls"></audio></div>'."\n";
-		}
-
+		if ($myfile['bt_type'] == 'music')
+		$form .= '<div class="display-media"><audio class="media" src="../'.$relativeFilePath.'" type="audio/'.$myfile['bt_fileext'].'" load controls="controls"></audio></div>'."\n";
+		
 		// la partie listant les infos du fichier.
 		$form .= '<ul id="fichier-meta-info">'."\n";
 			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_nom'].'</b> '.$myfile['bt_filename'].'</li>'."\n";
 			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_type'].'</b> '.$myfile['bt_type'].' (.'.$myfile['bt_fileext'].')</li>'."\n";
-			if ($myfile['bt_type'] == 'image') { // si le fichier est une image, on ajout ses dimensions en pixels
-				$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_dimensions'].'</b> '.$myfile['bt_dim_w'].'px × '.$myfile['bt_dim_h'].'px'.'</li>'."\n";
-			}
+			if ($myfile['bt_type'] == 'image') // si le fichier est une image, on ajout ses dimensions en pixels
+			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_dimensions'].'</b> '.$myfile['bt_dim_w'].'px × '.$myfile['bt_dim_h'].'px'.'</li>'."\n";
 			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_date'].'</b>'.date_formate($myfile['bt_id']).', '.heure_formate($myfile['bt_id']).'</li>'."\n";
 			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_poids'].'</b>'.taille_formate($myfile['bt_filesize']).'</li>'."\n";
 			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_checksum'].'</b>'.$myfile['bt_checksum'].'</li>'."\n";
@@ -144,7 +140,6 @@ function afficher_form_fichier($erreurs, $fichiers, $what) { // ajout d’un fic
 		// audio
 		} elseif ($myfile['bt_type'] == 'music') {
 			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<audio src="'.$absolute_URI.'" type="audio/'.$myfile['bt_fileext'].'" load="" controls="controls"></audio>\' />'."\n";
-
 		} else {
 			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'[url]'.$absolute_URI.'[/url]\' />'."\n";
 		}
@@ -153,9 +148,9 @@ function afficher_form_fichier($erreurs, $fichiers, $what) { // ajout d’un fic
 
 		// la partie avec l’édition du contenu.
 		$form .= '<div id="img-others-infos">'."\n";
-		$form .= "\t".'<p><label for="nom_entree">'.ucfirst($GLOBALS['lang']['label_dp_nom']).'</label><input type="text" id="nom_entree" name="nom_entree" placeholder="" value="'.pathinfo($myfile['bt_filename'], PATHINFO_FILENAME).'" size="60" class="text" /></p>'."\n";
-		$form .= "\t".'<p><label for="description">'.$GLOBALS['lang']['label_dp_description'].'</label><textarea class="text" name="description" id="description" cols="60" rows="5" placeholder="'.$GLOBALS['lang']['placeholder_description'].'" >'.$myfile['bt_content'].'</textarea></p>'."\n";
-		$form .= "\t".'<p><label for="dossier">'.$GLOBALS['lang']['label_dp_dossier'].'</label><input type="text" name="dossier" placeholder="'.$GLOBALS['lang']['placeholder_folder'].'" value="'.$myfile['bt_folder'].'" size="60" class="text" /></p>'."\n";
+		$form .= "\t".'<p><input type="text" id="nom_entree" name="nom_entree" placeholder="" value="'.pathinfo($myfile['bt_filename'], PATHINFO_FILENAME).'" size="60" class="text" /><label for="nom_entree">'.ucfirst($GLOBALS['lang']['label_dp_nom']).'</label></p>'."\n";
+		$form .= "\t".'<p><textarea class="text" name="description" id="description" cols="60" rows="5" placeholder="'.$GLOBALS['lang']['placeholder_description'].'" >'.$myfile['bt_content'].'</textarea><label for="description">'.$GLOBALS['lang']['label_dp_description'].'</label></p>'."\n";
+		$form .= "\t".'<p><input type="text" name="dossier" placeholder="'.$GLOBALS['lang']['placeholder_folder'].'" value="'.$myfile['bt_folder'].'" size="60" class="text" /><label for="dossier">'.$GLOBALS['lang']['label_dp_dossier'].'</label></p>'."\n";
 		$checked = ($myfile['bt_statut'] == 0) ? 'checked ' : '';
 		$form .= "\t".'<p><input type="checkbox" id="statut" name="statut" '.$checked.' class="checkbox" /><label for="statut">'.$GLOBALS['lang']['label_file_priv'].'</label></p>';
 		$form .= "\t".'<p class="submit-bttns">'."\n";
@@ -169,10 +164,8 @@ function afficher_form_fichier($erreurs, $fichiers, $what) { // ajout d’un fic
 		$form .= hidden_input('is_it_edit', 'yes');
 		$form .= hidden_input('file_id', $myfile['bt_id']);
 		$form .= hidden_input('filename', $myfile['bt_filename']);
-		$form .= hidden_input('sha1_file', $myfile['bt_checksum']);
-		$form .= hidden_input('path', $myfile['bt_path']);
-		$form .= hidden_input('filesize', $myfile['bt_filesize']);
 		$form .= hidden_input('token', new_token());
+		$form .= hidden_input('path', $myfile['bt_path']);
 		$form .= '</div>';
 	}
 	$form .= '</form>'."\n";

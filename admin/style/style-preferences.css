@@ -1,5 +1,6 @@
 /* PRÉFÉRENCES
 ------------------------------------------------------------ */
+
 #preferences {
 	max-width: 900px;
 	margin: auto;
@@ -14,17 +15,13 @@
 #preferences .form-legend {
 	padding: 20px;
 	font-weight: 500;
-	box-sizing: border-box;
 	color: rgba(0, 0, 0, .5);
-	font-size: 1.1em;
 	border-top-left-radius: inherit;
 	border-top-right-radius: inherit;
 	background-color: #eee;
 }
 
 #preferences p {
-	max-width: 100%;
-	margin: 20px auto;
 	display: flex;
 	align-items: center;
 }
@@ -32,17 +29,19 @@
 #preferences label {
 	text-align: right;
 	padding-right: 5px;
-	margin: 10px 0;
 	flex: 0 1 45%;
 }
 
-#preferences .text {
-	padding: 10px 5px 10px 1px;
+#preferences a {
+	padding: 15px 0;
 }
 
 #preferences textarea.text {
-	padding-top: 1px;
 	width: auto;
+}
+
+#preferences .submit-bttns {
+	margin-top: 40px;
 }
 
 /* MAINTENANCE */
@@ -59,9 +58,6 @@
 #maintenance-form legend {
 	font-weight: bold;
 	color: #1e88e5;
-}
-
-#maintenance-form p {
 }
 
 #maintenance-form p > label {
@@ -81,5 +77,4 @@
 	padding: 0px 20px;
 	max-width: 700px;
 }
-
 
