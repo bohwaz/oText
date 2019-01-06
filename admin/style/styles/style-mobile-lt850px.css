@@ -10,6 +10,10 @@
 
 	/* TOP
 	------------------------------------------------------*/
+	#top {
+		padding: 8px;
+	}
+
 	#search {
 		flex: 0 0 48px;
 		background-color: transparent;
@@ -33,11 +37,12 @@
 	#search #q[value=""]:focus,
 	#search #q:not([value=""]) { /* focus OR not empty (a search is done) */
 		border-radius: 3px;
-		width: calc( 0px - 8px - 48px + 100% - 48px - 48px - 8px );
-		right: 105px;
+		width: calc( 100% - 8px - 48px - 13px - 48px - 48px - 8px );
+		right: 165px;
 		transition: 0s;
 		padding: 5px 10px;
 		opacity: 1;
+		color: black;
 	}
 
 	#search:hover #label_q:active,
@@ -47,6 +52,14 @@
 		transition: 0s;
 		color: black;
 		z-index: 2;
+	}
+
+	#nav > ul::before {
+		right: 113px;
+	}
+
+	#notif-icon > ul::before {
+		right: 64px;
 	}
 
 	/* liste fichiers */
@@ -185,48 +198,12 @@
 		width: 100%;
 	}
 
-	#calendar {
-		flex-direction: column;
-	}
-
-	#calendar_aside {
-		width: auto;
-	}
-
-	#calendar_aside .side_m,
-	#calendar_aside .side_d {
-		display: inline;
-	}
-
 	#cal-row {
 		flex-direction: column;
 	}
 
-	#calendar {
-		width: 100%;
-	}
-
-	#calendar-table {
-		border-collapse: collapse;
-		table-layout: auto;
-		width: 100%;
-	}
-
-	#calendar-table > thead td button {
-		font-size: 2em;
-		width: 11vmin;
-		height: 11vmin;
-	}
-
-	#calendar-table td button {
-		width: 11vmin;
-		height: 11vmin;
-	}
-
 	#daily-events-wrapper {
-		margin-left: 0;
-		width: 100%;
-		max-width: 100%;
+		margin: 30px 0;
 	}
 
 	/* FORM ECRIRE */

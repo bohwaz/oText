@@ -7,6 +7,11 @@
 
 "use strict";
 
+/* l10n */
+if (document.getElementById('jsonLang')) {
+	var BTlang = JSON.parse(document.getElementById('jsonLang').textContent);
+}
+
 /* reproduces the PHP « date(#, 'c') » output format */
 Date.prototype.dateToISO8601String  = function() {
 	var padDigits = function padDigits(number, digits) {
@@ -32,7 +37,17 @@ Date.prototype.dateToISO8601String  = function() {
 		//+ "." + padDigits(this.getMilliseconds(),2)
 		+ offset;
 
+}
 
+Date.prototype.ymdhis = function() {
+	var y = this.getFullYear();
+	var m = ("00" + (this.getMonth() + 1)).slice(-2); // 0-11
+	var d = ("00" + (this.getDate())).slice(-2);
+	//var h = ("00" + (this.getHours())).slice(-2);
+	//var i = ("00" + (this.getMinutes())).slice(-2);
+	//var s = ("00" + (this.getSeconds())).slice(-2);
+
+	return "".y + m + d;
 }
 
 /*Date.dateFromISO8601 = function(isoDateString) {
@@ -70,26 +85,26 @@ Date.dateFromYMDHIS = function(d) {
 // close already open menus, but not the current menu
 function closeOpenMenus(target) {
 	// close already open menus, but not the current menu
-	var openMenu = document.querySelectorAll('#top > [id] > ul.visible');
+	var openMenu = document.querySelectorAll('#top > .visible');
 	for (var i=0, len=openMenu.length ; i<len ; i++) {
-		if (!openMenu[i].parentNode.contains(target)) openMenu[i].classList.remove('visible');
+		if (!openMenu[i].contains(target)) openMenu[i].classList.remove('visible');
 	}
 }
-
-window.addEventListener('click', function(e) {
-	var openMenu = document.querySelectorAll('#top > [id] > ul.visible');
-	// no open menus: abord
-	if (!openMenu.length) return;
-	// open menus ? close them.
-	else closeOpenMenus(null);
-});
 
 // add "click" listeners on the list of menus
 ['nav', 'nav-acc', 'notif-icon'].forEach(function(elem) {
 	document.getElementById(elem).addEventListener('click', function(e) {
 		closeOpenMenus(e.target);
-		var menu = document.getElementById(elem).querySelector('ul');
+		var menu = document.getElementById(elem);
 		if (this === (e.target)) menu.classList.toggle('visible');
+		window.addEventListener('click', function(e) {
+			var openMenu = document.querySelectorAll('#top > .visible');
+			// no open menus: abord
+			if (!openMenu.length) return;
+			// open menus ? close them.
+			else closeOpenMenus(null);
+		}, {once: true});
+
 		e.stopPropagation();
 	});
 });
@@ -165,6 +180,7 @@ function humanFileSize(bytes) {
 /*
 	in page maintenance : switch visibility of forms.
 */
+
 function switch_form(activeForm) {
 	var form_export = document.getElementById('form_export');
 	var form_import = document.getElementById('form_import');
@@ -254,7 +270,7 @@ function unfold(e) {
 	theComm.appendChild(theForm);
 
 	// update the from data
-	var comm_data = JSON.parse(theComm.querySelector('input[name="comm_data"]').value);
+	var comm_data = JSON.parse(theComm.querySelector('script[id]').textContent);
 	theForm.querySelector('[name="commentaire"]').value = comm_data.wiki;
 	theForm.querySelector('[name="auteur"]').value = comm_data.auth;
 	theForm.querySelector('[name="email"]').value = comm_data.mail;
@@ -767,14 +783,15 @@ function type_sort(type, button) {
 
 
 function imgListWall() {
-	if (typeof images == 'undefined' || !images.list.length) return;
 	var _this = this;
 
 	/***********************************
 	** Some properties & misc actions
 	*/
 	// init JSON List
-	this.imgList = images.list;
+	this.imgList = JSON.parse(document.getElementById('json_images').textContent);
+	if (typeof this.imgList == 'undefined' || !this.imgList.length) return;
+
 
 	// get some DOM elements
 	this.imgDomWall = document.getElementById('image-wall');
@@ -808,12 +825,16 @@ function imgListWall() {
 			var bloc = document.createElement('div');
 			bloc.id = 'bloc_' + item.id;
 			bloc.classList.add('image_bloc');
+			bloc.addEventListener('click', function(e){ this.classList.toggle('show-buttons'); } );
 			bloc.dataset.folder = item.folder;
 
 			var imgThb = document.createElement('img');
 			imgThb.src = item.thbPath;
 			imgThb.alt = '#';
+			imgThb.width = item.w;
+			imgThb.height = item.h;
 			bloc.appendChild(imgThb);
+
 
 			var spanBtns = document.createElement('span');
 
@@ -905,14 +926,15 @@ function imgListWall() {
 
 
 function docListWall() {
-	if (typeof docs == 'undefined' || !docs.list.length) return;
 	var _this = this;
 
 	/***********************************
 	** Some properties & misc actions
 	*/
 	// init JSON List
-	this.docsList = docs.list;
+	this.docsList = JSON.parse(document.getElementById('json_docs').textContent);
+	if (typeof this.docsList == 'undefined' || !this.docsList.length) return;
+
 
 	// get some DOM elements
 	this.docsDomTable = document.getElementById('file-list').getElementsByTagName('tbody')[0];
@@ -932,7 +954,7 @@ function docListWall() {
 	** The HTML tree builder :
 	** Rebuilts the whole list of files.
 	*/
-	this.rebuiltTable = function(docsList, limit) {
+	this.rebuiltTable = function(docsList) {
 
 		// empties the actual list
 		while (this.docsDomTable.firstChild) {
@@ -942,7 +964,7 @@ function docListWall() {
 		if (0 === docsList.length) return false;
 
 		// populates the new list
-		for (var i = 0, len = docsList.length ; i < (Math.min(len, limit)) ; i++) {
+		for (var i = 0, len = docsList.length ; i < len ; i++) {
 			var item = docsList[i];
 
 
@@ -954,7 +976,7 @@ function docListWall() {
 			var icon = document.createElement('img');
 			icon.id = item.id;
 			icon.alt = item.fileName;
-			icon.src = 'style/filetypes/'+item.fileType+'.png';
+			icon.src = 'style/imgs/filetypes/'+item.fileType+'.png';
 			cellIcon.appendChild(icon);
 			row.appendChild(cellIcon);
 
@@ -970,7 +992,7 @@ function docListWall() {
 			row.appendChild(cellSize);
 
 			var cellDate = document.createElement('td');
-			cellDate.appendChild(document.createTextNode(Date.dateFromYMDHIS(item.id).toLocaleString('fr', {weekday: "short", month: "short", day: "numeric"})));
+			cellDate.appendChild(document.createTextNode(Date.dateFromYMDHIS(item.id).toLocaleString('fr', {year: "numeric", weekday: "short", month: "short", day: "numeric"})));
 			row.appendChild(cellDate);
 
 			var cellDwnd = document.createElement('td');
@@ -995,7 +1017,7 @@ function docListWall() {
 		return false;
 	}
 	// init the whole DOM table
-	this.rebuiltTable(this.docsList, 25);
+	this.rebuiltTable(this.docsList);
 
 
 
@@ -1063,14 +1085,6 @@ function loading_animation(onoff) {
 	return false;
 }
 
-/* open-close rss-folder */
-function hideFolder(btn) {
-	btn.parentNode.parentNode.classList.toggle('open');
-	return false;
-}
-
-
-
 function RssReader() {
 	var _this = this;
 
@@ -1078,7 +1092,7 @@ function RssReader() {
 	** Some properties & misc actions
 	*/
 	// init JSON List
-	this.feedList = rss_entries.list;
+	this.feedList = JSON.parse(document.getElementById('json_rss').textContent);
 
 	// init local "mark as read" buffer
 	this.readQueue = {"count": "0", "urlList": []};
@@ -1092,33 +1106,29 @@ function RssReader() {
 	this.openAllButton = document.getElementById('openallitemsbutton');
 	this.openAllButton.addEventListener('click', function(){ _this.openAll(); });
 
-	// init the « mark as read button ».
-	this.markAsReadButton = document.getElementById('markasread');
-	this.markAsReadButton.addEventListener('click', function(){ _this.markAsRead(); });
+	// init the « hide feed-list » button
+	document.getElementById('hide-feed-list').addEventListener('click', function(){ _this.hideFeedList(); });
+
+	// init the « mark as read » button.
+	document.getElementById('markasread').addEventListener('click', function(){ _this.markAsRead(); });
 
 	// init the « refresh all » button event
-	this.refreshButton = document.getElementById('refreshAll');
-	this.refreshButton.addEventListener('click', function(){ _this.refreshAllFeeds(); });
+	document.getElementById('refreshAll').addEventListener('click', function(e){ _this.refreshAllFeeds(e); });
 
 	// init the « list all feeds » button
-	this.globalCounter = document.getElementById('global-post-counter');
-	this.globalCounter.addEventListener('click', function(){ _this.sortAll(); });
+	document.getElementById('global-post-counter').addEventListener('click', function(){ _this.sortAll(); });
 
 	// init the « list today posts » button
-	this.todayCounter = document.getElementById('today-post-counter');
-	this.todayCounter.addEventListener('click', function() { _this.sortToday(); });
+	document.getElementById('today-post-counter').addEventListener('click', function() { _this.sortToday(); });
 
 	// init the « list favorits posts » button
-	this.favsCounter = document.getElementById('favs-post-counter');
-	this.favsCounter.addEventListener('click', function() { _this.sortFavs(); });
+	document.getElementById('favs-post-counter').addEventListener('click', function() { _this.sortFavs(); });
 
-	// init the « delete old » button event
-	this.deleteButton = document.getElementById('deleteOld');
-	this.deleteButton.addEventListener('click', function(){ _this.deleteOldFeeds(); });
+	// init the « delete old » button
+	document.getElementById('deleteOld').addEventListener('click', function(){ _this.deleteOldFeeds(); });
 
-	// init the « add new feed » button event
-	this.fabButton = document.getElementById('fab');
-	this.fabButton.addEventListener('click', function(){ _this.addNewFeed(); });
+	// init the « add new feed » button
+	document.getElementById('fab').addEventListener('click', function(){ _this.addNewFeed(); });
 
 	// add click events on Sites
 	this.allSites = this.feedsList.querySelectorAll('.feed-site');
@@ -1146,10 +1156,14 @@ function RssReader() {
 	this.ymd000 = '' + d.getFullYear() + ('0' + (d.getMonth()+1)).slice(-2) + ('0' + d.getDate()).slice(-2) + '000000';
 
 
+	this.postTemplate = this.postsList.firstElementChild.parentNode.removeChild(this.postsList.firstElementChild);
+	this.postTemplate.removeAttribute('hidden');
+
 	/***********************************
 	** The HTML tree builder :
 	** Rebuilts the whole list of posts.
 	*/
+
 	this.rebuiltTree = function(RssPosts) {
 		// empties the actual list
 		while (this.postsList.firstChild) {
@@ -1158,114 +1172,45 @@ function RssReader() {
 
 		if (0 === RssPosts.length) return false;
 
+		var liList = document.createDocumentFragment();
+		var begin = Date.now();
+
 		// populates the new list
 		for (var i = 0, len = RssPosts.length ; i < len ; i++) {
 			var item = RssPosts[i];
-
-			// new list element
-			var li = document.createElement("li");
+			var li = this.postTemplate.cloneNode(true);
 			li.id = 'i_'+item.id;
-			li.dataset.sitehash = item.feedhash;
-			//li.dataset.postdate = item.datetime;
+			li.setAttribute('data-sitehash', item.feedhash);
 			if (0 === item.statut) { li.classList.add('read'); }
+			li.querySelector('.post-head > .lien-fav').setAttribute('data-is-fav', item.fav);
+			li.querySelector('.post-head > .lien-fav').setAttribute('data-fav-id', item.id);
+			li.querySelector('.post-head > .lien-fav').addEventListener('click', function(e){ _this.markAsFav(this); e.preventDefault(); } );
+			li.querySelector('.post-head > .site').textContent = item.sitename;
+			if (item.folder) { li.querySelector('.post-head > .folder').textContent = item.folder; }
+			else { li.querySelector('.post-head > .folder').parentNode.removeChild(li.querySelector('.folder')); }
+			li.querySelector('.post-head > .post-title').href = item.link;
+			li.querySelector('.post-head > .post-title').title = item.title;
+			li.querySelector('.post-head > .post-title').setAttribute('data-id', li.id);
+			li.querySelector('.post-head > .post-title').textContent = item.title;
+			li.querySelector('.post-head > .post-title').addEventListener('click', function(e){ if(!_this.openThisItem(document.getElementById(this.dataset.id))) e.preventDefault(); } );
+			li.querySelector('.post-head > .share > .lien-share').href = 'links.php?url='+encodeURIComponent(item.link);
+			li.querySelector('.post-head > .share > .lien-open').href = item.link;
+			li.querySelector('.post-head > .share > .lien-mail').href = 'mailto:?&subject='+ encodeURIComponent(item.title) + '&body=' + encodeURIComponent(item.link);
+			li.querySelector('.post-head > .date').textContent = DateTimeFormat.format(Date.dateFromYMDHIS(item.datetime));
+			li.querySelector('.rss-item-content').appendChild(document.createComment(item.content));
 
-			// li-head: head-block
-			var postHead = document.createElement("div");
-			postHead.classList.add('post-head');
+			liList.appendChild(li);
 
-			var favBtn = document.createElement("a");
-			favBtn.href = '#';
-			favBtn.classList.add("lien-fav");
-			favBtn.dataset.isFav = item.fav;
-			favBtn.dataset.favId = item.id;
-			favBtn.addEventListener('click', function(e){ _this.markAsFav(this); e.preventDefault(); } );
-			postHead.appendChild(favBtn);
-
-			// site name
-			var site = document.createElement("div");
-			site.classList.add('site');
-			site.appendChild(document.createTextNode(item.sitename));
-			postHead.appendChild(site);
-
-			// post folders labels
-			if (item.folder) {
-				var folder = document.createElement("div");
-				folder.classList.add('folder');
-				folder.appendChild(document.createTextNode(item.folder));
-				postHead.appendChild(folder);
-			}
-			
-			// post title
-			var titleLink = document.createElement("a");
-			titleLink.href = item.link;
-			titleLink.title = item.title;
-			titleLink.classList.add('post-title');
-			titleLink.target = "_blank";
-			titleLink.appendChild(document.createTextNode(item.title));
-			titleLink.dataset.id = li.id;
-			titleLink.addEventListener('click', function(e){ if(!_this.openThisItem(document.getElementById(this.dataset.id))) e.preventDefault(); } );
-			postHead.appendChild(titleLink);
-
-			// hover buttons (share link, tweet…)
-			var share = document.createElement("div");
-			share.classList.add('share');
-			// share, in linx
-			var shareLink = document.createElement("a");
-			shareLink.href = 'links.php?url='+encodeURIComponent(item.link);
-			shareLink.target = "_blank";
-			shareLink.classList.add("lien-share");
-			share.appendChild(shareLink);
-			// open in new tab
-			var openLink = document.createElement("a");
-			openLink.href = item.link;
-			openLink.target = "_blank";
-			openLink.classList.add("lien-open");
-			share.appendChild(openLink);
-			// mail link
-			var mailLink = document.createElement("a");
-			mailLink.href = 'mailto:?&subject='+ encodeURIComponent(item.title) + '&body=' + encodeURIComponent(item.link);
-			mailLink.target = "_blank";
-			mailLink.classList.add("lien-mail");
-			share.appendChild(mailLink);
-			// tweet link
-			var tweetLink = document.createElement("a");
-			tweetLink.href = 'https://twitter.com/intent/tweet?text='+ encodeURIComponent(item.title) + '&amp;url=' + encodeURIComponent(item.link);
-			tweetLink.target = "_blank";
-			tweetLink.classList.add("lien-tweet");
-			share.appendChild(tweetLink);
-			// G+ link
-
-			postHead.appendChild(share);
-			li.appendChild(postHead);
-
-			// post date
-			var date = document.createElement("div");
-			date.classList.add('date');
-			date.appendChild(document.createTextNode(DateTimeFormat.format(Date.dateFromYMDHIS(item.datetime))));
-			postHead.appendChild(date);
-
-			// bloc with main content of feed in a comment (it’s uncomment when open, to defer media loading).
-			var content = document.createElement("div");
-			content.classList.add('rss-item-content');
-			var comment = document.createComment(item.content);
-			content.appendChild(comment);
-			li.appendChild(content);
-
-			var hr = document.createElement("hr");
-			hr.classList.add('clearboth');
-			li.appendChild(hr);
-
-			this.postsList.appendChild(li);
 		}
+
+		this.postsList.appendChild(liList);
 
 		// displays the number of items (local counter)
 		var count = document.querySelector('#post-counter');
 		if (count.firstChild) {
 			count.firstChild.nodeValue = RssPosts.length;
-			//count.dataset.nbrun = RssPosts.length;
 		} else {
 			count.appendChild(document.createTextNode(RssPosts.length));
-			//count.dataset.nbrun = RssPosts.length;
 		}
 
 		return false;
@@ -1319,10 +1264,10 @@ function RssReader() {
 
 		// jump to post (anchor + 120px)
 		var rect = theItem.getBoundingClientRect();
-		var isVisible = ( (rect.top < 120) || (rect.bottom > window.innerHeight) ) ? false : true ;
+		var isVisible = ( (rect.top < 144) || (rect.bottom > window.innerHeight) ) ? false : true ;
 		if (!isVisible) {
 			window.location.hash = theItem.id;
-			window.scrollBy(0, -120);
+			window.scrollBy(0, -144);
 		}
 
 		// mark as read in DOM and saves for mark as read in DB
@@ -1365,6 +1310,9 @@ function RssReader() {
 	}
 
 
+	this.hideFeedList = function() {
+		this.feedsList.classList.toggle('hidden-list');
+	}
 
 	/***********************************
 	** Methods to "sort" elements (by site, folder, favs…)
@@ -1401,7 +1349,7 @@ function RssReader() {
 		// unhighlight previously highlighted site
 		if (document.querySelector('.active-site')) { document.querySelector('.active-site').classList.remove('active-site'); }
 		// highlight selected folder
-		document.querySelector('#feed-list li[data-folder="'+theFolder+'"]').classList.add('active-site');
+		this.feedsList.querySelector('li[data-folder="'+theFolder+'"]').classList.add('active-site');
 		window.location.hash = '';
 		this.rebuiltTree(newList);
 		this.openAllButton.classList.remove('unfold');
@@ -1411,7 +1359,7 @@ function RssReader() {
 	this.sortAll = function() {
 		// unhighlight previously selected site
 		document.querySelector('.active-site').classList.remove('active-site');
-		// highlight favs
+		// highlight "all" button.
 		document.querySelector('.all-feeds').classList.add('active-site');
 
 		window.location.hash = '';
@@ -1464,7 +1412,7 @@ function RssReader() {
 	** Methods to "mark as read" item in the local list and on screen
 	*/
 	this.markAsRead = function() {
-		var markWhat = this.feedsList.querySelector('.active-site');
+		var markWhat = document.querySelector('.active-site');
 
 		// Mark ALL as read.
 		if (markWhat.classList.contains('all-feeds')) {
@@ -1495,7 +1443,7 @@ function RssReader() {
 			markWhat.dataset.nbrun = 0;
 
 			// mark 0 for the sites in that folder
-			var sitesInFolder = markWhat.querySelectorAll('ul > li');
+			var sitesInFolder = this.feedsList.querySelectorAll('li[data-feed-folder=' + folder + ']');
 			for (var i = 0, len = sitesInFolder.length ; i < len ; i++) {
 				sitesInFolder[i].dataset.nbrun = 0;
 			}
@@ -1520,9 +1468,6 @@ function RssReader() {
 
 			// send XHR
 			if (!this.markAsReadXHR('site', siteHash)) return false;
-
-			// update global counter by substracting unread items from the site
-			// this.globalCounter.dataset.nbrun -= markWhat.dataset.nbrun;
 
 			// if site is in a folder, update amount of unread for that folder too
 			var parentFolder = markWhat.parentNode.parentNode;
@@ -1701,8 +1646,8 @@ function RssReader() {
 	** This call is long, also it updates gradually on screen.
 	**
 	*/
-	this.refreshAllFeeds = function() {
-		var _refreshButton = this.refreshButton;
+	this.refreshAllFeeds = function(e) {
+		var _refreshButton = e.target;
 		// if refresh ongoing : abbord !
 		if (_refreshButton.dataset.refreshOngoing == 1) {
 			return false;
@@ -1861,17 +1806,161 @@ function RssReader() {
 
 };
 
+function RssConfig() {
+	var _this = this;
 
-/* in RSS config : mark a feed as "to remove" */
-function markAsRemove(link) {
-	var li = link.parentNode.parentNode;
-	li.classList.add('to-remove');
-	li.getElementsByClassName('remove-feed')[0].value = 0;
-}
-function unMarkAsRemove(link) {
-	var li = link.parentNode.parentNode;
-	li.classList.remove('to-remove');
-	li.getElementsByClassName('remove-feed')[0].value = 1;
+	// hasUpdated flag
+	this.hasUpdated = false;
+
+	// the table with the feeds-info
+	this.feedTable = document.getElementById('rss-feed').tBodies[0];
+
+	// Global Page listeners
+	// beforeunload : warns the user if some data is not saved
+	window.addEventListener("beforeunload", function(e) {
+		if (_this.hasUpdated) {
+			var confirmationMessage = BTlang.questionQuitPage;
+			(e || window.event).returnValue = confirmationMessage;	//Gecko + IE
+			return confirmationMessage;								// Webkit : ignore this.
+		}
+		else { return true; }
+	});
+
+	// Save button
+	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveFeedsXHR(); } );
+
+	// add events for edition & deletion
+	this.feedTableTR = this.feedTable.querySelectorAll('tr');
+	for (var i = 0, len = this.feedTableTR.length; i < len; i++) {
+		var tr = this.feedTableTR[i];
+
+		// "input" / edit event on row
+		tr.addEventListener('input', function(e) {
+			this.classList.add('edited');
+			_this.raiseUpdateFlag(true);
+		}, {once: true});
+
+		// "delete" event on button
+		tr.querySelector('td.suppr > button').addEventListener('click', function(e) {
+			if (!window.confirm(BTlang.questionSupprFlux)) { return false; }
+			this.parentNode.parentNode.classList.add('deleted');
+			_this.raiseUpdateFlag(true);
+		});
+	}
+
+
+
+
+
+	/**************************************
+	 * AJAX call to save changes to DB
+	*/
+	this.saveFeedsXHR = function() {
+		loading_animation('on');
+		// only keep modified notes
+		var toSaveFeeds = Array();
+		for (var i=0, len=this.feedTableTR.length; i<len ; i++) {
+
+			if (this.feedTableTR[i].classList.contains('edited') || this.feedTableTR[i].classList.contains('deleted')) {
+
+				// mark for removal
+				if (this.feedTableTR[i].classList.contains('deleted')) {
+					var feedObj = {
+						id: this.feedTableTR[i].getAttribute('data-feed-hash'),
+						action: 'delete'
+					};
+				}
+				// mark for edit
+				else {
+					var feedObj = {
+						id: this.feedTableTR[i].getAttribute('data-feed-hash'),
+						action: 'edited',
+						title: this.feedTableTR[i].querySelector('.title').textContent,
+						link: this.feedTableTR[i].querySelector('.link').textContent,
+						folder: this.feedTableTR[i].querySelector('.folder').textContent
+					};
+				}
+			
+				toSaveFeeds.push(feedObj);
+
+			}
+		}
+
+		// make a string out of it
+		var feedsDataText = JSON.stringify(toSaveFeeds);
+
+		var notifDiv = document.createElement('div');
+		// create XHR
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', '_rss.ajax.php', true);
+
+		// onload
+		xhr.onload = function() {
+			if (this.responseText.indexOf("Success") == 0) {
+				loading_animation('off');
+				_this.raiseUpdateFlag(false);
+				// adding notif
+				notifDiv.textContent = BTlang.confirmFeedSaved;
+				notifDiv.classList.add('confirmation');
+				document.getElementById('top').appendChild(notifDiv);
+
+				// reset flags on tableTR
+
+				for (var i=0, len=_this.feedTableTR.length; i<len ; i++) {
+					var tr = _this.feedTableTR[i];
+					// mark for removal
+					if (tr.classList.contains('deleted')) {
+						tr.parentNode.removeChild(tr);
+					}
+					// mark for edit
+					if (tr.classList.contains('edited')) {
+						tr.classList.remove('edited')
+					}
+				
+				}
+				return true;
+			} else {
+				loading_animation('off');
+				// adding notif
+				notifDiv.textContent = this.responseText;
+				notifDiv.classList.add('no_confirmation');
+				document.getElementById('top').appendChild(notifDiv);
+				return false;
+			}
+		};
+
+		// onerror
+		xhr.onerror = function(e) {
+			loading_animation('off');
+			// adding notif
+			notifDiv.textContent = 'AJAX Error ' +e.target.status;
+			notifDiv.classList.add('no_confirmation');
+			document.getElementById('top').appendChild(notifDiv);
+			_this.notifNode.appendChild(document.createTextNode(this.responseText));
+		};
+
+		// prepare and send FormData
+		var formData = new FormData();
+		formData.append('token', token);
+		formData.append('edit-feed-list', feedsDataText);
+		xhr.send(formData);
+	}
+
+
+
+
+
+	this.raiseUpdateFlag = function(flagRaised) {
+		if (flagRaised) {
+			this.hasUpdated = true;
+			document.getElementById('enregistrer').disabled = false;
+		} else {
+			this.hasUpdated = false;
+			document.getElementById('enregistrer').disabled = true;
+		}
+	}
+
+
 }
 
 
@@ -1974,7 +2063,7 @@ function NoteBlock() {
 	** Some properties & misc actions
 	*/
 	// init JSON List
-	this.notesList = Notes.list;
+	this.notesList = JSON.parse(document.getElementById('json_notes').textContent);
 	// init to "false" a flag aimed to determine if changed have yet to be saved to server
 	this.hasUpdated = false;
 
@@ -1982,6 +2071,14 @@ function NoteBlock() {
 	this.noteContainer = document.getElementById('list-notes');
 	this.domPage = document.getElementById('page');
 	this.notifNode = document.getElementById('message-return');
+
+	// get note template
+	this.noteTemplate = this.noteContainer.firstElementChild.parentNode.removeChild(this.noteContainer.firstElementChild);
+	this.noteTemplate.removeAttribute('hidden');
+
+	this.notePopupTemplate = document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
+	this.notePopupTemplate.removeAttribute('hidden');
+
 
 	document.getElementById('post-new-note').addEventListener('click', function(e) { _this.addNewNote(); });
 
@@ -2006,40 +2103,44 @@ function NoteBlock() {
 	this.rebuiltNotesWall = function(NotesData) {
 		if (0 === NotesData.length) return false;
 
+		var notesPinned = document.createDocumentFragment();
+		var notesUnPinned = document.createDocumentFragment();
+
+		// "pinnedNotes" <h2>
+		var pinnedTitle = document.getElementById('are-pinned');
+
 		// populates the new list
 		for (var i = 0, len = NotesData.length ; i < len ; i++) {
 			var item = NotesData[i];
 
-			// note block
-			var divNote = document.createElement('div');
-			divNote.id = 'i_' + item.id;
-			divNote.dataset.updateAction = item.action;
-			divNote.classList.add('notebloc');
-			divNote.style.backgroundColor = item.color;
-			divNote.dataset.indexId = i;
-			divNote.addEventListener('click',
+			var div = this.noteTemplate.cloneNode(true);
+			div.id = 'i_' + item.id;
+			div.dataset.updateAction = item.action;
+			div.dataset.ispinned = item.ispinned;
+			div.style.backgroundColor = item.color;
+			div.dataset.indexId = i;
+			div.querySelector('.title > h2').textContent = item.title;
+			div.querySelector('.content').textContent = item.content;
+			div.addEventListener('click',
 			function(e) {
 				_this.showNotePopup(NotesData[this.dataset.indexId]);
 			} );
 
-			// note title
-			var title = document.createElement('div');
-			title.classList.add('title');
-			var h2 = document.createElement('h2');
-			h2.appendChild(document.createTextNode(item.title));
-			title.appendChild(h2);
-			divNote.appendChild(title);
+			if (item.ispinned == 1) {
+				notesPinned.appendChild(div);
+			} else {
+				notesUnPinned.appendChild(div);
+			}
 
-			// note main content
-			var divContent = document.createElement('div');
-			divContent.classList.add('content');
-			divContent.appendChild(document.createTextNode(item.content));
-			divContent.dataset.id = item.id;
-			divNote.appendChild(divContent);
+		}
 
-			// add to page
-			this.noteContainer.appendChild(divNote);
-
+		// add to page
+		if (0 !== notesUnPinned.children.length) {
+			this.noteContainer.append(notesUnPinned);
+		}
+		if (0 !== notesPinned.children.length) {
+			pinnedTitle.removeAttribute('hidden');
+			this.noteContainer.insertBefore(notesPinned, pinnedTitle.nextSibling);
 		}
 
 		return false;
@@ -2057,6 +2158,8 @@ function NoteBlock() {
 			"title": BTlang.notesLabelTitle,
 			"content": '',
 			"color": '#ffffff',
+			"ispinned": '0',
+			"isstatut": '1',
 			"action": 'newNote',
 		};
 
@@ -2069,132 +2172,46 @@ function NoteBlock() {
 			var noteNode = document.getElementById('i_' + item.id);
 			noteNode.style.opacity = 0;
 		}
-		var popupWrapper = document.createElement('div');
-		popupWrapper.id = 'popup-wrapper';
 
-		// TODO : make this a "form" and put this.markAsEdit() on the "onsubmit" action.
-		var popup = document.createElement('div');
-		popup.id = 'popup';
-		popup.classList.add('popup-note');
-		popup.style.backgroundColor = item.color;
-
-		popupWrapper.appendChild(popup);
-		popupWrapper.addEventListener('click',
-			function(e) {
-				// clic is outside popup: closes popup
-				if (e.target == this) {
-					popupWrapper.parentNode.removeChild(popupWrapper);
-					if (noteNode) noteNode.style.opacity = null;
-				}
-			} );
-
-
-		// note title
-		var title = document.createElement('div');
-		title.classList.add('title');
-		// h2 title
-		var h2 = document.createElement('h2');
-		h2.contentEditable = true;
-		h2.dataset.id = item.id;
-		h2.appendChild(document.createTextNode(item.title));
-		title.appendChild(h2);
-		popup.appendChild(title);
-
-		// note main content
-		var textarea = document.createElement('textarea');
-		textarea.classList.add('content');
-		textarea.appendChild(document.createTextNode(item.content));
-		textarea.cols = 30;
-		textarea.rows = 8;
-		textarea.dataset.id = item.id;
-		textarea.placeholder = 'Content';
-		popup.appendChild(textarea);
-
-
-		// date
-		var noteDate = document.createElement('div');
-		noteDate.classList.add('date');
-		noteDate.appendChild(document.createTextNode(BTlang.createdOn + ' ' + Date.dateFromYMDHIS(item.id).toLocaleDateString('fr', {weekday: "long", month: "long", day: "numeric"}) ));
-		popup.appendChild(noteDate);
-
-		// note buttons
-		var ctrls = document.createElement('div');
-		ctrls.classList.add('noteCtrls');
-		// color button
-		var colorBtn = document.createElement('button');
-		colorBtn.type = 'button';
-
-		colorBtn.classList.add('colorIcon');
-		ctrls.appendChild(colorBtn);
-		var colorLst = document.createElement('ul');
-		colorLst.dataset.id = item.id;
-		colorLst.addEventListener('click',
-			function(e) {
-				if (e.target.tagName == 'LI') {
-					_this.changeColor(item, e);
-				}
-			});
-		colorLst.classList.add('colors');
-		var colorsSet = ['#ffffff', '#FF8A80', '#FFD180', '#FFFF8D', '#CCFF90', '#A7FFEB', '#80D8FF', '#82B1FF', '#F8BBD0', '#CFD8DC'];
-		for (var ili=0; ili<9; ili++) {
-			var li = document.createElement('li');
-			li.style.backgroundColor = colorsSet[ili];
-			colorLst.appendChild(li);
-		}
-		ctrls.appendChild(colorLst);
-		// suppr button
-		var supprBtn = document.createElement('button');
-		supprBtn.type = 'button';
-		supprBtn.classList.add('supprIcon');
-		supprBtn.dataset.id = item.id;
-		supprBtn.addEventListener('click',
-			function() {
-				_this.markAsDeleted(item);
-			});
-		ctrls.appendChild(supprBtn);
-
-		// save button
-		var span = document.createElement('span');
-		span.classList.add('submit-bttns');
-
-		var button = document.createElement('button');
-		button.classList.add('submit', 'button-cancel');
-		button.type = "button";
-		button.addEventListener('click',
-			function() {
-				// closes popup
+		var popupWrapper = this.notePopupTemplate.cloneNode(true);
+		popupWrapper.addEventListener('click', function(e) {
+			// clic is outside popup: closes popup
+			if (e.target == this) {
 				popupWrapper.parentNode.removeChild(popupWrapper);
 				if (noteNode) noteNode.style.opacity = null;
-			})
-		button.appendChild(document.createTextNode(BTlang.cancel));
-		span.appendChild(button);
-
-		var button = document.createElement('button');
-		button.classList.add('submit', 'button-submit');
-		button.dataset.id = item.id;
-		button.type = "button";
-		button.name = "editer";
-		button.addEventListener('click',
-			function() {
-				// mark as edited
-				_this.markAsEdited(item);
-				// closes popup
-				popupWrapper.parentNode.removeChild(popupWrapper);
-				if (noteNode) noteNode.style.opacity = null;
-
-			})
-		button.appendChild(document.createTextNode(BTlang.save));
-		span.appendChild(button);
-
-		ctrls.appendChild(span);
-		popup.appendChild(ctrls);
+			}
+		} );
+		popupWrapper.querySelector('#popup').style.backgroundColor = item.color;
+		popupWrapper.querySelector('#popup').dataset.ispinned = item.ispinned;
+		popupWrapper.querySelector('#popup > .title > h2').textContent = item.title;
+		popupWrapper.querySelector('#popup > .title > .pinnedIcon').addEventListener('click', function(e) {
+			popupWrapper.querySelector('#popup').dataset.ispinned = Math.abs(popupWrapper.querySelector('#popup').dataset.ispinned -1);
+		});
+		popupWrapper.querySelector('#popup > .content').value = item.content;
+		popupWrapper.querySelector('#popup > .date').textContent = Date.dateFromYMDHIS(item.id).toLocaleDateString('fr', {weekday: "long", month: "long", year: "numeric", day: "numeric"});
+		popupWrapper.querySelector('#popup > .noteCtrls > .colors').addEventListener('click', function(e) {
+			if (e.target.tagName == 'LI') _this.changeColor(item, e);
+		});
+		popupWrapper.querySelector('#popup > .noteCtrls > .supprIcon').addEventListener('click', function(e) {
+			_this.markAsDeleted(item);
+		});
+		popupWrapper.querySelector('#popup > .noteCtrls > .submit-bttns > .button-cancel').addEventListener('click', function(e) {
+			popupWrapper.parentNode.removeChild(popupWrapper);
+			if (noteNode) noteNode.style.opacity = null;
+		});
+		popupWrapper.querySelector('#popup > .noteCtrls > .submit-bttns > .button-submit').addEventListener('click', function(e) {
+			// mark as edited
+			_this.markAsEdited(item);
+			// closes popup
+			popupWrapper.parentNode.removeChild(popupWrapper);
+			if (noteNode) noteNode.style.opacity = null;
+		});
 
 		// add to page
 		this.domPage.appendChild(popupWrapper);
 
-		textarea.focus();
+		popupWrapper.querySelector('#popup > .content').focus();
 	}
-
 
 
 	/**************************************
@@ -2213,8 +2230,9 @@ function NoteBlock() {
 		}
 
 		item.content = popup.querySelector('.content').value;
-		item.title = popup.querySelector('h2').firstChild.nodeValue;
+		item.title = popup.querySelector('h2').textContent;
 		item.color = window.getComputedStyle(popup).backgroundColor;
+		item.ispinned = popup.dataset.ispinned;
 
 		// note is new:
 		if (!isEdit) {
@@ -2226,10 +2244,28 @@ function NoteBlock() {
 		else {
 			var theNote = document.getElementById('i_'+item.id);
 			theNote.style.backgroundColor = item.color;
-			theNote.querySelector('.content').firstChild.nodeValue = item.content;
-			theNote.querySelector('h2').firstChild.nodeValue = item.title;
-		}
+			theNote.querySelector('.content').textContent = item.content;
+			theNote.querySelector('h2').textContent = item.title;
+			var oldPinnedState = theNote.dataset.ispinned;
+			theNote.dataset.ispinned = item.ispinned;
 
+			// if pined/unpinned : move note in proper section
+			if (oldPinnedState != theNote.dataset.ispinned) {
+				var pinnedTitle = document.getElementById('are-pinned');
+				if (item.ispinned == 1) {
+					this.noteContainer.insertBefore(theNote, pinnedTitle.nextSibling);
+				}
+				else {
+					this.noteContainer.appendChild(theNote);
+				}
+				// if no pinned : hide <h2> (this is not yet possible in CSS only…)
+				if (pinnedTitle.nextElementSibling.tagName === 'H2') {
+					pinnedTitle.setAttribute('hidden', '');
+				} else {
+					pinnedTitle.removeAttribute('hidden');
+				}
+			}
+		}
 		item.action = item.action || 'updateNote';
 
 		// raises global "updated" flag.
@@ -2244,15 +2280,13 @@ function NoteBlock() {
 		if (!window.confirm(BTlang.questionSupprNote)) { return false; }
 		// mark as removed
 		item.action = 'deleteNote';
-
 		// close popup
 		document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
-
 		// remove item from page too, with little animation
 		var theNote = document.getElementById('i_'+item.id);
 		theNote.classList.add('deleteFadeOutH');
 		theNote.addEventListener('animationend', function(event){event.target.parentNode.removeChild(event.target);}, false);
-
+		
 		// raises global "updated" flag.
 		this.raiseUpdateFlag(true);
 	}
@@ -2370,15 +2404,19 @@ function NoteBlock() {
 
 	AGENDA MANAGEMENT
 **************************************************************************************************************************************/
+
+
 function EventAgenda() {
 	var _this = this;
 
 	/***********************************
 	** Some properties & misc actions
 	*/
+	this.initDate = new Date();
 
 	// init JSON List
-	this.eventsList = Events.list;
+	this.eventsList = JSON.parse(document.getElementById('json_agenda').textContent);
+
 	// init a flag aimed to determine if changes have yet to be pushed
 	this.hasUpdated = false;
 
@@ -2386,6 +2424,47 @@ function EventAgenda() {
 	this.calWrap = document.getElementById('calendar-wrapper');
 	this.domPage = document.getElementById('page');
 	this.notifNode = document.getElementById('message-return');
+
+	this.eventFilter = document.getElementById('filter-events');
+	this.eventFilter.addEventListener('change', function(e) { _this.sortEventByFilter(); });
+
+	this.eventContainer = document.getElementById('daily-events');
+	this.eventTable = document.getElementById('calendar-table');
+
+	// add events on buttons in table
+	this.eventTable.querySelector('thead.month-mode #changeYear > button').addEventListener('click', function(e){
+		_this.eventTable.classList.remove('table-month-mode');
+		_this.eventTable.classList.add('table-year-mode');
+		_this.rebuiltYearlyCal();
+	});
+	this.eventTable.querySelector('thead.month-mode #month > #prev-month').addEventListener('click', function(e){
+			_this.initDate = new Date(_this.initDate.getFullYear(), _this.initDate.getMonth()-1, _this.initDate.getDate());
+			_this.rebuiltMonthlyCal();
+		});
+	this.eventTable.querySelector('thead.month-mode #month > #next-month').addEventListener('click', function(e){
+			_this.initDate = new Date(_this.initDate.getFullYear(), _this.initDate.getMonth()+1, _this.initDate.getDate());
+			_this.rebuiltMonthlyCal();
+		});
+
+	this.eventTable.querySelector('thead.year-mode #year > #prev-year').addEventListener('click', function(e){
+		_this.initDate = new Date(_this.initDate.getFullYear()-1, _this.initDate.getMonth(), _this.initDate.getDate());
+		_this.rebuiltYearlyCal();
+	});
+	this.eventTable.querySelector('thead.year-mode #year > #next-year').addEventListener('click', function(e){
+		_this.initDate = new Date(_this.initDate.getFullYear()+1, _this.initDate.getMonth(), _this.initDate.getDate());
+		_this.rebuiltYearlyCal();
+	});
+
+	// get edit-popup template
+	this.editEventPopupTemplate = document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
+	this.editEventPopupTemplate.removeAttribute('hidden');
+
+
+
+
+	// get event template
+	this.eventTemplate = this.eventContainer.firstElementChild.parentNode.removeChild(this.eventContainer.firstElementChild);
+	this.eventTemplate.removeAttribute('hidden');
 
 	document.getElementById('fab').addEventListener('click', function(e) { _this.addNewEvent(); });
 
@@ -2407,80 +2486,23 @@ function EventAgenda() {
 	 * Draw the MONTHLY calendar
 	*/
 	this.rebuiltMonthlyCal = function() {
-			// empties the node
-			if (document.getElementById('calendar-table')) {
-				this.calWrap.removeChild(document.getElementById('calendar-table'));
-			}
-
 			// reference datetime
-			var date = initDate;
+			var date = this.initDate;
 			var dateToday = new Date();
+			// update Month name on display
+			this.eventTable.querySelector('thead.month-mode #changeYear > span').textContent = this.initDate.toLocaleDateString('fr-FR', {month: "long", year: "numeric"});
 
-			/*******************
-			** the frame + thead
-			*/
-			// the calendar block
-			var calendar = document.createElement('table');
-			calendar.id = 'calendar-table';
-			calendar.classList.add('monthDisplay');
-
-			// thead-tr with prev-next buttons
-			var calThead = calendar.createTHead();
-			var tr = calThead.insertRow();
-			tr.classList.add('monthrow');
-
-			td = tr.insertCell();
-			td.id = 'year';
-			td.colSpan = 3;
-
-			var button = document.createElement('button');
-			button.id = 'show-full-year';
-			button.addEventListener('click', function(e){ _this.rebuiltYearlyCal(); });
-			td.appendChild(button);
-			td.appendChild( (document.createElement('span')).appendChild(document.createTextNode(date.getFullYear())).parentNode);
-
-			td = tr.insertCell();
-			td.id = 'month';
-			td.colSpan = 4;
-			var button = document.createElement('button');
-			button.id = 'prev-month';
-			button.addEventListener('click',
-				function(e){
-					initDate = new Date(initDate.getFullYear(), initDate.getMonth()-1, initDate.getDate());
-					_this.rebuiltMonthlyCal();
-				});
-			td.appendChild(button);
-			td.appendChild( (document.createElement('span')).appendChild(document.createTextNode( date.toLocaleDateString('fr-FR', {month: "long"}) )).parentNode);
-
-
-
-			var button = document.createElement('button');
-			button.id = 'next-month';
-			button.addEventListener('click',
-				function(e){
-					initDate = new Date(initDate.getFullYear(), initDate.getMonth()+1, initDate.getDate());
-					_this.rebuiltMonthlyCal();
-				});
-			td.appendChild(button);
-
-			// thead-tr with date abbr
-			var tr = calThead.insertRow();
-			tr.classList.add('dayAbbr');
-			for (var jour of (BTlang.lmmjvsd).split('')) {
-				tr.appendChild((document.createElement('th')).appendChild(document.createTextNode(jour)).parentNode);
+			// the <td> with the dates are rebuilt each time (much simplier to handle). So when building, first remove old <td>
+			var calBody = this.eventTable.querySelector('tbody.month-mode');
+			if (calBody.firstChild) {
+				while (calBody.firstChild) {calBody.removeChild(calBody.firstChild);}
 			}
 
-			var calBody = document.createElement('tbody');
-			calendar.appendChild(calBody);
-
-
-			/*******************
-			** the days
-			*/
+			/* the days */
 			var firstDay = (new Date(date.getFullYear(), date.getMonth(), 1));
 			var lastDay = (new Date(date.getFullYear(), date.getMonth() + 1, 0));
 
-			// if month is not a complet <table>, complete <table> with days from prev/next month
+			// if month is not a complete square, complete <table> with days from prev/next month
 			// in JS Sunday = 0th day of week. I need 7th, since sunday is last collumn in table
 			var nbDaysPrevMonth = (firstDay.getDay() == 0) ? 7 : firstDay.getDay();
 			var nbDaysNextMonth = 7 - ((lastDay.getDay() == 0) ? 7 : lastDay.getDay());
@@ -2488,6 +2510,7 @@ function EventAgenda() {
 			var firstDayOfCal = new Date(firstDay); firstDayOfCal.setDate(-nbDaysPrevMonth+2);
 			var lastDayOfCal = new Date(lastDay); lastDayOfCal.setDate(lastDay.getDate()+nbDaysNextMonth);
 
+			// complete the actual <table>
 			for (var cell = 1; cell < lastDay.getDate() + nbDaysPrevMonth + nbDaysNextMonth ; cell++) {
 				var dateOfCell = new Date(date.getFullYear(), date.getMonth(), cell-(nbDaysPrevMonth-1) );
 
@@ -2496,12 +2519,10 @@ function EventAgenda() {
 					var tr = calBody.appendChild(document.createElement("tr"));
 				}
 
-
 				var td = document.createElement('td');
 				if (!td.previousSibling) td.dataset.week = dateOfCell.getWeekNumber();
 
-
-				td.id = 'i' + dateOfCell.getMonth() + dateOfCell.getDate();
+				td.id = 'i' + ("00" + (dateOfCell.getMonth() + 1)).slice(-2) + ("00" + dateOfCell.getDate()).slice(-2);
 
 				if (dateOfCell.getDate() == (dateToday.getDate())) {
 					td.classList.add('isToday');
@@ -2516,24 +2537,31 @@ function EventAgenda() {
 					td.classList.add('isNextMonth');
 				}
 
-
 				var button = document.createElement('button');
 				button.appendChild(document.createTextNode( dateOfCell.getDate() ) );
 				button.dataset.date = dateOfCell.dateToISO8601String();
 				button.addEventListener('click',
-					function(e){
-						var oldInitDate = initDate;
-						initDate = new Date(this.dataset.date);
-						if (oldInitDate.getMonth() != initDate.getMonth() ) {
-							_this.rebuiltMonthlyCal();
-						}
+					function(e) {
+						var oldInitDate = _this.initDate;
+						_this.initDate = new Date(this.dataset.date);
+						// on click on a cell, change the #select.value
+						_this.eventFilter.querySelector('option:first-of-type').value = _this.initDate.dateToISO8601String();
+						_this.eventFilter.querySelector('option:first-of-type').textContent = _this.initDate.toLocaleDateString('fr-FR', {weekday: "long", month: "long", day: "numeric", year: "numeric"})
+						_this.eventFilter.selectedIndex = 0;
+						// sort the events for the actual selected date
+						_this.sortEventByFilter();
 					});
+
+				button.addEventListener('dblclick',
+					function(e) {
+						_this.addNewEvent();
+					});
+
+
 				td.appendChild(button);
 				tr.appendChild(td);
 
 			}
-
-			this.calWrap.appendChild(calendar);
 
 			/*******************
 			** append the events to the calendar
@@ -2546,7 +2574,7 @@ function EventAgenda() {
 				// is event in currently displayed month?
 				if (!( eventDateTime >= firstDayOfCal && eventDateTime <= lastDayOfCal ) ) continue;
 
-				var selectCell = document.getElementById('i' + eventDateTime.getMonth() + eventDateTime.getDate());
+				var selectCell = document.getElementById('i' + ("00" + (eventDateTime.getMonth() + 1)).slice(-2) + ("00" + eventDateTime.getDate()).slice(-2));
 				if (selectCell.classList.contains('hasEvent')) {
 					selectCell.dataset.nbEvents++;
 				}
@@ -2554,16 +2582,12 @@ function EventAgenda() {
 					selectCell.dataset.nbEvents = 1;
 
 					selectCell.classList.add('hasEvent');
-					selectCell.firstChild.addEventListener('click',
-						function() {
-							_this.rebuiltDailySched(this.dataset.date);
-						})
 				}
 			}
 
 			// saves calendar size
-			this.calWrap.dataset.calendarSizeW = calendar.getBoundingClientRect().width;
-			this.calWrap.dataset.calendarSizeH = calendar.getBoundingClientRect().height;
+			this.calWrap.dataset.calendarSizeW = this.eventTable.getBoundingClientRect().width;
+			this.calWrap.dataset.calendarSizeH = this.eventTable.getBoundingClientRect().height;
 	}
 	// Init events lists (default in "calendar" view)
 	this.rebuiltMonthlyCal();
@@ -2573,60 +2597,15 @@ function EventAgenda() {
 	 * Draw the YEARLY calendar
 	*/
 	this.rebuiltYearlyCal = function() {
-			// empties the node
-			if (document.getElementById('calendar-table')) {
-				this.calWrap.removeChild(document.getElementById('calendar-table'));
+			this.eventTable.querySelector('thead.year-mode #year > span').textContent = this.initDate.getFullYear();
+
+			// the <td>s with the dates are rebuilt each time (much simplier to handle). So when building, first remove old <td>
+			var calBody = this.eventTable.querySelector('tbody.year-mode');
+			if (calBody.firstChild) {
+				while (calBody.firstChild) {calBody.removeChild(calBody.firstChild);}
 			}
 
-			// reference datetime
-			var date = initDate;
-			var dateToday = new Date();
-			var tempDate = new Date();
-
-			/*******************
-			** the frame + thead
-			*/
-			// the calendar block
-			var calendar = document.createElement('table');
-			calendar.id = 'calendar-table';
-			calendar.classList.add('yearDisplay');
-
-			// thead-tr with prev-next buttons
-			var calThead = calendar.createTHead();
-			var tr = calThead.insertRow();
-			tr.classList.add('monthrow');
-
-			var td = tr.insertCell();
-			td.id = 'year';
-			td.colSpan = 4;
-			var button = document.createElement('button');
-			button.id = 'prev-year';
-			button.addEventListener('click',
-				function(e){
-					initDate = new Date(initDate.getFullYear()-1, initDate.getMonth(), initDate.getDate());
-					_this.rebuiltYearlyCal();
-				});
-			td.appendChild(button);
-			td.appendChild( (document.createElement('span')).appendChild(document.createTextNode( date.getFullYear() )).parentNode);
-
-			var button = document.createElement('button');
-			button.id = 'next-year';
-			button.addEventListener('click',
-				function(e){
-					initDate = new Date(initDate.getFullYear()+1, initDate.getMonth(), initDate.getDate());
-					_this.rebuiltYearlyCal();
-				});
-			td.appendChild(button);
-
-			var calBody = document.createElement('tbody');
-			calendar.appendChild(calBody);
-
-			calendar.style.height = this.calWrap.dataset.calendarSizeH + 'px';
-			calendar.style.width = this.calWrap.dataset.calendarSizeW + 'px';
-
-			/*******************
-			** the Months
-			*/
+			/* the Months */
 
 			for (var cell = 0; cell < 12 ; cell++) {
 
@@ -2636,231 +2615,185 @@ function EventAgenda() {
 				}
 
 				var td = tr.appendChild(document.createElement('td'));
-				td.dataset.datetime = (new Date(date.getFullYear(), cell, date.getDate() ) );
-				if (cell == (dateToday.getMonth())) {
+				td.dataset.datetime = (new Date(this.initDate.getFullYear(), cell, this.initDate.getDate() ) );
+				if (cell == ((new Date()).getMonth())) {
 					td.classList.add('isToday');
 				}
 				var button = document.createElement('button');
-				tempDate.setMonth(cell);
-				button.appendChild(document.createTextNode( tempDate.toLocaleDateString('fr-FR', {month: "short"}) ));
+				button.appendChild(document.createTextNode( (new Date(this.initDate.getFullYear(), cell, this.initDate.getDate())).toLocaleDateString('fr-FR', {month: "short"}) ));
 
 				button.addEventListener('click', function(e){
-					initDate = new Date( this.parentNode.dataset.datetime );
+					_this.eventTable.classList.remove('table-year-mode');
+					_this.eventTable.classList.add('table-month-mode');
+
+					_this.initDate = new Date( this.parentNode.dataset.datetime );
 					_this.rebuiltMonthlyCal();
 				});
 				td.appendChild(button);
 			}
-			this.calWrap.appendChild(calendar);
+
+			this.eventTable.style.height = this.calWrap.dataset.calendarSizeH + 'px';
+			this.eventTable.style.width = this.calWrap.dataset.calendarSizeW + 'px';
 	}
 
 
-	this.rebuiltDailySched = function(date) {
-		date = new Date(date);
-		var dewNode = document.getElementById('daily-events-wrapper');
+	this.rebuiltEventsWall = function(EventsData) {
 		// empties the node
-		if (dewNode) {
-			while (dewNode.firstChild) {dewNode.removeChild(dewNode.firstChild);}
+		if (this.eventContainer.firstChild) {
+			while (this.eventContainer.firstChild) {this.eventContainer.removeChild(this.eventContainer.firstChild);}
+		}
+		// TODO : add "no event" message
+		if (0 === EventsData.length) return false;
+
+		// sort chronologically
+		EventsData.sort(function(a, b) {
+			if (a.date > b.date) return 1;
+			return -1;
+		});
+
+		var date = Date.now();
+		var evList = document.createDocumentFragment();
+
+		// populates the new list
+		for (var i = 0, len = EventsData.length ; i < len ; i++) {
+			var item = EventsData[i]; // sort in reverse order
+			var itemDate = new Date(item.date);
+			var div = this.eventTemplate.cloneNode(true);
+			// ignore deleted events
+			if (item.action == 'deleteEvent') continue;
+			div.dataset.id = item.id;
+			div.addEventListener('click',
+				function() {
+					_this.showEventPopup(this.dataset.id);
+				} );
+
+			if (itemDate >= new Date()) {
+				div.classList.add('futureEvent');
+			} else {
+				div.classList.add('pastEvent');
+			}
+			div.querySelector('.eventDate').title = itemDate.toLocaleDateString('fr', {weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "numeric"});
+			div.querySelector('.event-dd').textContent = itemDate.getDate();
+			div.querySelector('.event-mmdd').textContent = itemDate.toLocaleDateString('fr', {month: "short"}) + ", " + itemDate.toLocaleDateString('fr', {weekday: "short"});
+			div.querySelector('.event-hhii').textContent = itemDate.toLocaleTimeString('fr', {hour: 'numeric', minute: 'numeric'});
+			div.querySelector('.eventSummary > .title').textContent = item.title;
+			div.querySelector('.eventSummary > .loc').textContent = item.loc;
+
+			evList.appendChild(div);
 		}
 
+		this.eventContainer.appendChild(evList);
 
-		var dailyEvs = document.createElement('div');
-		dailyEvs.id = 'daily-events';
+	}
+
+	/**************************************
+	 * Sorting functions
+	*/
+
+	// sort Event according to the "select" element status.
+	this.sortEventByFilter = function() {
+		// init sorting mode from the <select> form value
+		var selectDate = this.eventFilter.value;
+
+	
+		var filter = function(date) {
+			switch(selectDate) {
+
+				case 'today':
+					if (date.toDateString() == (new Date()).toDateString()) {
+						return true;
+					}
+					break;
+
+				case 'tomonth':
+					var newD = new Date();
+					if ("" + date.getFullYear() + date.getMonth() == "" + newD.getFullYear() + newD.getMonth()) {
+						return true;
+					}
+					break;
+
+				case 'toyear':
+					if (date.getFullYear() == (new Date()).getFullYear()) {
+						return true;
+					}
+					break;
+
+				case 'past':
+					if (date <= new Date()) {
+						return true;
+					}
+					break;
+
+				case 'all':
+					return true;
+					break;
+
+				default:
+					selectDate = new Date(selectDate);
+					if (date.toDateString() == selectDate.toDateString()) {
+						return true;
+					}
+					break;
+
+			}
+			return false;
+
+		}
+
+		var newList = new Array();
 
 		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
 			var item = this.eventsList[len-1-i];
 			if (item.action == 'deleteEvent') continue;
-			var itemDate = new Date(item.date); itemDate.setHours(0, 0, 0, 0);
+			var itemDate = new Date(item.date);
 
 			// if the event is today, add a row to div.
-			if (itemDate.toDateString() == date.toDateString()) {
-				var itemDiv = document.createElement("div");
-				//itemDiv.dataset.id = item.id;
-				itemDiv.dataset.indexId = len-1-i;
-				itemDiv.addEventListener('click',
-					function() {
-						_this.showEventPopup(_this.eventsList[this.dataset.indexId]);
-					} );
-
-				if (new Date(item.date) >= new Date()) {
-					itemDiv.classList.add('futureEvent');
-				} else {
-					itemDiv.classList.add('pastEvent');
-				}
-				var itemDateEvent = document.createElement("div");
-				itemDateEvent.classList.add('eventDate');
-				itemDateEvent.appendChild(document.createTextNode(new Date(item.date).toLocaleTimeString('fr', {hour: 'numeric', minute: 'numeric'})));
-				itemDiv.appendChild(itemDateEvent);
-
-				var itemSummaryEvent = document.createElement("div");
-				itemSummaryEvent.classList.add('eventSummary');
-				itemSummaryEvent.appendChild(document.createElement('h2').appendChild(document.createTextNode(item.title)).parentNode );
-				if (item.content) {
-					itemSummaryEvent.appendChild(document.createElement('div').appendChild(document.createTextNode(item.content)).parentNode );
-				}
-
-				itemDiv.appendChild(itemSummaryEvent);
-
-				dailyEvs.appendChild(itemDiv);
+			if ( filter(itemDate) === true ) {
+				newList.push(item);
 			}
 		}
-
-		if (dailyEvs.firstChild) {
-			dewNode.appendChild( document.createElement('p').appendChild(document.createTextNode(date.toLocaleDateString('fr', {weekday: "long", month: "long", day: "numeric"}) + ' :' )).parentNode );
-			dewNode.appendChild(dailyEvs);
-		}
-	}
-
-
-	/**************************************
-	 * Built the event wall (bellow the calendar)
-    * TODO : add buttons (like in 'fichiers') to filter events : past, today, to come…
-	*/
-	this.rebuiltEventsWall = function(EventsData) {
-		if (0 === EventsData.length) return false;
-
-		// populates the new list
-		for (var i = 0, len = EventsData.length ; i < len ; i++) {
-			var item = EventsData[i];
-			var dateToday = new Date();
-			var row = document.createElement('tr');
-			var dateItem = new Date(item.date);
-
-			if (dateToday > dateItem) {
-				row.classList.add('pastEvent', 'pastEventHidden');
-			}
-
-			row.id = 'i_' + item.id;
-			//row.dataset.date = item.date;
-			row.dataset.j = i;
-			row.addEventListener('click',
-				function(){
-					_this.showEventPopup(_this.eventsList[this.dataset.j]);
-				} );
-
-			var cellDate = document.createElement('td');
-			cellDate.appendChild(document.createTextNode( dateItem.toLocaleDateString('fr-FR', {weekday: "short", month: "short", day: "numeric"}) ) );
-
-			row.appendChild(cellDate);
-
-			var cellName = document.createElement('td');
-			cellName.appendChild(document.createTextNode(item.title));
-			row.appendChild(cellName);
-
-			var cellDescr = document.createElement('td');
-			cellDescr.appendChild(document.createTextNode(item.content));
-			row.appendChild(cellDescr);
-
-			document.getElementById('event-list').getElementsByTagName('tbody')[0].appendChild(row);
-
-		}
-
-		if (document.querySelector('#event-list .pastEventHidden')) {
-			var button = document.createElement('button');
-			button.appendChild(document.createTextNode(BTlang.questionPastEvents));
-			button.classList.add('submit', 'button-cancel');
-			button.addEventListener('click',
-				function() {
-					var pastEvents = document.querySelectorAll('#event-list .pastEventHidden');
-					for (var i=0, len = pastEvents.length ; i < len ; i++) pastEvents[i].classList.remove('pastEventHidden');
-					button.parentNode.removeChild(button);
-				});
-			document.getElementById('events-section').appendChild(button);
-		}
-		return false;
+		this.rebuiltEventsWall(newList);
 	}
 	// init the whole DOM list
-	this.rebuiltEventsWall(this.eventsList);
+	this.sortEventByFilter();
 
 
 	/**************************************
 	 * Displays the "show event" popup
 	*/
-	this.showEventPopup = function(item) {
-		var popupWrapper = document.createElement('div');
-		popupWrapper.id = 'popup-wrapper';
-
-		var popup = document.createElement('div');
-
-		popup.id = 'popup';
-		popup.classList.add('popup-event');
-		popupWrapper.appendChild(popup);
-
-		popupWrapper.addEventListener('click',
-			function(e){
-				// clic is outside popup: closes popup
-				if (e.target == this) {
-					popupWrapper.parentNode.removeChild(popupWrapper);
-				}
-			} );
-
-		// Popup > Title
-		var title = document.createElement('div');
-		title.classList.add('event-title');
-		title.appendChild( (document.createElement('span')).appendChild(document.createTextNode(item.title)).parentNode );
-
-		// Popup > Title > menu options
-		var options = document.createElement('div');
-		options.classList.add('item-menu-options');
-		var optionsUl = document.createElement('ul');
-		options.appendChild(optionsUl);
-		var optionsUlLi = document.createElement('li');
-		optionsUl.appendChild(optionsUlLi);
-		var optionsUlLiA = document.createElement('a');
-		optionsUlLiA.appendChild(document.createTextNode(BTlang.supprimer));
-		optionsUlLiA.addEventListener('click',
-			function(e){
-				_this.markAsDeleted(item);
-			} );
-		optionsUlLi.appendChild(optionsUlLiA);
-		title.appendChild(options);
-
-		// Popup > Title > Cancel button
-		var button = document.createElement('button');
-		button.classList.add('submit', 'button-cancel');
-		button.type = "button";
-		button.addEventListener('click',
-			function() {
-				popupWrapper.parentNode.removeChild(popupWrapper);
-			} );
-		title.appendChild(button);
-
-		// Popup > Title > Édit Button
-		var editButton = document.createElement('button');
-		editButton.classList.add('button-edit');
-		editButton.addEventListener('click',
-			function() {
-				_this.showEventEditPopup(item);
-			});
-		title.appendChild(editButton);
-
-		popup.appendChild(title);
-
-		// Popup > event info
-		var content = document.createElement('div');
-		content.classList.add('event-content');
-
-		var ul = document.createElement('ul');
-		var li = document.createElement('li');
-		li.classList.add('event-time');
-
-		li.appendChild( (document.createElement('span')).appendChild(document.createTextNode( (new Date(item.date)).toLocaleDateString('fr-FR', {weekday: "long", year: "numeric", month: "long", day: "numeric"}) )).parentNode );
-		li.appendChild( (document.createElement('span')).appendChild(document.createTextNode( (new Date(item.date)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'} ) )).parentNode );
-		ul.appendChild(li);
-
-		if (item.loc) {
-			var li = document.createElement('li');
-			li.classList.add('event-loc');
-			li.appendChild(document.createTextNode(item.loc));
-			ul.appendChild(li);
+	this.showEventPopup = function(id) {
+		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
+			if (this.eventsList[i].id === id) {
+				var item = this.eventsList[i];
+				break;
+			}
 		}
+		var popupWrapper = this.editEventPopupTemplate.cloneNode(true);
+		popupWrapper.addEventListener('click', function(e) {
+			// clic is outside popup: closes popup
+			if (e.target == this) {
+				popupWrapper.parentNode.removeChild(popupWrapper);
+			}
+		});
+		popupWrapper.querySelector('.popup-event').id = 'popup';
+		popupWrapper.querySelector('.popup-event').removeAttribute('hidden');
 
-		var li = document.createElement('li');
-		li.classList.add('event-description');
-		li.appendChild(document.createTextNode(item.content));
-		ul.appendChild(li);
+		popupWrapper.querySelector('#popup > .event-title > span').textContent = item.title;
+		popupWrapper.querySelector('#popup > .event-title > .item-menu-options > ul > li > a').addEventListener('click', function(e){
+			_this.markAsDeleted(item);
+		});
+		popupWrapper.querySelector('#popup > .event-title > .button-cancel').addEventListener('click', function() {
+			popupWrapper.parentNode.removeChild(popupWrapper);
+		});
+		popupWrapper.querySelector('#popup > .event-title > .button-edit').addEventListener('click', function() {
+			popupWrapper.parentNode.removeChild(popupWrapper);
+			_this.showEventEditPopup(item);
+		});
 
-		content.appendChild(ul);
-		popup.appendChild(content);
+		popupWrapper.querySelector('#popup > .event-content > ul > li.event-time > span:nth-of-type(1)').textContent = (new Date(item.date)).toLocaleDateString('fr-FR', {weekday: "long", year: "numeric", month: "long", day: "numeric"});
+		popupWrapper.querySelector('#popup > .event-content > ul > li.event-time > span:nth-of-type(2)').textContent = (new Date(item.date)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'} );
+		popupWrapper.querySelector('#popup > .event-content > ul > li.event-loc').textContent = item.loc;
+		popupWrapper.querySelector('#popup > .event-content > ul > li.event-description').textContent = item.content;
 
 		this.domPage.appendChild(popupWrapper);
 	}
@@ -2870,151 +2803,40 @@ function EventAgenda() {
 	 * Displays the "Edit event" popup (also for "new" events)
 	*/
 	this.showEventEditPopup = function(item) {
-		// if any popup : remove it first
-		if (document.getElementById('popup-wrapper')) {
-			document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
-		}
-
-		var popupWrapper = document.createElement('div');
-		popupWrapper.id = 'popup-wrapper';
-
-		var popup = document.createElement('form');
-		popup.id = 'popup';
-		popup.classList.add('popup-edit-event');
-		//popup.dataset.id = item.id;
-		popup.addEventListener('submit',
-			function() {
-				_this.markAsEdited(item);
-				// closes popup
+		var popupWrapper = this.editEventPopupTemplate.cloneNode(true);
+		popupWrapper.addEventListener('click', function(e) {
+			// clic is outside popup: closes popup
+			if (e.target == this) {
 				popupWrapper.parentNode.removeChild(popupWrapper);
-			})
-		popupWrapper.appendChild(popup);
+			}
+		});
 
-		popupWrapper.addEventListener('click',
-			function(e){
-				// clic is outside popup: closes popup
-				if (e.target == this) {
-					popupWrapper.parentNode.removeChild(popupWrapper);
-				}
-			} );
+		popupWrapper.querySelector('.popup-edit-event').id = 'popup';
+		popupWrapper.querySelector('.popup-edit-event').removeAttribute('hidden');
 
-		// title block
-		var title = document.createElement('div');
-		title.classList.add('event-title');
+		popupWrapper.querySelector('#popup > .event-title > .button-cancel').addEventListener('click', function() {
+			popupWrapper.parentNode.removeChild(popupWrapper);
+		});
+		popupWrapper.querySelector('#popup > .event-title > .button-submit').addEventListener('click', function() {
+			_this.markAsEdited(item);
+			popupWrapper.parentNode.removeChild(popupWrapper);
+		});
 
-		// cancel button
-		var button = document.createElement('button');
-		button.classList.add('submit', 'button-cancel');
-		button.type = "button";
-		button.addEventListener('click',
-			function() {
-				popupWrapper.parentNode.removeChild(popupWrapper);
-			} );
-		title.appendChild(button);
+		popupWrapper.querySelector('#popup > .event-title > input').value = item.title;
+		popupWrapper.querySelector('#popup > .event-content-date #allDay').addEventListener('change', function() {
+			var timeInput = document.getElementById('time');
+			if (this.checked) {
+				timeInput.classList.add('hidden');
+			}
+			else {
+				timeInput.classList.remove('hidden');
+			}
+		});
 
-
-		// save button
-		var button = document.createElement('button');
-		button.classList.add('submit', 'button-submit');
-		button.type = "submit";
-		button.name = "editer";
-		button.appendChild(document.createTextNode(BTlang.save));
-
-		title.appendChild(button);
-
-		var titleInput = document.createElement('input');
-		titleInput.value = item.title;
-		titleInput.type = 'text';
-		titleInput.classList.add('text');
-		titleInput.name = 'itemTitle';
-		titleInput.required = 'required';
-		titleInput.placeholder = BTlang.add_title;
-
-		title.appendChild(titleInput);
-		popup.appendChild(title);
-
-		var contentDate = document.createElement('div');
-		contentDate.classList.add('event-content');
-		contentDate.classList.add('event-content-date');
-
-		// "all day" form
-		var p = document.createElement('p');
-
-		var checkbox = document.createElement('input');
-		checkbox.type = "checkbox";
-		checkbox.name = "allDay";
-		checkbox.id = "allDay";
-		checkbox.addEventListener('change',
-			function() {
-				var timeInput = document.getElementById('time');
-				if (this.checked) {
-					timeInput.classList.add('hidden');
-					timeInput.value = '00:00';
-				}
-				else {
-					timeInput.classList.remove('hidden');
-				}
-			} );
-
-
-		checkbox.checked = '';
-		checkbox.classList.add('checkbox-toggle');
-		var label = document.createElement('label').appendChild(document.createTextNode(BTlang.entireDay)).parentNode;
-		label.htmlFor = "allDay"
-		p.appendChild(checkbox)
-		p.appendChild(label)
-
-		contentDate.appendChild(p);
-
-		// date & time
-		var p = document.createElement('p');
-		var inputT = document.createElement('input');
-		inputT.classList.add('text');
-		inputT.type = 'time';
-		inputT.required = 'required';
-		inputT.value = item.date.substr(11, 5); // FIXME don’t do SUBSTR : use date()
-		inputT.name = 'time';
-		inputT.id = 'time';
-
-		var inputD = document.createElement('input');
-		inputD.classList.add('text');
-		inputD.type = 'date';
-		inputD.required = 'required';
-		inputD.value = item.date.substr(0, 10); // FIXME don’t do SUBSTR : use date()
-		inputD.name = 'date';
-		inputD.id = 'date';
-
-		p.appendChild(inputD);
-		p.appendChild(inputT);
-		contentDate.appendChild(p);
-
-		var contentLoc = document.createElement('div');
-		contentLoc.classList.add('event-content');
-		contentLoc.classList.add('event-content-loc');
-		var locInput = document.createElement('input');
-		locInput.placeholder = BTlang.add_location;
-		locInput.type = 'text';
-		locInput.classList.add('text');
-		locInput.name = 'loc';
-		locInput.value = item.loc;
-		contentLoc.appendChild(locInput);
-
-
-		var contentDescr = document.createElement('div');
-		contentDescr.classList.add('event-content');
-		contentDescr.classList.add('event-content-descr');
-		var descrInput = document.createElement('textarea');
-		descrInput.placeholder = BTlang.add_description;
-		descrInput.cols = "30"; descrInput.rows = "3";
-		descrInput.classList.add('text');
-		descrInput.name = 'descr';
-		descrInput.value = item.content;
-		contentDescr.appendChild(descrInput);
-
-
-		popup.appendChild(contentDate);
-		popup.appendChild(contentLoc);
-		popup.appendChild(contentDescr);
+		popupWrapper.querySelector('#popup > .event-content-date #time').value = item.date.substr(11, 5); // FIXME don’t do SUBSTR : use date()
+		popupWrapper.querySelector('#popup > .event-content-date #date').value = item.date.substr(0, 10); // FIXME don’t do SUBSTR : use date()
+		popupWrapper.querySelector('#popup > .event-content-loc input').value = item.loc;
+		popupWrapper.querySelector('#popup > .event-content-descr textarea').value = item.content;
 
 		this.domPage.appendChild(popupWrapper);
 	}
@@ -3037,7 +2859,7 @@ function EventAgenda() {
 			}
 		}
 
-		item.title = popup.querySelector('.event-title input').value;;
+		item.title = popup.querySelector('.event-title input').value;
 		item.content = popup.querySelector('.event-content-descr .text').value;
 		item.loc = popup.querySelector('.event-content-loc .text').value;
 		var newDate = new Date(document.getElementById('date').value + " " + document.getElementById('time').value);
@@ -3046,28 +2868,11 @@ function EventAgenda() {
 		// event is new:
 		if (!isEdit) {
 			item.id = item.date.substr(0,19).replace(/[:T-]/g, ''); // give it an ID
-			// TODO : place it in at the right place in the table.
-			this.rebuiltEventsWall([item]);                         // append it to #event-list
 			this.eventsList.push(item);                             // append it to the eventsList{}
-
 		}
 
-		// event is only edited
-		else {
-			// update display in #event-list // TODO : also update "hasEvents" in calendar.
-			var theRow = document.getElementById('i_'+ item.id);
-			theRow.getElementsByTagName('td')[0].firstChild.nodeValue = newDate.toLocaleDateString('fr-FR', {weekday: "short", month: "short", day: "numeric"})
-			theRow.getElementsByTagName('td')[1].firstChild.nodeValue = item.title;
-			theRow.getElementsByTagName('td')[2].firstChild.nodeValue = item.content;
-			if (newDate < new Date()) {
-				theRow.classList.add('pastEvent');
-			} else {
-				theRow.classList.remove('pastEvent');
-			}
-		}
-
-		// hide from daily schedule (if sched is displayed for that day, only)
-		this.rebuiltDailySched(item.date);
+		// event is only edited // TODO : instead of rebuilting the wall, only edit Node.
+		this.sortEventByFilter();
 
 		// rebuilt Calendar to take changes into account. // TODO: perhaps not rebuilt cal, but only add/move buttons (for perf) ?
 		this.rebuiltMonthlyCal();
@@ -3083,7 +2888,7 @@ function EventAgenda() {
 	 * Creates a new event, init it, display it and add it to list.
 	*/
 	this.addNewEvent = function() {
-		var date = initDate;
+		var date = this.initDate;
 		var newEv = {
 			"id": '',
 			"date": date.dateToISO8601String(),
@@ -3104,14 +2909,9 @@ function EventAgenda() {
 	this.markAsDeleted = function(item) {
 		if (!window.confirm(BTlang.questionSupprEvent)) { return false; }
 		item.action = 'deleteEvent';
-		// hide from list
-		var theRow = document.getElementById('i_'+ item.id);
-		theRow.parentNode.removeChild(theRow);
 
-		// hide from daily schedule (if sched is displayed for that day, only)
-		if (initDate.getDate() == new Date(item.date).getDate()) {
-			this.rebuiltDailySched(item.date);
-		}
+		// rebuilt wall
+		this.sortEventByFilter();
 
 		// rebuilt Calendar to take changes into account. // TODO: perhaps not rebuilt cal, but only add/move buttons (for perf) ?
 		this.rebuiltMonthlyCal();
@@ -3122,7 +2922,6 @@ function EventAgenda() {
 		// raises global "updated" flag.
 		this.raiseUpdateFlag(true);
 	}
-
 
 
 	/**************************************
@@ -3204,60 +3003,5 @@ function EventAgenda() {
 		formData.append('save_events', eventsDataText);
 		xhr.send(formData);
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

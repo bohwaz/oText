@@ -11,6 +11,189 @@ require_once 'inc/boot.php';
 operate_session();
 $GLOBALS['liste_flux'] = open_serialzd_file(FEEDS_DB);
 
+// création du dossier des backups
+creer_dossier(DIR_BACKUP, 0);
+
+
+
+/*
+ *
+ *
+ *
+ *
+ *
+ *  E X P O R T     F U N C T I O N S 
+ */
+
+
+///////////////////////////////////////////////////////////////////////////////////
+//
+// Creates the HTML file containing the links
+// The HTML fil has the same format as all major browser "import bookmarks" format.
+//
+
+function creer_fich_html() {
+	// récupère les liens
+	$query = "SELECT * FROM links ORDER BY bt_id DESC";
+	$list = liste_elements($query, array(), 'links');
+
+	// génération du code HTML.
+	$html = '<!DOCTYPE NETSCAPE-Bookmark-file-1><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">'."\n";
+	$html .= '<TITLE>Blogotext links export '.date('Y-M-D').'</TITLE><H1>Blogotext links export</H1>'."\n";
+	foreach ($list as $n => $link) {
+		$dec = decode_id($link['bt_id']);
+		$timestamp = mktime($dec['h'], $dec['i'], $dec['s'], $dec['m'], $dec['d'], $dec['y']); // HISMDY : wtf!
+		$html .= '<DT><A HREF="'.$link['bt_link'].'" ADD_DATE="'.$timestamp.'" PRIVATE="'.abs(1-$link['bt_statut']).'" TAGS="'.$link['bt_tags'].'">'.$link['bt_title'].'</A>'."\n";
+		$html .= '<DD>'.strip_tags($link['bt_wiki_content'])."\n";
+	}
+
+	// écriture du fichier
+	$file = 'backup-links-'.date('Ymd-His').'.html';
+	$filepath = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), '', dirname(__DIR__)).'/'.str_replace(BT_ROOT, '', DIR_BACKUP).$file;
+	return (file_put_contents(DIR_BACKUP.$file, $html) === FALSE) ? FALSE : $filepath; // écriture du fichier
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////
+//
+// Creates the Zip archive, with several oText data storage folders
+//
+
+function creer_fichier_zip($dossiers) {
+	function addFolder2zip($zip, $folder) {
+		if ($handle = opendir($folder)) {
+			while (FALSE !== ($entry = readdir($handle))) {
+				if ($entry != "." and $entry != ".." and is_readable($folder.'/'.$entry)) {
+					if (is_dir($folder.'/'.$entry)) addFolder2zip($zip, $folder.'/'.$entry);
+					else $zip->addFile($folder.'/'.$entry, preg_replace('#^\.\./#', '', $folder.'/'.$entry));
+			}	}
+			closedir($handle);
+		}
+	}
+
+	foreach($dossiers as $i => $dossier) {
+		$dossiers[$i] = '../'.str_replace(BT_ROOT, '', $dossier); // FIXME : find cleaner way for '../';
+	}
+	$file = 'backup-zip-'.date('Ymd-His').'.zip';
+	$filepath = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), '', dirname(__DIR__)).'/'.str_replace(BT_ROOT, '', DIR_BACKUP).$file;
+
+	$zip = new ZipArchive;
+	if ($zip->open(DIR_BACKUP.$file, ZipArchive::CREATE) === TRUE) {
+		foreach ($dossiers as $dossier) {
+			addFolder2zip($zip, $dossier);
+		}
+		$zip->close();
+		if (is_file(DIR_BACKUP.$file)) return $filepath;
+	}
+	else return FALSE;
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+//
+// Creates the JSON export file, with a provided data Array.
+//
+
+function creer_fichier_json($data_array) {
+	$file = 'backup-data-'.date('Ymd-His').'.json';
+	$filepath = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), '', dirname(__DIR__)).'/'.str_replace(BT_ROOT, '', DIR_BACKUP).$file;
+	return (file_put_contents(DIR_BACKUP.$file, json_encode($data_array)) === FALSE) ? FALSE : $filepath;
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+//
+// Creates the OPML file
+//
+
+function creer_fichier_opml() {
+	// sort feeds by folder
+	$folders = array();
+	foreach ($GLOBALS['liste_flux'] as $i => $feed) {
+		$folders[$feed['folder']][] = $feed;
+	}
+	ksort($folders);
+
+	$html  = '<?xml version="1.0" encoding="utf-8"?>'."\n";
+	$html .= '<opml version="1.0">'."\n";
+	$html .= "\t".'<head>'."\n";
+	$html .= "\t\t".'<title>Newsfeeds '.BLOGOTEXT_NAME.' '.BLOGOTEXT_VERSION.' on '.date('Y/m/d').'</title>'."\n";
+	$html .= "\t".'</head>'."\n";
+	$html .= "\t".'<body>'."\n";
+
+	function esc($a) {
+		return htmlspecialchars($a, ENT_QUOTES, 'UTF-8');
+	}
+	
+	foreach ($folders as $i => $folder) {
+		$outline = '';
+		foreach ($folder as $j => $feed) {
+			$outline .= ($i ? "\t" : '')."\t\t".'<outline text="'.esc($feed['title']).'" title="'.esc($feed['title']).'" type="rss" xmlUrl="'.esc($feed['link']).'" />'."\n";
+		}
+		if ($i != '') {
+			$html .= "\t\t".'<outline text="'.esc($i).'" title="'.esc($i).'" >'."\n";
+			$html .= $outline;
+			$html .= "\t\t".'</outline>'."\n";	
+		} else {
+			$html .= $outline;
+		}
+	}
+
+	$html .= "\t".'</body>'."\n".'</opml>';
+
+	$file = 'backup-feeds-'.date('Ymd-His').'.opml';
+	$filepath = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), '', dirname(__DIR__)).'/'.str_replace(BT_ROOT, '', DIR_BACKUP).$file;
+
+	return (file_put_contents(DIR_BACKUP.$file, $html) === FALSE) ? FALSE : $filepath;
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+//
+// Creates the XML file for the notes
+//
+
+function creer_fichier_xmlnotes() {
+	// récupère les notes
+	$query = "SELECT * FROM notes ORDER BY bt_id DESC";
+	$list = liste_elements($query, array(), 'notes');
+
+	function esc($a) {
+		return htmlspecialchars($a, ENT_QUOTES, 'UTF-8');
+	}
+
+	$html  = '<?xml version="1.0" encoding="utf-8"?>'."\n";
+	$html .= '<stickynotes version="1.20.1">'."\n";
+	foreach ($list as $note) {
+		$html .= "\t".'<note title="'.esc($note['bt_title']).'" color="'.$note['bt_color'].'" locked="'.$note['bt_pinned'].'" pinned="'.$note['bt_pinned'].'" statut="'.$note['bt_statut'].'" id="'.$note['bt_id'].'">';
+		$html .= $note['bt_content'];
+		$html .= "\t".'</note>'."\n";
+	}
+	$html .= "\t".'</stickynotes>';
+
+	$file = 'backup-notes-'.date('Ymd-His').'.xml';
+	$filepath = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), '', dirname(__DIR__)).'/'.str_replace(BT_ROOT, '', DIR_BACKUP).$file;
+
+	return (file_put_contents(DIR_BACKUP.$file, $html) === FALSE) ? FALSE : $filepath;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
  * reconstruit la BDD des fichiers (en synchronisant la liste des fichiers sur le disque avec les fichiers dans BDD)
@@ -133,7 +316,7 @@ function rebuilt_file_db() {
 		return 'Erreur 39787 ajout images du disque dans DB: '.$e->getMessage();
 	}
 
-/* TODO
+	/* TODO
 	// fait pareil pour les files/ *
 	foreach ($docs_on_disc as $file) {
 		if (!in_array($file, $files_db)) {
@@ -167,34 +350,10 @@ function rebuilt_file_db() {
 	*/
 }
 
-/*
- * génère le fichier HTML au format de favoris utilisés par tous les navigateurs.
-*/
-function creer_fich_html() {
-	// récupère les liens
-	$query = "SELECT * FROM links ORDER BY bt_id DESC";
-	$list = liste_elements($query, array(), 'links');
-
-	// génération du code HTML.
-	$html = '<!DOCTYPE NETSCAPE-Bookmark-file-1><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">'."\n";
-	$html .= '<TITLE>Blogotext links export '.date('Y-M-D').'</TITLE><H1>Blogotext links export</H1>'."\n";
-	foreach ($list as $n => $link) {
-		$dec = decode_id($link['bt_id']);
-		$timestamp = mktime($dec['h'], $dec['i'], $dec['s'], $dec['m'], $dec['d'], $dec['y']); // HISMDY : wtf!
-		$html .= '<DT><A HREF="'.$link['bt_link'].'" ADD_DATE="'.$timestamp.'" PRIVATE="'.abs(1-$link['bt_statut']).'" TAGS="'.$link['bt_tags'].'">'.$link['bt_title'].'</A>'."\n";
-		$html .= '<DD>'.strip_tags($link['bt_wiki_content'])."\n";
-	}
-
-	// écriture du fichier
-	$file = 'backup-links-'.date('Ymd-His').'.html';
-	$filepath = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), '', dirname(__DIR__)).'/'.str_replace(BT_ROOT, '', DIR_BACKUP).$file;
-	return (file_put_contents(DIR_BACKUP.$file, $html) === FALSE) ? FALSE : $filepath; // écriture du fichier
-}
-
 
 /*
  * liste une table (ex: les commentaires) et comparre avec un tableau de commentaires trouvées dans l’archive
- * Retourne deux tableau : un avec les éléments présents dans la base, et un avec les éléments absents de la base
+ * Retourne un tableau avec les éléments absents de la base
  */
 function diff_trouve_base($table, $tableau_trouve) {
 	$tableau_base = $tableau_absents = array();
@@ -208,7 +367,7 @@ function diff_trouve_base($table, $tableau_trouve) {
 		die('Erreur 20959 : diff_trouve_base avec les "'.$table.'" : '.$e->getMessage());
 	}
 
-	// remplit les deux tableaux, pour chaque élément trouvé dans l’archive, en fonction de ceux déjà dans la base
+	// remplit le tableau
 	foreach ($tableau_trouve as $key => $element) {
 		if (!in_array($element['bt_id'], $tableau_base)) $tableau_absents[] = $element;
 	}
@@ -231,10 +390,11 @@ function recompte_commentaires() {
 	}
 }
 
-/* IMPORTER UN FICHIER json AU FORMAT DE BLOGOTEXT */
-function insert_bak_table($json) {
+/* IMPORTER UN FICHIER json AU FORMAT DE oTEXT */
+function import_json_file($json) {
 	$data = json_decode($json, true);
 	$return = array();
+	$flag_has_comms = false;
 
 	try {
 		$GLOBALS['db_handle']->beginTransaction();
@@ -270,43 +430,19 @@ function insert_bak_table($json) {
 							$array = array($com['bt_type'], $com['bt_id'], $com['bt_article_id'], $com['bt_content'], $com['bt_wiki_content'], $com['bt_author'], $com['bt_link'], $com['bt_webpage'], $com['bt_email'], $com['bt_subscribe'], $com['bt_statut']);
 							$req = $GLOBALS['db_handle']->prepare($query);
 							$req->execute($array);
-
-						}
-						recompte_commentaires();
-						break;
-
-					case 'links':
-						foreach($data[$type] as $link) {
-							$query = 'INSERT INTO links (bt_type, bt_id, bt_link, bt_content, bt_wiki_content, bt_statut, bt_title, bt_tags ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? ) ';
-							$array = array($link['bt_type'], $link['bt_id'], $link['bt_link'], $link['bt_content'], $link['bt_wiki_content'], $link['bt_statut'], $link['bt_title'], $link['bt_tags']);
-							$req = $GLOBALS['db_handle']->prepare($query);
-							$req->execute($array);
-						}
-						break;
-					
-					case 'notes':
-						foreach($data[$type] as $note) {
-							$query = 'INSERT INTO notes ( bt_id, bt_title, bt_content, bt_color ) VALUES (?, ?, ?, ?)';
-							$array = array($note['bt_id'], $note['bt_title'], $note['bt_content'], $note['bt_color']);
-							$req = $GLOBALS['db_handle']->prepare($query);
-							$req->execute($array);
+							$flag_has_comms = true;
 						}
 						break;
 
-					case 'agenda':
-						foreach($data[$type] as $event) {
-							$query = 'INSERT INTO agenda ( bt_id, bt_date, bt_event_loc, bt_title, bt_content ) VALUES (?, ?, ?, ?, ?)';
-							$array = array( $event['bt_id'], $event['bt_date'], $event['bt_event_loc'], $event['bt_title'], $event['bt_content']);
-
-							$req = $GLOBALS['db_handle']->prepare($query);
-							$req->execute($array);
-						}
-						break;
 				} // end switch
 			} // end if
 		} // end forearch
 
 		$GLOBALS['db_handle']->commit();
+
+		if ($flag_has_comms === true) {
+			recompte_commentaires();
+		}
 
 	} catch (Exception $e) {
 		$req->rollBack();
@@ -317,84 +453,6 @@ function insert_bak_table($json) {
 }
 
 
-/* AJOUTE TOUS LES DOSSIERS DU TABLEAU $dossiers DANS UNE ARCHIVE ZIP */
-function addFolder2zip($zip, $folder) {
-	if ($handle = opendir($folder)) {
-		while (FALSE !== ($entry = readdir($handle))) {
-			if ($entry != "." and $entry != ".." and is_readable($folder.'/'.$entry)) {
-				if (is_dir($folder.'/'.$entry)) addFolder2zip($zip, $folder.'/'.$entry);
-				else $zip->addFile($folder.'/'.$entry, preg_replace('#^\.\./#', '', $folder.'/'.$entry));
-		}	}
-		closedir($handle);
-	}
-}
-
-function creer_fichier_zip($dossiers) {
-	foreach($dossiers as $i => $dossier) {
-		$dossiers[$i] = '../'.str_replace(BT_ROOT, '', $dossier); // FIXME : find cleaner way for '../';
-	}
-	$file = 'archive_site-'.date('Ymd').'-'.substr(md5(rand(10,99)),3,5).'.zip';
-	$filepath = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), '', dirname(__DIR__)).'/'.str_replace(BT_ROOT, '', DIR_BACKUP).$file;
-
-	$zip = new ZipArchive;
-	if ($zip->open(DIR_BACKUP.$file, ZipArchive::CREATE) === TRUE) {
-		foreach ($dossiers as $dossier) {
-			addFolder2zip($zip, $dossier);
-		}
-		$zip->close();
-		if (is_file(DIR_BACKUP.$file)) return $filepath;
-	}
-	else return FALSE;
-}
-
-/* FABRIQUE LE FICHIER JSON (très simple en fait) */
-function creer_fichier_json($data_array) {
-	$file = 'backup-data-'.date('Ymd-His').'.json';
-	$filepath = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), '', dirname(__DIR__)).'/'.str_replace(BT_ROOT, '', DIR_BACKUP).$file;
-	return (file_put_contents(DIR_BACKUP.$file, json_encode($data_array)) === FALSE) ? FALSE : $filepath;
-}
-
-/* Crée la liste des RSS et met tout ça dans un fichier OPML */
-function creer_fichier_opml() {
-	// sort feeds by folder
-	$folders = array();
-	foreach ($GLOBALS['liste_flux'] as $i => $feed) {
-		$folders[$feed['folder']][] = $feed;
-	}
-	ksort($folders);
-
-	$html  = '<?xml version="1.0" encoding="utf-8"?>'."\n";
-	$html .= '<opml version="1.0">'."\n";
-	$html .= "\t".'<head>'."\n";
-	$html .= "\t\t".'<title>Newsfeeds '.BLOGOTEXT_NAME.' '.BLOGOTEXT_VERSION.' on '.date('Y/m/d').'</title>'."\n";
-	$html .= "\t".'</head>'."\n";
-	$html .= "\t".'<body>'."\n";
-	function esc($a) {
-		return htmlspecialchars($a, ENT_QUOTES, 'UTF-8');
-	}
-
-	foreach ($folders as $i => $folder) {
-		$outline = '';
-		foreach ($folder as $j => $feed) {
-			$outline .= ($i ? "\t" : '')."\t\t".'<outline text="'.esc($feed['title']).'" title="'.esc($feed['title']).'" type="rss" xmlUrl="'.esc($feed['link']).'" />'."\n";
-		}
-		if ($i != '') {
-			$html .= "\t\t".'<outline text="'.esc($i).'" title="'.esc($i).'" >'."\n";
-			$html .= $outline;
-			$html .= "\t\t".'</outline>'."\n";	
-		} else {
-			$html .= $outline;
-		}
-	}
-
-	$html .= "\t".'</body>'."\n".'</opml>';
-
-	// écriture du fichier
-	$file = 'backup-data-'.date('Ymd-His').'.opml';
-	$filepath = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), '', dirname(__DIR__)).'/'.str_replace(BT_ROOT, '', DIR_BACKUP).$file;
-	return (file_put_contents(DIR_BACKUP.$file, $html) === FALSE) ? FALSE : $filepath;
-
-}
 
 // Parse et importe un fichier de liste de flux OPML
 function importer_opml($opml_content) {
@@ -410,11 +468,12 @@ function importer_opml($opml_content) {
 				$GLOBALS['array_new'][$url] = array(
 					'link' => $url,
 					'title' => ucfirst($title),
-					'favicon' => 'style/rss-feed-icon.png',
+					'favicon' => '',
 					'checksum' => '0',
 					'time' => '0',
 					'folder' => (string)$folder,
 					'iserror' => 0,
+					'nbrun' => 0,
 				);
 			}
 	 		parseOpmlRecursive($child);
@@ -431,8 +490,8 @@ function importer_opml($opml_content) {
 	return (count($GLOBALS['liste_flux']) - $old_len);
 }
 
-// Parse and import HTML bookmarks (netscape/Firefox bookmarks export)
-function parse_html($content) {
+// Parse HTML bookmarks (netscape/Firefox bookmarks export) file
+function import_html_links($content) {
 	$out_array = array();
 	// Netscape bookmark file (Firefox).
 	if (strcmp(substr($content, 0, strlen('<!DOCTYPE NETSCAPE-Bookmark-file-1>')), '<!DOCTYPE NETSCAPE-Bookmark-file-1>') === 0) {
@@ -448,7 +507,7 @@ function parse_html($content) {
 				preg_match('!<A .*?>(.*?)</A>!i',$d[0],$matches); $link['bt_title'] = (isset($matches[1]) ? trim($matches[1]) : '');  // Get title
 				$link['bt_title'] = html_entity_decode($link['bt_title'], ENT_QUOTES, 'utf-8');
 				preg_match_all('# ([A-Z_]+)=\"(.*?)"#i', $dt, $matches, PREG_SET_ORDER); // Get all other attributes
-				$raw_add_date = 0;
+				$raw_add_date = time();
 				foreach($matches as $m) {
 					$attr = $m[1]; $value = $m[2];
 					if ($attr == 'HREF') { $link['bt_link'] = html_entity_decode($value, ENT_QUOTES, 'utf-8'); }
@@ -456,16 +515,37 @@ function parse_html($content) {
 					elseif ($attr == 'PRIVATE') { $link['bt_statut'] = ($value == '1') ? '0' : '1'; } // value=1 =>> statut=0 (it’s reversed)
 					elseif ($attr == 'TAGS') { $link['bt_tags'] = str_replace('  ', ' ', str_replace(',', ', ', html_entity_decode($value, ENT_QUOTES, 'utf-8'))); }
 				}
+				while (in_array(date('YmdHis', $raw_add_date), $ids_array)) $raw_add_date--; // avoids duplicate IDs
+				$link['bt_id'] = date('YmdHis', $raw_add_date); // converts date to YmdHis format
+
 				if ($link['bt_link'] != '') {
-					$raw_add_date = (empty($raw_add_date)) ? time() : $raw_add_date; // In case of shitty bookmark file with no ADD_DATE
-					while (in_array(date('YmdHis', $raw_add_date), $ids_array)) $raw_add_date--; // avoids duplicate IDs
-					$ids_array[] = $link['bt_id'] = date('YmdHis', $raw_add_date); // converts date to YmdHis format
+					$ids_array[] = $link['bt_id'];
 					$out_array[] = $link;
 				}
 			}
 		}
 	}
-	return $out_array;
+
+	$to_save_links = diff_trouve_base('links', $out_array);
+
+	try {
+		$GLOBALS['db_handle']->beginTransaction();
+
+		foreach($to_save_links as $link) {
+			$query = 'INSERT INTO links (bt_type, bt_id, bt_link, bt_content, bt_wiki_content, bt_statut, bt_title, bt_tags ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? ) ';
+			$array = array($link['bt_type'], $link['bt_id'], $link['bt_link'], $link['bt_content'], $link['bt_wiki_content'], $link['bt_statut'], $link['bt_title'], $link['bt_tags']);
+			$req = $GLOBALS['db_handle']->prepare($query);
+			$req->execute($array);
+		}
+
+		$GLOBALS['db_handle']->commit();
+
+	} catch (Exception $e) {
+		$req->rollBack();
+		die('Erreur 7241 on import HTML links : '.$e->getMessage());
+	}
+
+	return count($to_save_links);
 }
 
 
@@ -477,10 +557,6 @@ afficher_topnav($GLOBALS['lang']['titre_maintenance'], ''); #top
 
 echo '<div id="axe">'."\n";
 echo '<div id="page">'."\n";
-
-// création du dossier des backups
-creer_dossier(DIR_BACKUP, 0);
-
 
 /*
  * Affiches les formulaires qui demandent quoi faire.
@@ -508,14 +584,14 @@ if (!isset($_GET['do']) and !isset($_FILES['file'])) {
 	// choose export what ?
 		echo '<fieldset>'."\n";
 		echo '<legend class="legend-backup">'.$GLOBALS['lang']['maintenance_export'].'</legend>';
-		echo "\t".'<p><label for="json">'.$GLOBALS['lang']['bak_export_json'].'</label>'.
-			'<input type="radio" name="exp-format" value="json" id="json" onchange="switch_export_type(\'e_json\')" /></p>'."\n";
-		echo "\t".'<p><label for="html">'.$GLOBALS['lang']['bak_export_netscape'].'</label>'.
-			'<input type="radio" name="exp-format" value="html" id="html" onchange="switch_export_type(\'e_html\')" /></p>'."\n";
-		echo "\t".'<p><label for="opml">'.$GLOBALS['lang']['bak_export_opml'].'</label>'.
-			'<input type="radio" name="exp-format" value="opml"  id="opml"  onchange="switch_export_type(\'e_opml\')"  /></p>'."\n";
-		echo "\t".'<p><label for="zip">'.$GLOBALS['lang']['bak_export_zip'].'</label>'.
-			'<input type="radio" name="exp-format" value="zip"  id="zip"  onchange="switch_export_type(\'e_zip\')"  /></p>'."\n";
+		echo "\t".'<p><label for="json">'.$GLOBALS['lang']['bak_export_json'].'</label><input type="radio" name="exp-format" value="json" id="json" onchange="switch_export_type(\'e_json\')" /></p>'."\n";
+		echo "\t".'<p><label for="html">'.$GLOBALS['lang']['bak_export_netscape'].'</label><input type="radio" name="exp-format" value="html" id="html" onchange="switch_export_type(\'e_html\')" /></p>'."\n";
+		echo "\t".'<p><label for="opml">'.$GLOBALS['lang']['bak_export_opml'].'</label><input type="radio" name="exp-format" value="opml" id="opml" /></p>'."\n";
+		echo "\t".'<p><label for="xmln">'.$GLOBALS['lang']['bak_export_xmln'].'</label><input type="radio" name="exp-format" value="xmln" id="xmln" /></p>'."\n";
+		echo "\t".'<p><label for="zip">'.$GLOBALS['lang']['bak_export_zip'].'</label><input type="radio" name="exp-format" value="zip" id="zip" onchange="switch_export_type(\'e_zip\')" /></p>'."\n";
+
+
+
 		echo '</fieldset>'."\n";
 
 		// export in JSON.
@@ -523,9 +599,6 @@ if (!isset($_GET['do']) and !isset($_FILES['file'])) {
 		echo '<legend class="legend-backup">'.$GLOBALS['lang']['maintenance_incl_quoi'].'</legend>';
 		echo "\t".'<p>'.form_checkbox('incl-artic', 0, $GLOBALS['lang']['bak_articles_do']).'</p>'."\n";
 		echo "\t".'<p>'.form_checkbox('incl-comms', 0, $GLOBALS['lang']['bak_comments_do']).'</p>'."\n";
-		echo "\t".'<p>'.form_checkbox('incl-links', 0, $GLOBALS['lang']['bak_links_do']).'</p>'."\n";
-		echo "\t".'<p>'.form_checkbox('incl-notes', 0, $GLOBALS['lang']['bak_notes_do']).'</p>'."\n";
-		echo "\t".'<p>'.form_checkbox('incl-agend', 0, $GLOBALS['lang']['bak_agenda_do']).'</p>'."\n";
 		echo '</fieldset>'."\n";
 
 		// export links in html
@@ -612,18 +685,12 @@ if (!isset($_GET['do']) and !isset($_FILES['file'])) {
 				if (@$_GET['exp-format'] == 'json') {
 					$data_array = array(
 						'articles' => array(),
-						'links' => array(),
 						'commentaires' => array(),
-						'notes' => array(),
-						'agenda' => array()
 					);
 
 					// retreive data that has been asked
-					if (isset($_GET['incl-links'])) $data_array['links'] = liste_elements('SELECT * FROM links ORDER BY bt_id DESC ', array(), 'links');
 					if (isset($_GET['incl-artic'])) $data_array['articles'] = liste_elements('SELECT * FROM articles ORDER BY bt_id DESC ', array(), 'articles');
 					if (isset($_GET['incl-comms'])) $data_array['commentaires'] = liste_elements('SELECT * FROM commentaires ORDER BY bt_id DESC', array(), 'commentaires');
-					if (isset($_GET['incl-notes'])) $data_array['notes'] = liste_elements('SELECT * FROM notes ORDER BY bt_id DESC', array(), 'notes');
-					if (isset($_GET['incl-agend'])) $data_array['agenda'] = liste_elements('SELECT * FROM agenda ORDER BY bt_id DESC', array(), 'agenda');
 					// jsonise it
 					$file_archive = creer_fichier_json($data_array);
 
@@ -634,24 +701,19 @@ if (!isset($_GET['do']) and !isset($_FILES['file'])) {
 				// Export a ZIP archive
 				} elseif (@$_GET['exp-format'] == 'zip') {
 					$dossiers = array();
-					if (isset($_GET['incl-sqlit'])) {
-						$dossiers[] = DIR_DATABASES;
-					}
-					if (isset($_GET['incl-files'])) {
-						$dossiers[] = DIR_DOCUMENTS;
-						$dossiers[] = DIR_IMAGES;
-					}
-					if (isset($_GET['incl-confi'])) {
-						$dossiers[] = DIR_CONFIG;
-					}
-					if (isset($_GET['incl-theme'])) {
-						$dossiers[] = DIR_THEMES;
-					}
+					if (isset($_GET['incl-sqlit'])) { $dossiers[] = DIR_DATABASES; }
+					if (isset($_GET['incl-files'])) { $dossiers[] = DIR_DOCUMENTS; $dossiers[] = DIR_IMAGES; }
+					if (isset($_GET['incl-confi'])) { $dossiers[] = DIR_CONFIG; }
+					if (isset($_GET['incl-theme'])) { $dossiers[] = DIR_THEMES; }
 					$file_archive = creer_fichier_zip($dossiers);
 
-				// Export a OPML rss lsit
+				// Export a OPML rss list
 				} elseif (@$_GET['exp-format'] == 'opml') {
 					$file_archive = creer_fichier_opml();
+
+				// Export an XML notes file
+				} elseif (@$_GET['exp-format'] == 'xmln') {
+					$file_archive = creer_fichier_xmlnotes();
 
 				} else {
 					echo 'nothing to do';
@@ -712,11 +774,11 @@ if (!isset($_GET['do']) and !isset($_FILES['file'])) {
 				switch($_POST['imp-format']) {
 					case 'jsonbak':
 						$json = file_get_contents($_FILES['file']['tmp_name']);
-						$message = insert_bak_table($json);
+						$message = import_json_file($json);
 					break;
 					case 'htmllinks':
 						$html = file_get_contents($_FILES['file']['tmp_name']);
-						$message['links'] = insert_table_links(parse_html($html));
+						$message['links'] = import_html_links($html);
 					break;
 					case 'rssopml':
 						$xml = file_get_contents($_FILES['file']['tmp_name']);
@@ -744,8 +806,6 @@ if (!isset($_GET['do']) and !isset($_FILES['file'])) {
 
 echo '</div>'."\n";
 
-
-echo "\n".'<script src="style/javascript.js" type="text/javascript"></script>'."\n";
+echo "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
 
 footer($begin);
-

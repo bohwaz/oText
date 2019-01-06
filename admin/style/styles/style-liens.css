@@ -59,7 +59,7 @@
 }
 
 #post-new-lien label[for="url"]::before {
-	content: "\e94a";
+	content: "\e894";
 	font-size: 1.3em;
 	line-height: 24px;
 	color: rgba(0, 0, 0, .5);
@@ -210,7 +210,8 @@
 .linkbloc .link-footer {
 	background-color: rgba(0, 0, 0, .05);
 	border-top: #eee;
-	border-radius: 0 0 15px 15px;
+	border-bottom-left-radius: inherit;
+	border-bottom-right-radius: inherit;
 }
 
 .linkbloc .link-tags {
@@ -225,13 +226,12 @@
 
 .linkbloc .link-tags a {
 	display: inline-block;
-	margin-right: 3px;
-	padding: 3px 6px;
-	color: inherit;
 	text-decoration: none;
-	background: rgba(0, 0, 0, .05);
-	border-radius: 3px;
-	box-shadow: 0 0 1px rgba(0, 0, 0, .3) inset;
+	padding: 5px 10px;
+	background-color: white;
+	border: 1px solid silver;
+	border-radius: 20px;
+	color: inherit;
 }
 
 .linkbloc .link-tags a:hover {

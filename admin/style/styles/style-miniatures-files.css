@@ -1,7 +1,5 @@
 /* FORMULAIRE IMAGE
 ---------------------------------------------------------------------------------- */
-
-
 /* IMAGES : DnD area */
 #form-image #dragndrop-area {
 	background: #f5f5f5;
@@ -66,7 +64,7 @@
 }
 
 #form-image #file-input-wrapper > label::before {
-	content: "\e939";
+	content: "\e43e";
 	width: 40px;
 	height: 40px;
 	background: var(--md-secondary-color);
@@ -153,9 +151,9 @@
 	text-align: center;
 }
 
-#img-others-infos label[for^="nom_entree"]::before  { content: "\e903"; }
-#img-others-infos label[for^="description"]::before { content: "\e931"; }
-#img-others-infos label[for^="dossier"]::before     { content: "\e91a"; }
+#img-others-infos label[for^="nom_entree"]::before  { content: "\e892"; }
+#img-others-infos label[for^="description"]::before { content: "\e0d8"; }
+#img-others-infos label[for^="dossier"]::before     { content: "\e2c7"; }
 
 #img-others-infos label[for="statut"] {
 	margin: 20px;
@@ -248,6 +246,7 @@
 	background-color: #e8eaf6;
 }
 
+
 /* IMAGES : Liste des images : sous la forme d’un mur d’images */
 #image-section,
 #files-section {
@@ -257,33 +256,41 @@
 
 #image-wall {
 	text-align: center;
-	padding: 15px;
+	padding: 1px;
+	display: flex;
+	flex-wrap: wrap;
 }
 
 #image-wall .image_bloc {
 	height: 200px;
-	width: 250px;
 	margin: 2px;
-	display: inline-block;
 	position: relative;
 	overflow: hidden;
-	background: url(data:image/gif;base64,R0lGODlhEAAQAIACALKysszMzCwAAAAAEAAQAAACH4RvoauIzNyBSyYaLMDZcv15HAaSIlWiJ5Sya/RWVgEAOw==);
+	flex: 1 1 auto;
+	min-width: 200px;
+	max-width: 25%;
+}
+
+#image-wall .image_bloc img {
+	height: 100%;
+	width: 100%;
 }
 
 #image-wall .image_bloc > span {
 	position: absolute;
-	right: 0; left: 0; top: 0; bottom: 0;
-	background: linear-gradient(to bottom, rgba(0, 0, 0, 1) , transparent );
+	//right: 0; left: 0; top: 0; bottom: 0;
+	width: 80%; height: 100%;
 	opacity: 0;
 	transition: opacity .3s;
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
+	display: grid;
+	grid-template-columns: repeat(2, 50%);
+	grid-template-rows: 50%;
+	z-index: -1;
 }
 
 #image-wall .image_bloc > span > .vignetteAction {
+	background: rgba(0, 0, 0, .5);
 	cursor: pointer;
-	background: transparent;
 	border: 0;
 	box-sizing: border-box;
 	flex-basis: 50%;
@@ -301,17 +308,14 @@
 	text-shadow: 0 0 10px black, 0 0 20px black;
 }
 
-#image-wall .image_bloc > span > .vignetteAction.imgShow::before  { content: "\e933"; }
-#image-wall .image_bloc > span > .vignetteAction.imgEdit::before  { content: "\e903"; }
-#image-wall .image_bloc > span > .vignetteAction.imgDL::before    { content: "\e938"; }
-#image-wall .image_bloc > span > .vignetteAction.imgSuppr::before { content: "\e90f"; }
+#image-wall .image_bloc > span > .vignetteAction.imgShow::before  { content: "\e8a0"; }
+#image-wall .image_bloc > span > .vignetteAction.imgEdit::before  { content: "\e3c9"; }
+#image-wall .image_bloc > span > .vignetteAction.imgDL::before    { content: "\e171"; }
+#image-wall .image_bloc > span > .vignetteAction.imgSuppr::before { content: "\e92b"; }
 
-#image-wall .image_bloc:hover > span {
+#image-wall .image_bloc.show-buttons > span {
 	opacity: 1;
-}
-
-#image-wall .image_bloc img {
-	height: 100%;
+	z-index: 1;
 }
 
 /* Liste des fichiers : sous la forme d’un tableau */
@@ -396,8 +400,8 @@
 	text-align: center;
 }
 
-#file-list tr td:nth-of-type(5) a::before { content: '\e938'; } /* DL */
-#file-list tr td:nth-of-type(6) a::before { content: '\e90f'; } /* RM */
+#file-list tr td:nth-of-type(5) a::before { content: '\e2c4'; } /* DL */
+#file-list tr td:nth-of-type(6) a::before { content: '\e92b'; } /* RM */
 
 #file-list tr td:last-of-type {
 	padding-right: 15px;

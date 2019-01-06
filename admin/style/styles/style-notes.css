@@ -6,15 +6,26 @@
 }
 
 #list-notes {
-	text-align: center;
 }
+
+#list-notes > h2 {
+	padding: 10px;
+	font-size: 1em;
+	//display: none;
+}
+
+#list-notes > h2+h2,
+#list-notes > h2:last-child {
+	display: none;
+}
+
 
 #post-new-note {
 	cursor: pointer;
 }
 
 #post-new-note .contain::before {
-	content: "\e944";
+	content: "\e3de";
 	font-size: 1.3em;
 	color: rgba(0, 0, 0, .5);
 	margin-right: 10px;
@@ -37,10 +48,16 @@
 	padding: 0 0 50px;
 	text-align: left;
 	border-radius: 5px;
+	overflow: hidden;
 }
 
 .notebloc:hover {
 	box-shadow: 0 2px 15px rgba(0,0,0,0.30);
+}
+
+.notebloc .title,
+#popup.popup-note .title {
+	display: flex;
 }
 
 .notebloc .title > h2,
@@ -49,6 +66,7 @@
 	margin: 0;
 	font-size: 1.1em;
 	font-weight: 700;
+	flex: 1;
 }
 
 .notebloc > .content {
@@ -64,12 +82,13 @@
 	flex: 1;
 }
 
-.noteCtrls {
+.popup-note > .noteCtrls {
 	padding: 0 5px 5px;
 	display: flex;
 }
 
-.noteCtrls > button {
+.popup-note > .noteCtrls > button,
+.popup-note > .title > button {
 	background-color: transparent;
 	border: 1px solid transparent;
 	border-radius: 50%;
@@ -81,14 +100,27 @@
 	transition: opacity .2s ease-in;
 }
 
-.noteCtrls > button::before {
+.popup-note > .noteCtrls > button:hover,
+.popup-note > .title > button:hover {
+	background-color: rgba(0, 0, 0, .1);
+}
+
+.popup-note > .noteCtrls > button::before,
+.popup-note > .title > button::before {
 	font-size: 1.6em;
 }
 
-.noteCtrls > button.colorIcon::before { content: "\e946"; }
-.noteCtrls > button.supprIcon::before { content: "\e90f"; }
+.popup-note > .noteCtrls > .colorIcon::before { content: "\e3b7"; }
+.popup-note > .noteCtrls > .supprIcon::before { content: "\e92b"; }
 
-.noteCtrls > .colors {
+.popup-note > .title > .archiveIcon::before { content: "\e149"; }
+.popup-note > .title > .archiveIcon:hover::before { content: "\e169"; }
+
+
+.popup-note[data-ispinned="0"] > .title > .pinnedIcon::before { content: "\e16e"; }
+.popup-note[data-ispinned="1"] > .title > .pinnedIcon::before { content: "\e153"; }
+
+.popup-note > .noteCtrls > .colors {
 	display: none;
 	position: absolute;
 	list-style: none;
@@ -101,15 +133,15 @@
 	background-color: white;
 	border-radius: 2px;
 	box-shadow: 2px 2px 3px rgba(0, 0, 0, .2);
-	line-height: 0;
+	font-size: 0;
 }
 
-.noteCtrls .colorIcon:focus + .colors,
-.noteCtrls .colors:hover {
+.popup-note > .noteCtrls .colorIcon:focus + .colors,
+.popup-note > .noteCtrls .colors:hover {
 	display: block;
 }
 
-.noteCtrls > .colors > li {
+.popup-note > .noteCtrls > .colors > li {
 	box-sizing: border-box;
 	border: 1px silver solid;
 	cursor: pointer;
@@ -120,13 +152,13 @@
 	margin: 5px 0 0 5px;
 }
 
-.noteCtrls > .colors > li:hover {
+.popup-note > .noteCtrls > .colors > li:hover {
 	opacity: .95;
 	border-color: gray;
 }
 
-.noteCtrls li > button:focus,
-.noteCtrls li > button::-moz-focus-inner {
+.popup-note > .noteCtrls li > button:focus,
+.popup-note > .noteCtrls li > button::-moz-focus-inner {
 	background-color: rgba(0, 0, 0, .05);
 	transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1) 0s;
 	outline: none;
@@ -149,6 +181,7 @@
 	animation:  appearSlow .2s;
 	border-radius: 2px;
 	position: relative;
+	transition: .3s background-color ease;
 }
 
 #popup.popup-note > textarea.content {
@@ -167,6 +200,8 @@
 #popup.popup-note .submit-bttns {
 	padding: 0;
 	margin: 5px 10px;
+	width: auto;
+	flex: 1;
 }
 
 #popup.popup-note .noteCtrls .submit {

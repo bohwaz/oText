@@ -89,7 +89,7 @@ function afficher_form_commentaire($article_id, $mode, $erreurs, $edit_comm) {
 
 	// Comments are open
 	else {
-		$form .= '<form id="form-commentaire" class="form-commentaire" method="post" action="?'.$_SERVER['QUERY_STRING'].'">'."\n";
+		$form .= '<form id="form-commentaire" class="form-commentaire" method="post" action="?'.htmlentities($_SERVER['QUERY_STRING']).'">'."\n";
 		$form .= "\t".'<fieldset class="field">'."\n";
 		$form .= form_formatting_toolbar(FALSE);
 		$form .= "\t\t".'<textarea class="commentaire text" name="commentaire" required="" placeholder="'.$GLOBALS['lang']['label_commentaire'].'" id="commentaire" cols="50" rows="10">'.$form_cont['comment'].'</textarea>'."\n";

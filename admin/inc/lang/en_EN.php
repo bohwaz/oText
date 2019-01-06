@@ -64,6 +64,7 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'question_suppr_event'			=> 'This event will be deleted!',
 'question_quit_page'			=> 'Leaving this page will have your unsaved modifications lost. Ok?',
 'question_clean_rss'			=> 'All the read items will be removed from database, OK?',
+'question_suppr_feed'			=> 'This feed will be deleted!',
 'question_show_past_events'		=> 'Display past events?',
 'question_entire_day'			=> 'Entire day?',
 
@@ -209,7 +210,8 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'bak_export_json'				=> 'Export various data in a JSON file',
 'bak_export_netscape'			=> 'Export your links in a HTML bookmark file',
 'bak_export_zip'				=> 'Export your database &amp; other files in a zip-file',
-'bak_export_opml'				=> 'EXPORT your RSS feeds in an OPML file',
+'bak_export_opml'				=> 'Export your RSS feeds in an OPML file',
+'bak_export_xmln'				=> 'Export your notes in a XML file',
 'bak_incl_sqlit'				=> 'Include SQLite file',
 'bak_incl_confi'				=> 'Include configuration files',
 'bak_incl_files'				=> 'Include images and files',
@@ -335,5 +337,12 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'label_dl_fichier'				=> 'Also import file localy? ',
 'label_all_comm_by_author'		=> 'All comments by this author',
 'label_planned'					=> 'planned',
+
+// Agenda
+'cemois'							=> 'This month',
+'cetteannee'						=> 'This Year',
+'label_all_events'				=> 'All events',
+'label_past_events'				=> 'Past events',
+
 
 ));

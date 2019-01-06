@@ -98,8 +98,8 @@ echo '<div id="page">'."\n";
 
 afficher_liste_articles($tableau);
 
-echo "\n".'<script src="style/javascript.js" type="text/javascript"></script>'."\n";
-	echo "\n".'<script type="text/javascript">'."\n";
+echo "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
+	echo "\n".'<script>'."\n";
 	echo 'var scrollPos = 0;'."\n";
 	echo 'window.addEventListener(\'scroll\', function(){ scrollingFabHideShow() });'."\n";
 	echo "\n".'</script>'."\n";

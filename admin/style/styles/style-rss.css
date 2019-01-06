@@ -6,29 +6,73 @@
 	padding: 0;
 }
 
-#body.feeds #header {
-	box-shadow: 280px 1px 8px rgba(0,0,0,.5);
+#body.feeds #fab {
+	left: 198px;
+	transition: transform .2s cubic-bezier(.2,-.5,.5,.2), left .3s ease;
 }
 
-#body.feeds #sub-menu::before {
-	content: '';
-	position: absolute;
-	width: 280px;
-	background: #fefefe;
-	left: 0;
-	bottom: -1px;
-	border-top: 1px solid silver;
+#sub-menu #hide-feed-list {
+	padding: 6px;
+	background-color: transparent;
+	border: none;
+	border-radius: 50%;
+	color: rgba(0, 0, 0, .7);
 }
 
-#sub-menu .rss-menu-buttons > li:nth-of-type(1) > button::before { content: "\e92e"; }
-#sub-menu .rss-menu-buttons > li:nth-of-type(2) > button::before { content: "\e92f"; }
-#sub-menu .rss-menu-buttons > li:nth-of-type(3) > button::before { content: "\e938"; }
-#sub-menu .rss-menu-buttons > li:nth-of-type(4) > button::before { content: "\e90f"; }
-#sub-menu #count-posts > button { background-image: none; }
+#sub-menu #hide-feed-list:focus {
+	background-color: rgba(0, 0, 0, .1);
+}
+
+#sub-menu #hide-feed-list:before {
+	content: "\e5d2";
+	font-size: 1.7em;
+	cursor: pointer;
+}
+
+#sub-menu .rss-menu-buttons > li > button {
+	background-color: transparent;
+	border: none;
+	transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
+	font-weight: bold;
+	padding: 7px 16px;
+	margin: 0 5px;
+	opacity: .85;
+}
+
+#sub-menu .rss-menu-buttons li > button::before {
+	font-size: 1.5em;
+	margin-right: 7px;
+}
+
+#sub-menu .rss-menu-buttons li:nth-of-type(1) > button::before { content: "\e5d5"; }
+#sub-menu .rss-menu-buttons li:nth-of-type(2) > button::before { content: "\e896"; }
+#sub-menu .rss-menu-buttons li:nth-of-type(3) > button::before { content: "\e0c3"; }
+#sub-menu .rss-menu-buttons li:nth-of-type(4) > button::before { content: "\e16c"; }
+
+
 
 #sub-menu .rss-menu-tags {
 	flex: 1 1 100%;
-	align-content: flex-start;
+	justify-content: center;
+}
+
+#sub-menu .rss-menu-tags > li {
+	display: inline-block;
+	padding: 5px 15px;
+	color: #333;
+	border: 1px solid #c7c7c7;
+	border-radius: 20px;
+	margin: 3px;
+	font-weight: bold;
+	cursor: pointer;
+	background-color: white;
+	transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+#sub-menu .rss-menu-tags > li:hover,
+#sub-menu .rss-menu-tags > li.active-site {
+	color: var(--md-primary-color);
+	background-color: #eee;
 }
 
 /* the left sidebar, with the list of feeds */
@@ -39,7 +83,22 @@
 	overflow-y: scroll;
 	position: fixed;
 	width: 280px;
-	height: calc(100% - 108px);
+	height: calc(100% - 110px);
+	border-radius: 0;
+	transform: translateX(0px);
+	transition: transform .3s ease;
+}
+
+#feed-list.hidden-list {
+	transform: translateX(-280px);	
+}
+
+#feed-list.hidden-list + #rss-list {
+	margin-left: 20px;
+}
+
+#feed-list.hidden-list ~ #fab {
+	left: -82px;
 }
 
 #feed-list li {
@@ -51,13 +110,13 @@
 	text-overflow: ellipsis;
 	padding: 20px 45px;
 	background-repeat: no-repeat;
-	background-position: 15px center;
+	background-position: 12px center;
 	cursor: pointer;
+	background-size: 20px 20px;
 }
 
 #feed-list > li.special {
 	padding: 0;
-	text-align: center;
 }
 
 #feed-list > li.special:hover {
@@ -70,32 +129,36 @@
 }
 
 #feed-list > li.special > ul > li {
-	padding-right: 1em;
-	padding-left: 0;
 }
 
 #feed-list > li.special > ul > li::before {
 	content: "\e901";
 	font-size: 1.6em;
 	font-weight: normal;
-	padding-right: .5em;
-	color: rgba(0, 0, 0, .5);
+	position: absolute;
+	top: 17px;
+	left: 10px;
+	color: rgba(0, 0, 0, .4);
 }
 
-#feed-list > li.special .all-feeds::before   { content: "\e901"; }
-#feed-list > li.special .today-feeds::before { content: "\e918"; }
-#feed-list > li.special .fav-feeds::before   { content: "\e90c"; }
+#feed-list > li.special .all-feeds::before   { content: "\e8ef"; }
+#feed-list > li.special .today-feeds::before { content: "\e8df"; }
+#feed-list > li.special .fav-feeds::before   { content: "\e87d"; }
 
-#feed-list li.feed-site:not([data-nbrun="0"])::before,
-#feed-list li.feed-folder:not([data-nbrun="0"])::before {
+#feed-list li[class^="feed-"]:not([data-nbrun="0"])::before {
 	content: attr(data-nbrun);
-	font-family: inherit!important;
+	font-family: inherit;
 	position: absolute;
 	right: 10px;
-	padding: 2px 4px;
-	border-radius: 5px;
-	border: 1px solid silver;
+	padding: 2px;
+	color: rgba(0, 0, 0, .5);
+
 }
+
+#feed-list li[class^="feed-"]:not([data-nbrun="0"]).active-site::before {
+	color: inherit;
+}
+
 
 #feed-list > li.feed-folder > ul {
 	font-weight: normal;
@@ -120,31 +183,32 @@
 	margin-left: 5px;
 	overflow: visible;
 	transition: transform ease .2s;
+	color: inherit;
 	position: absolute;
 	left: 0;
 	top: 12px;
 }
 
-#feed-list li.feed-folder a.unfold::before {
-	content: "\e92d";
+#feed-list li.feed-folder .unfold::before {
+	content: "\e313";
 	font-size: 2em;
-	color: rgba(0, 0, 0, .6);
 	display: inline-block;
 	height: 30px;
 	width: 30px;
 	border-radius: 50%;
 	padding: 3px;
+	color: rgba(0, 0, 0, .4);
+}
+#feed-list li.feed-folder.active-site .unfold::before,
+#feed-list > li.special > ul > li.active-site::before {
+	color: inherit;
 }
 
-#feed-list li.feed-folder.open a.unfold:focus::before {
-	background: rgba(0, 0, 0, .1);
-}
-
-#feed-list li.feed-folder.open a.unfold {
+#feed-list li.feed-folder.open .unfold {
 	transform: rotate(90deg);
 }
 
-#feed-list li a.feed-error {
+#feed-list li.feed-error {
 	color: red;
 }
 
@@ -152,7 +216,8 @@
 #feed-list > li.feed-folder.active-site {
 	background-color: #eee;
 	box-shadow: 3px 0 0 var(--md-primary-color) inset;
-	transition: box-shadow 0.2s ease 0s
+	transition: box-shadow 0.2s ease 0s;
+	color: var(--md-primary-color);
 }
 
 #feed-list > li.feed-folder.active-site .li {
@@ -176,6 +241,9 @@
 /* block with list of elements to read */
 #rss-list {
 	margin-left: 305px;
+	margin-right: 20px;
+	transition: margin-left .3s ease;
+
 }
 
 #post-list-title {
@@ -207,9 +275,9 @@
 	font-size: 1.5em;
 }
 
-#post-list-title ul > li:nth-of-type(1) > button::before        { content: "\e91c"; }
-#post-list-title ul > li:nth-of-type(2) > button::before        { content: "\e90a"; }
-#post-list-title ul > li:nth-of-type(2) > button.unfold::before { content: "\e90b"; }
+#post-list-title ul > li:nth-of-type(1) > button::before        { content: "\e8f4"; }
+#post-list-title ul > li:nth-of-type(2) > button::before        { content: "\e5d7"; }
+#post-list-title ul > li:nth-of-type(2) > button.unfold::before { content: "\e5d6"; }
 
 #post-list-title > p {
 	margin: 0;
@@ -226,6 +294,7 @@
 #post-list > li {
 	padding: 0px 15px 0px;
 	border-bottom: #F9F9F9 solid 1px;
+	transition: box-shadow 0.2s ease 0s;
 }
 
 #post-list > li:hover {
@@ -277,12 +346,12 @@
 }
 
 #post-list > li > .post-head > .lien-fav::before {
-	content: "\e942";
+	content: "\e87e";
 	font-size: 1.3em;
 }
 
 #post-list > li > .post-head > .lien-fav[data-is-fav="1"]::before {
-	content: "\e90c";
+	content: "\e87d";
 	color: red;
 }
 
@@ -298,10 +367,11 @@
 
 /* le dossier */
 #post-list > li > .post-head > .folder {
-	border: 1px solid silver;
-	border-radius: 5px;
-	padding: 0 5px;
 	margin: 0 10px 0 0;
+	padding: 1px 10px;
+	background-color: lightblue;
+	border-radius: 10px;
+	font-style: italic;
 }
 
 /* le titre */
@@ -356,11 +426,9 @@
 	font-size: 1.3em;
 }
 
-#post-list > li > .post-head > .share > .lien-share::before { content: "\e910"; }
-#post-list > li > .post-head > .share > .lien-open::before  { content: "\e94a"; }
-#post-list > li > .post-head > .share > .lien-tweet::before { content: "\e94b"; }
-#post-list > li > .post-head > .share > .lien-mail::before  { content: "\e91e"; }
-#post-list > li > .post-head > .share > .lien-gplus::before { content: "\e94c"; }
+#post-list > li > .post-head > .share > .lien-share::before { content: "\e80d"; }
+#post-list > li > .post-head > .share > .lien-open::before  { content: "\e8a0"; }
+#post-list > li > .post-head > .share > .lien-mail::before  { content: "\e0be"; }
 
 #post-list > li > .post-head > .share a:hover,
 #post-list > li > .post-head > .lien-fav:hover {
@@ -408,100 +476,105 @@
 
 /* RSS Config Page -------------------- */
 #form-rss-config {
-	margin: 30px 0;
-	text-align: center;
-}
-
-#form-rss-config > .feed-item {
 	margin: 25px;
-	display: inline-block;
-	max-width: 300px;
 }
 
-#form-rss-config > .feed-item.feed-error {
-	color: red;
+#rss-feed {
+	width: 100%;
+	border-collapse: collapse;
+	background-color: white;
+	overflow: hidden;
 }
 
-#form-rss-config > .feed-item > p {
-	margin: 0;
-	display: flex;
-	position: relative;
-	align-items: center;
+#rss-feed,
+#rss-feed tr,
+#rss-feed td {
+	border: none;
 }
 
-#form-rss-config > .feed-item > p > label {
-	flex: 0 0 0;
-	font-size: 0;
+#rss-feed > thead {
+	background-color: #f6f6f6;
 }
 
-#form-rss-config > .feed-item > p > label::before {
-	content: "\e901";
-	font-size: initial;
-	color: rgba(0, 0, 0, .5);
-	margin-left: -16px;
-	margin-right: -25px;
-	vertical-align: middle;
-	position: relative;
-	left: 16px;
-	z-index: 3;
+#rss-feed tr {
+	border-bottom: 1px solid rgba(0, 0, 0, .05);
 }
 
-#form-rss-config > .feed-item > p > label[for^="i_"]::before { content: "\e903"; }
-#form-rss-config > .feed-item > p > label[for^="j_"]::before { content: "\e926"; }
-#form-rss-config > .feed-item > p > label[for^="l_"]::before { content: "\e91a"; }
-
-#form-rss-config > .feed-item > p:first-of-type input { /* name */
-	font-weight: bold;
+#rss-feed > tbody > tr:hover {
+	background-color: rgba(0, 0, 0, .1);
+	transition: background-color .5s;
 }
 
-#form-rss-config > .feed-item > p:nth-of-type(2) input { /* url */
+#rss-feed > tbody > tr.edited {
+	background-color: rgba(128, 128, 0, .1);
+}
+
+#rss-feed > tbody > tr.deleted {
+	background-color: rgba(255, 0, 0, .3);
+	background-image: linear-gradient(to bottom, transparent 24px, black 24px, black 26px, transparent 26px);
+}
+
+
+#rss-feed th {
+	padding: 20px 10px 10px;
+	text-align: left;
+	white-space: nowrap;
+}
+
+#rss-feed td {
+	padding: 10px;
+	max-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
 	text-overflow: ellipsis;
+	border-radius: 2px;
 }
 
-#form-rss-config > .feed-item > p:last-of-type { /* buttons */
-	margin-top: 15px;
-	justify-content: flex-end;
+#rss-feed td:focus {
+	box-shadow: 0px 3px 9px black;
+	background: white;
 }
 
-#form-rss-config .button-cancel {
-	display: none;
+#rss-feed tr td.icon {
+	width: 30px;
+	max-width: 30px;
 }
 
-#form-rss-config input.text {
-	flex: 1;
-	border-bottom-color: transparent;
-	padding-left: 40px;
+#rss-feed tr td.folder {
+	width: 0px;
+	max-width: 100%;
 }
 
-#form-rss-config button.button-delete {
-	margin-left: 10px;
-	margin-top: 0;
-	vertical-align: middle;
-	background: none;
-	color: #f44336;
-	box-shadow: none;
+#rss-feed tr td.dtime {
+	width: 0px;
+	max-width: 100%;
 }
 
-#form-rss-config button.button-delete:hover {
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+
+#rss-feed tr td.suppr {
+	width: 30px;
+	max-width: 30px;
 }
 
-#form-rss-config button.button-delete:active {
-	box-shadow: none;
+
+#rss-feed tr td.suppr > button {
+	border: 0;
+	background-color: transparent;
+	padding: 0;
+	width: 30px;
+	border-radius: 50%;
+	height: 30px;
+	color: rgba(0, 0, 0, .5);
 }
 
-#form-rss-config > .feed-item.to-remove {
-	background-color: rgb(250, 250, 250);
+#rss-feed tr td.suppr > button:hover {
+	background-color: silver;
+	color: black;
 }
 
-#form-rss-config > .feed-item.to-remove > p .button-cancel {
-	display: inline;
-	text-decoration: none;
+#rss-feed tr td.suppr > button::before {
+	font-size: 1.4em;
+	content: '\e92b';
 }
 
-#form-rss-config > .feed-item.to-remove label,
-#form-rss-config > .feed-item.to-remove input,
-#form-rss-config > .feed-item.to-remove .button-delete {
-	opacity: .2;
-}
 

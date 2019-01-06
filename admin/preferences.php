@@ -223,6 +223,6 @@ echo '<div id="page">'."\n";
 
 afficher_form_prefs($erreurs_form);
 
-echo "\n".'<script src="style/javascript.js" type="text/javascript"></script>'."\n";
+echo "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
 
 footer($begin);

@@ -150,17 +150,16 @@ else { // aucun lien à ajouter ou éditer : champ nouveau lien + listage des li
 	echo '</div>'."\n";
 }
 
-echo "\n".'<script src="style/javascript.js" type="text/javascript"></script>'."\n";
-echo '<script type="text/javascript">'."\n";
-echo php_lang_to_js(0)."\n";
-
+echo "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
+echo '<script>'."\n";
 if ($step == 1) {
 	echo 'document.getElementById(\'url\').addEventListener(\'focus\', function(){ document.getElementById(\'post-new-lien\').classList.add(\'focusedField\'); }, false);'."\n";
 	echo 'document.getElementById(\'post-new-lien\').addEventListener(\'click\', function(){ document.getElementById(\'url\').focus(); }, false);'."\n";
 	echo 'document.getElementById(\'url\').addEventListener(\'blur\', function(){ document.getElementById(\'post-new-lien\').classList.remove(\'focusedField\'); }, false);'."\n";
-
 }
 echo '</script>';
+echo php_lang_to_js();
+
 
 footer($begin);
 

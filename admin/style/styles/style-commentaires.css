@@ -25,7 +25,7 @@
 	display: block;
 	width: 6px;
 	height: 20%;
-	height: calc(100% - 101px);
+	height: calc(100% - 120px);
 	position: relative;
 	margin: 0 auto;
 	top: 10px;
@@ -43,6 +43,7 @@
 	padding: 0;
 	flex: 1;
 	min-width: 0;
+	border-radius: 3px;
 }
 
 .comm-main-frame::after {
@@ -92,9 +93,9 @@
 	color: rgba(0, 0, 0, .5);
 }
 
-.commentbloc .reply::before {     content: "\e920"; }
-.commentbloc .email a::before {   content: "\e91e"; }
-.commentbloc .webpage a::before { content: "\e901"; }
+.commentbloc .reply::before {     content: "\e15e"; }
+.commentbloc .email a::before {   content: "\e0be"; }
+.commentbloc .webpage a::before { content: "\e80b"; }
 
 .commentbloc:hover .webpage a,
 .commentbloc:hover .email a,
@@ -145,7 +146,7 @@
 }
 
 .item-menu-options::before {
-	content: "\e924";
+	content: "\e5d4";
 	font-size: 1.7em;
 	cursor: pointer;
 }
@@ -189,6 +190,8 @@
 	border: 0;
 	background-color: transparent;
 	font-weight: inherit;
+	width: 100%;
+	text-align: left;
 }
 
 .commentbloc .comm-content p:first-of-type { margin-top: 0; }
@@ -273,9 +276,9 @@
 	text-align: center;
 }
 
-#form-commentaire label[for^="auteur"]::before  { content: "\e930"; }
-#form-commentaire label[for^="email"]::before   { content: "\e91e"; }
-#form-commentaire label[for^="webpage"]::before { content: "\e901"; }
+#form-commentaire label[for^="auteur"]::before  { content: "\e7fd"; }
+#form-commentaire label[for^="email"]::before   { content: "\e0be"; }
+#form-commentaire label[for^="webpage"]::before { content: "\e80b"; }
 
 /* New Comment */
 #post-nv-commentaire {

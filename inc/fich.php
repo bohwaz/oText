@@ -232,7 +232,7 @@ function detection_type_fichier($extension) {
 		'spreadsheet'  => array('xls', 'xlsx', 'xlt', 'xltx', 'ods', 'ots', 'csv'),
 		'text_document'=> array('doc', 'docx', 'rtf', 'odt', 'ott'),
 		'text-code'    => array('txt', 'css', 'py', 'c', 'cpp', 'dat', 'ini', 'inf', 'text', 'conf', 'sh'),
-		'video'        => array('mp4', 'ogv', 'avi', 'mpeg', 'mpg', 'flv', 'webm', 'mov', 'divx', 'rm', 'rmvb', 'wmv'),
+		'video'        => array('mp4', 'ogv', 'avi', 'mpeg', 'mpg', 'flv', 'webm', 'mov', 'divx', 'rm', 'rmvb', 'wmv', 'mkv'),
 		'other'        => array(''), // default
 	);
 
@@ -255,71 +255,61 @@ function open_serialzd_file($fichier) {
 // $feeds is an array of URLs: Array( [http://…], [http://…], …)
 // Returns the same array: Array([http://…] [[headers]=> 'string', [body]=> 'string'], …)
 function request_external_files($feeds, $timeout, $echo_progress=false) {
-	// uses chunks of 30 feeds because Curl has problems with too big (~150) "multi" requests.
-	$chunks = array_chunk($feeds, 30, true);
 	$results = array();
 	$total_feed = count($feeds);
 	if ($echo_progress === true) {
 		echo '0/'.$total_feed.' '; ob_flush(); flush(); // for Ajax
 	}
 
-	foreach ($chunks as $chunk) {
-		set_time_limit(30);
-		$curl_arr = array();
-		$master = curl_multi_init();
-		$total_feed_chunk = count($chunk)+count($results);
+	set_time_limit(30);
+	$curl_arr = array();
+	$master = curl_multi_init();
 
-		// init each url
-		foreach ($chunk as $i => $url) {
+	// init each url
+	foreach ($feeds as $i => $url) {
 
-			$curl_arr[$url] = curl_init(trim($url));
-			curl_setopt_array($curl_arr[$url], array(
-					CURLOPT_RETURNTRANSFER => TRUE, // force Curl to return data instead of displaying it
-					CURLOPT_FOLLOWLOCATION => TRUE, // follow 302 ans 301 redirects
-					CURLOPT_CONNECTTIMEOUT => 100, // 0 = indefinately ; no connection-timeout (ruled out by "set_time_limit" hereabove)
-					CURLOPT_TIMEOUT => $timeout, // downloading timeout
-					CURLOPT_USERAGENT => BLOGOTEXT_UA, // User-agent (uses the UA of browser)
-					CURLOPT_SSL_VERIFYPEER => FALSE, // ignore SSL errors
-					CURLOPT_SSL_VERIFYHOST => FALSE, // ignore SSL errors
-					CURLOPT_ENCODING => "gzip", // take into account gziped pages
-					CURLOPT_VERBOSE => 0,
-					CURLOPT_HEADER => 1, // also return header
-				));
-			curl_multi_add_handle($master, $curl_arr[$url]);
-		}
-
-		// exec connexions
-		$running = $oldrunning = 0;
-		$utime = microtime(true);
-		do {
-			curl_multi_exec($master, $running);
-
-			// echoes the nb of feeds remaining
-			if ($echo_progress === true) {
-				if ($utime + 0.5 < microtime(true)) {
-					echo ($total_feed_chunk-$running).'/'.$total_feed.' '; ob_flush(); flush();
-					$utime = microtime(true);
-				}
-			}
-			usleep(1000);
-		} while ($running > 0);
-
-
-		// multi select contents
-		foreach ($chunk as $i => $url) {
-			$response = curl_multi_getcontent($curl_arr[$url]);
-			$header_size = curl_getinfo($curl_arr[$url], CURLINFO_HEADER_SIZE);
-			$results[$url]['headers'] = http_parse_headers(mb_strtolower(substr($response, 0, $header_size)));
-
-			// get only header, trim it, remove invalid UTF8 chars (half bits, etc.).
-
-			//$results[$url]['body'] = iconv("UTF-8", "UTF-8//IGNORE", trim(substr($response, $header_size))); // deprecated, iconv uses a bugged lib
-			$results[$url]['body'] = mb_convert_encoding(trim(substr($response, $header_size)), 'UTF-8'); 
-
-		}
-		// Ferme les gestionnaires
-		curl_multi_close($master);
+		$curl_arr[$url] = curl_init(trim($url));
+		curl_setopt_array($curl_arr[$url], array(
+				CURLOPT_RETURNTRANSFER => TRUE, // force Curl to return data instead of displaying it
+				CURLOPT_FOLLOWLOCATION => TRUE, // follow 302 ans 301 redirects
+				CURLOPT_CONNECTTIMEOUT => 100, // 0 = indefinately ; no connection-timeout (ruled out by "set_time_limit" hereabove)
+				CURLOPT_TIMEOUT => $timeout, // downloading timeout
+				CURLOPT_USERAGENT => BLOGOTEXT_UA, // User-agent (uses the UA of browser)
+				CURLOPT_SSL_VERIFYPEER => FALSE, // ignore SSL errors
+				CURLOPT_SSL_VERIFYHOST => FALSE, // ignore SSL errors
+				CURLOPT_ENCODING => "gzip", // take into account gziped pages
+				CURLOPT_VERBOSE => 0,
+				CURLOPT_HEADER => 1, // also return header
+			));
+		curl_multi_add_handle($master, $curl_arr[$url]);
 	}
+
+	// exec connexions
+	$running = $oldrunning = 0;
+	$utime = microtime(true);
+	do {
+		curl_multi_exec($master, $running);
+
+		// echoes the nb of feeds remaining
+		if ($echo_progress === true) {
+			if ($utime + 0.5 < microtime(true)) { // only echos every 0.5 secondes max
+				echo ($total_feed-$running).'/'.$total_feed.' '; ob_flush(); flush();
+				$utime = microtime(true);
+			}
+		}
+		usleep(1001);
+	} while ($running > 0);
+
+	// multi select contents
+	foreach ($feeds as $i => $url) {
+		$response = curl_multi_getcontent($curl_arr[$url]);
+		$header_size = curl_getinfo($curl_arr[$url], CURLINFO_HEADER_SIZE);
+		$results[$url]['headers'] = http_parse_headers(mb_strtolower(substr($response, 0, $header_size)));
+		$results[$url]['body'] = mb_convert_encoding(trim(substr($response, $header_size)), 'UTF-8'); 
+
+	}
+	// Ferme les gestionnaires
+	curl_multi_close($master);
 
 	return $results;
 }
@@ -351,7 +341,6 @@ function refresh_rss($feeds) {
 		if ($feed_elmts === FALSE) {
 			continue;
 		} else {
-			// there are new posts in the feed (md5 test on feed content file is positive). Now test on each post.
 			// only keep new post that are not in DB (in $guid_in_db) OR that are newer than the last post ever retreived.
 			foreach($feed_elmts['items'] as $key => $item) {
 				if ( (in_array($item['bt_id'], $guid_in_db)) or ($item['bt_date'] <= $feeds[$feed_url]['time']) ) {
@@ -361,7 +350,6 @@ function refresh_rss($feeds) {
 					$feed_elmts['items'][$key]['bt_bookmarked'] = 0;
 
 				}
-				// only save elements that are more recent
 				// we save the date of the last element on that feed
 				// we do not use the time of last retreiving, because it might not be correct due to different time-zones with the feeds date.
 				if ($item['bt_date'] > $GLOBALS['liste_flux'][$feeds[$feed_url]['link']]['time']) {
@@ -384,10 +372,16 @@ function refresh_rss($feeds) {
 		}
 	}
 
+
+	// recount unread elements (they are put in that array for caching ans performance purpose).
+	$feeds_nb = rss_count_feed();
+	foreach ($feeds_nb as $i => $feed) {
+		$GLOBALS['liste_flux'][$feed['bt_feed']]['nbrun'] = (isset($feed['nbrun'])) ? $feed['nbrun'] : 0;
+	}
+
 	// save last success time in the feed list
 	file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' */');
 
-	// returns the new feeds in JSON format
 
 	return $new_feed_elems;
 	//return $count_new;
@@ -395,7 +389,7 @@ function refresh_rss($feeds) {
 
 
 
-function retrieve_new_feeds($feedlinks, $md5='') {
+function retrieve_new_feeds($feedlinks) {
 	if (!$feeds = request_external_files($feedlinks, 15, true)) { // timeout = 25s
 		return FALSE;
 	}
@@ -405,12 +399,10 @@ function retrieve_new_feeds($feedlinks, $md5='') {
 		if (!empty($response['body'])) {
 			$new_md5 = hash('md5', $response['body']);
 			// if Feed has changed : parse it (otherwise, do nothing : no need)
-			if ($md5 != $new_md5 or '' == $md5) {
+			if ($GLOBALS['liste_flux'][$url]['checksum'] != $new_md5) {
 				$data_array = feed2array($response['body'], $url);
 				if ($data_array !== FALSE) {
 					$return[$url] = $data_array;
-					$data_array['infos']['md5'] = $md5;
-					// update RSSs of 30 feeds because Curl has problems with too big (~150) "multi" requests. last successfull update MD5
 					$GLOBALS['liste_flux'][$url]['checksum'] = $new_md5;
 					$GLOBALS['liste_flux'][$url]['iserror'] = 0;
 				} else {
@@ -535,10 +527,10 @@ function send_rss_json($rss_entries, $enclose_in_script_tag) {
 			'"content":'.json_encode($entry['bt_content'], JSON_UNESCAPED_UNICODE).''.
 		'}'.(($count==$i) ? '' :',')."\n";
 	}
-	$out .= ']';
+	$out .= ']'."\n";
 
 	if ($enclose_in_script_tag) {
-		$out = '<script type="text/javascript">'.'var rss_entries = {"list": '.$out."\n".'}'.'</script>'."\n";
+		$out = '<script id="json_rss" type="application/json">'.$out.'</script>'."\n";
 	}
 	return $out;
 }

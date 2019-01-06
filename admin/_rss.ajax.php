@@ -11,15 +11,16 @@ require_once 'inc/boot.php';
 // Update all RSS feeds using GET (for cron jobs).
 // only test here is on install UID.
 if (isset($_GET['refresh_all'], $_GET['guid']) and ($_GET['guid'] == BLOG_UID)) {
-	if ($_GET['guid'] == BLOG_UID) {
-		$GLOBALS['db_handle'] = open_base();
+//	if ($_GET['guid'] == BLOG_UID) {
+//		///////////////////////////////////////////////////////////////////////////////////////: THIS NEEDED ? since we have the "require inc/boot.php" hereabove.
+//		$GLOBALS['db_handle'] = open_base();
 		$GLOBALS['liste_flux'] = open_serialzd_file(FEEDS_DB);
 
 		refresh_rss($GLOBALS['liste_flux']);
 		die('Success');
-	} else {
-		die('Error');
-	}
+//	} else {
+//		die('Error');
+//	}
 }
 
 
@@ -74,7 +75,7 @@ if (isset($_POST['add-feed'])) {
 
 	$new_feed = trim($_POST['add-feed']);
 	$new_feed_folder = htmlspecialchars(trim($_POST['add-feed-folder']));
-	$feed_array = retrieve_new_feeds(array($new_feed), '');
+	$feed_array = retrieve_new_feeds(array($new_feed));
 
 
 	if (!($feed_array[$new_feed]['infos']['type'] == 'ATOM' or $feed_array[$new_feed]['infos']['type'] == 'RSS')) {
@@ -85,14 +86,20 @@ if (isset($_POST['add-feed'])) {
 	$GLOBALS['liste_flux'][$new_feed] = array(
 		'link' => $new_feed,
 		'title' => ucfirst($feed_array[$new_feed]['infos']['title']),
-		'favicon' => 'style/rss-feed-icon.png',
 		'checksum' => '42',
 		'time' => '1',
-		'folder' => $new_feed_folder
+		'folder' => $new_feed_folder,
+		'nbrun' => '0'
 	);
 
 	// sort list with title
 	$GLOBALS['liste_flux'] = array_reverse(tri_selon_sous_cle($GLOBALS['liste_flux'], 'title'));
+
+	// recount unread elements (they are put in that array for caching ans performance purpose).
+	$feeds_nb = rss_count_feed();
+	foreach ($feeds_nb as $i => $feed) {
+		$GLOBALS['liste_flux'][$feed['bt_feed']]['nbrun'] = (isset($feed['nbrun'])) ? $feed['nbrun'] : 0;
+	}
 	// save to file
 	file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' */');
 
@@ -149,6 +156,15 @@ if (isset($_POST['mark-as-read'])) {
 	try {
 		$req = $GLOBALS['db_handle']->prepare($query);
 		$req->execute($array);
+		// recount unread elements (they are put in that array for caching ans performance purpose).
+		$feeds_nb = rss_count_feed();
+		foreach ($feeds_nb as $i => $feed) {
+			$GLOBALS['liste_flux'][$feed['bt_feed']]['nbrun'] = (isset($feed['nbrun'])) ? $feed['nbrun'] : 0;
+		}
+		// save to file
+		file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' */');
+
+
 		die('Success');
 	} catch (Exception $e) {
 		die('Error : Rss mark as read: '.$e->getMessage());
@@ -174,6 +190,57 @@ if (isset($_POST['mark-as-fav'])) {
 		die('Error : Rss mark as fav: '.$e->getMessage());
 	}
 
+}
+
+
+if (isset($_POST['edit-feed-list'])) {
+	$posted_feeds = json_decode($_POST['edit-feed-list'], TRUE);
+
+	foreach ($posted_feeds as $i => $entry) {
+		$posted_feeds[$entry['id']] = $entry;
+	}
+
+	try {
+		$GLOBALS['db_handle']->beginTransaction();
+
+		foreach($GLOBALS['liste_flux'] as $i => $feed) {
+
+			if (isset($posted_feeds[$feed['checksum']])) {
+
+				switch ($posted_feeds[$feed['checksum']]['action']) {
+					case 'delete':
+						// rm posts from that feed
+						$req = $GLOBALS['db_handle']->prepare('DELETE FROM rss WHERE bt_feed = ?');
+						$req->execute(array($feed['link']));
+						// rm feed from feed list $GLOBALS['liste_flux']
+						unset($GLOBALS['liste_flux'][$i]);
+						break;
+
+					case 'edited':
+						// update feed in $GLOBALS['liste_flux']
+						unset($GLOBALS['liste_flux'][$i]);
+						$feed['link'] = $posted_feeds[$feed['checksum']]['link'];
+						$feed['title'] = $posted_feeds[$feed['checksum']]['title'];
+						$feed['folder'] = $posted_feeds[$feed['checksum']]['folder'];
+
+						$GLOBALS['liste_flux'][$feed['link']] = $feed;
+						break;
+				}
+			}
+		}
+		// commit to DB
+		$GLOBALS['db_handle']->commit();
+
+		// commit to feed list FILE
+		$GLOBALS['liste_flux'] = array_reverse(tri_selon_sous_cle($GLOBALS['liste_flux'], 'title'));
+		file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' */');
+
+
+		die('Success');
+	} catch (Exception $e) {
+		die('SQL Feeds-update Error: '.$e->getMessage());
+	}
+	die ('Success');
 }
 
 exit;

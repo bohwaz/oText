@@ -58,10 +58,11 @@ $GLOBALS['lang'] = array(
 'months_fullname'				=> array('janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'),
 'months_abbr'					=> array('janv.','févr.','mars','avril','mai','juin','juil.','août','sept.','oct.','nov.','déc.'),
 'days_abbr'						=> array('lun.','mar.','mer.','jeu.','ven.','sam.','dim.'),
+'days_abbr_narrow'				=> array('L','M','M','J','V','S','D'),
 'days_fullname'					=> array('lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'),
-'days_initials'					=> 'LMMJVSD',
 'aujourdhui'					=> 'aujourd’hui',
 'hier'							=> 'hier',
+'demain'						=> 'demain',
 
 // Erreurs
 'erreurs' 						=> 'Erreur(s)',

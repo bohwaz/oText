@@ -9,7 +9,7 @@
 require_once 'inc/boot.php';
 operate_session();
 
-setcookie('lastAccessComments', time(), time()+365*24*60*60, null, null, true, true);
+setcookie('lastAccessComments', time(), time()+365*24*60*60, null, null, false, true);
 
 
 function afficher_commentaire($comment) {
@@ -17,7 +17,7 @@ function afficher_commentaire($comment) {
 	echo '<div class="commentbloc'.(!$comment['bt_statut'] ? ' privatebloc' : '').'" id="'.article_anchor($comment['bt_id']).'">'."\n";
 	echo '<div class="comm-side-icon">'."\n";
 	echo "\t".'<div class="comm-title">'."\n";
-	echo "\t\t".'<img class="author-icon" src="'.URL_ROOT.'favatar.php?w=gravatar&amp;q='.md5((!empty($comment['bt_email']) ? $comment['bt_email'] : $comment['bt_author'] )).'&amp;s=48&amp;d=monsterid"/>'."\n";
+	echo "\t\t".'<img class="author-icon" src="'.URL_ROOT.'favatar.php?w=gravatar&amp;q='.md5((!empty($comment['bt_email']) ? $comment['bt_email'] : $comment['bt_author'] )).'&amp;s=48&amp;d=monsterid" alt="favatar" />'."\n";
 	echo "\t\t".'<span class="date">'.date_formate($comment['bt_id']).'<span>'.heure_formate($comment['bt_id']).'</span></span>'."\n" ;
 	echo "\t\t".'<span class="reply" onclick="reply(\'[b]@['.str_replace('\'', '\\\'', $comment['bt_author']).'|#'.article_anchor($comment['bt_id']).'] :[/b] \'); ">Reply</span> ';
 	if (!empty($comment['bt_webpage']))
@@ -45,14 +45,14 @@ function afficher_commentaire($comment) {
 	echo "\t".'<div class="comm-content">'."\n";
 	echo $comment['bt_content'];
 	echo "\t".'</div>'."\n";
-	$arr = array(
-		'auth' => protect($comment['bt_author']),
-		'mail' => protect($comment['bt_email']),
-		'webp' => protect($comment['bt_webpage']),
-		'wiki' => htmlspecialchars($comment['bt_wiki_content']),
-		'btid' => protect($comment['bt_id']),
-	);
-	echo "\t".hidden_input('comm_data', htmlspecialchars(json_encode($arr)));
+	$out = '{'.
+		'"auth":'.json_encode($comment['bt_author']).', '.
+		'"mail":'.json_encode($comment['bt_email']).', '.
+		'"webp":'.json_encode($comment['bt_webpage']).', '.
+		'"wiki":'.json_encode($comment['bt_wiki_content']).', '.
+		'"btid":'.json_encode($comment['bt_id']).
+	'}';
+	echo "\t".'<script id="s'.$comment['bt_id'].'" type="application/json">'.$out.'</script>'."\n";
 	echo "\t".'</div>'."\n\n";
 	echo '</div>'."\n\n";
 }
@@ -177,28 +177,26 @@ echo '</div>'."\n";
 if (!empty($article_id)) {
 	echo '<div id="post-nv-commentaire">'."\n";
 	echo '<h2 class="poster-comment">'.$GLOBALS['lang']['comment_ajout'].'</h2>'."\n";
-	$arr = array(
-		'auth' => protect($GLOBALS['auteur']),
-		'mail' => protect($GLOBALS['email']),
-		'webp' => protect($GLOBALS['racine']),
-		'wiki' => "",
-		'btid' => "",
-	);
-	echo "\t".hidden_input('comm_data', htmlspecialchars(json_encode($arr)));
+	$out = '{'.
+		'"auth":'.json_encode($GLOBALS['auteur']).', '.
+		'"mail":'.json_encode($GLOBALS['email']).', '.
+		'"webp":'.json_encode($GLOBALS['racine']).', '.
+		'"wiki":'.json_encode('').', '.
+		'"btid":'.json_encode('').
+	'}';
+	echo "\t".'<script id="snv" type="application/json">'.$out.'</script>'."\n";
 
 
 	echo afficher_form_commentaire($article_id, 'admin', $erreurs_form, '');
 	echo '</div>'."\n";
 }
 
-echo "\n".'<script src="style/javascript.js" type="text/javascript"></script>'."\n";
-echo '<script type="text/javascript">';
-echo php_lang_to_js(0);
-echo 'var csrf_token = \''.new_token().'\'';
-echo '
-new writeForm();
-';
-echo '</script>';
+echo "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
+echo '<script>';
+echo 'var csrf_token = \''.new_token().'\''."\n";
+echo 'new writeForm();'."\n";
+echo '</script>'."\n";
+echo php_lang_to_js();
 
 footer($begin);
 

@@ -34,16 +34,16 @@ if (isset($_POST['save_notes'])) {
 		foreach ($notes as $i => $note) {
 			switch ($note['action']) {
 				case 'newNote':
-					$req = $GLOBALS['db_handle']->prepare('INSERT INTO notes ( bt_id, bt_title, bt_content, bt_color ) VALUES (?, ?, ?, ?)');
-					$req->execute(array($note['id'], $note['title'], $note['content'], $note['color'] ));
+					$req = $GLOBALS['db_handle']->prepare('INSERT INTO notes ( bt_id, bt_title, bt_content, bt_color, bt_statut, bt_pinned ) VALUES (?, ?, ?, ?, ?, ?)');
+					$req->execute(array($note['id'], $note['title'], $note['content'], $note['color'], $note['isstatut'], $note['ispinned'] ));
 					break;
 				case 'deleteNote':
 					$req = $GLOBALS['db_handle']->prepare('DELETE FROM notes WHERE bt_id = ?');
 					$req->execute(array($note['id']));
 					break;
 				case 'updateNote':
-					$req = $GLOBALS['db_handle']->prepare('UPDATE notes SET bt_title = ?, bt_content = ?, bt_color = ? WHERE bt_id = ?');
-					$req->execute(array($note['title'], $note['content'], $note['color'], $note['id'] ));
+					$req = $GLOBALS['db_handle']->prepare('UPDATE notes SET bt_title = ?, bt_content = ?, bt_color = ?, bt_statut = ?, bt_pinned = ? WHERE bt_id = ?');
+					$req->execute(array($note['title'], $note['content'], $note['color'], $note['isstatut'], $note['ispinned'], $note['id']));
 					break;
 			}
 		}

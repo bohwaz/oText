@@ -89,9 +89,8 @@
 	color: red;
 }
 
-#auth p label[for="user"]::before     { content: "\e930"; }
-#auth p label[for="password"]::before { content: "\e93d"; }
-#auth p label[for="word"]::before     { content: "\e93b"; }
+#auth p label[for="user"]::before     { content: "\e7FD"; }
+#auth p label[for="password"]::before { content: "\e897"; }
 
 #auth .button-submit,
 #install .button-submit {

@@ -84,6 +84,6 @@ function valider_form() {
 	return TRUE;
 }
 
-echo "\n".'<script src="style/javascript.js" type="text/javascript"></script>'."\n";
+echo "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
 footer();
 

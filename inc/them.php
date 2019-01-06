@@ -240,6 +240,7 @@ function afficher_index($tableau, $type, $erreurs_form) {
 	if ($type == 'list') {
 		$HTML_elmts = '';
 		if (!empty($tableau)) {
+			$firstArticleArray = array();
 			// get template file based on article type.
 			switch ($tableau[0]['bt_type']) {
 				case 'article':
@@ -252,6 +253,10 @@ function afficher_index($tableau, $type, $erreurs_form) {
 					break;
 				case 'link':
 				case 'note':
+					// if single link, put link title in <title>
+					if (1 === count($tableau)) {
+						$firstArticleArray = $tableau[0];
+					}
 					if (!($theme_article = file_get_contents($GLOBALS['theme_post_link']))) die($GLOBALS['lang']['err_theme_introuvable']);
 					$conversion_theme_fonction = 'conversions_theme_lien';
 					break;				
@@ -264,7 +269,7 @@ function afficher_index($tableau, $type, $erreurs_form) {
 				$HTML_elmts .=  $conversion_theme_fonction($theme_article, $element);
 			}
 			$HTML = str_replace(extract_boucles($theme_page, $GLOBALS['boucles']['posts'], 'incl'), $HTML_elmts, $theme_page);
-			$HTML = conversions_theme($HTML, array(), 'post');
+			$HTML = conversions_theme($HTML, $firstArticleArray, 'post');
 		}
 		else {
 			$HTML_article = conversions_theme($theme_page, array(), 'list');

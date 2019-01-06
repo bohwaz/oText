@@ -11,20 +11,11 @@ operate_session();
 setcookie('lastAccessRss', time(), time()+365*24*60*60, null, null, false, true);
 $GLOBALS['liste_flux'] = open_serialzd_file(FEEDS_DB);
 
+//debug($GLOBALS['liste_flux']);
 
 /* Returns the HTML list with the feeds (the left panel with the sites, not the posts themselves) */
 function feed_list_html() {
-	// counts unread feeds in DB
-	$feeds_nb = rss_count_feed();
-
-/*	$total_unread = $total_favs = $total_today = 0;
-	foreach ($feeds_nb as $feed) {
-		$total_unread += $feed['nbrun'];
-		$total_favs += $feed['nbfav'];
-		$total_today += $feed['nbtoday'];
-	}*/
-
-	// first item : special buttons (all feeds ; favs ; today)
+	$html = "";
 	$html  = "\t\t".'<li class="special">'."\n";
 	$html .= "\t\t\t".'<ul>'."\n";
 	$html .= "\t\t\t\t".'<li class="all-feeds active-site" id="global-post-counter">'.$GLOBALS['lang']['rss_label_all_feeds'].'</li>'."\n";
@@ -33,28 +24,19 @@ function feed_list_html() {
 	$html .= "\t\t\t".'</ul>'."\n";
 	$html .= "\t\t".'</li>'."\n";
 
-
-	$feed_urls = array();
-	foreach ($feeds_nb as $i => $feed) {
-		$feed_urls[$feed['bt_feed']] = $feed;
-	}
-
 	// sort feeds by folder
 	$folders = array();
 	foreach ($GLOBALS['liste_flux'] as $i => $feed) {
-		$feed['nbrun'] = (isset($feed_urls[$feed['link']]['nbrun']) ? $feed_urls[$feed['link']]['nbrun'] : 0);
 		$folders[$feed['folder']][] = $feed;
 	}
 	krsort($folders);
-
+	
 	// creates html : lists RSS feeds without folder separately from feeds with a folder
 	foreach ($folders as $i => $folder) {
 		$li_html = "";
 		$folder_count = 0;
-		$folder_count_today = 0;
 		foreach ($folder as $j => $feed) {
 			$t = ($i != '') ? "\t\t" : "";
-
 			$li_html .= $t."\t\t".'<li class="feed-site'.(($feed['iserror'] > 2) ? ' feed-error': '' ).'" data-nbrun="'.$feed['nbrun'].'" data-feed-hash="'.crc32($feed['link']).'" style="background-image: url('.URL_ROOT.'favatar.php?w=favicon&amp;q='.parse_url($feed['link'], PHP_URL_HOST).')">'.htmlspecialchars($feed['title']).'</li>'."\n";
 			$folder_count += $feed['nbrun'];
 		}
@@ -72,73 +54,48 @@ function feed_list_html() {
 		}
 
 	}
+
 	return $html;
 }
 
 
 /* form config RSS feeds: allow changing feeds (title, url) or remove a feed */
-function afficher_form_rssconf($errors='') {
-	if (!empty($errors)) {
-		echo erreurs($errors);
-	}
+function afficher_form_rssconf() {
 	$out = '';
-	// form add new feed.
-	/*
-	$out .= '<form id="form-rss-add" method="post" action="feed.php?config">'."\n";
-	$out .= '<fieldset class="pref">'."\n";
-	$out .= '<legend class="legend-link">'.$GLOBALS['lang']['label_feed_ajout'].'</legend>'."\n";
-	$out .= "\t\t\t".'<label for="new-feed">'.$GLOBALS['lang']['label_feed_new'].':</label>'."\n";
-	$out .= "\t\t\t".'<input id="new-feed" name="new-feed" type="text" class="text" value="" placeholder="http://www.example.org/rss">'."\n";
-	$out .= '<p class="submit-bttns">'."\n";
-	$out .= "\t".'<button class="submit button-submit" type="submit" name="send">'.$GLOBALS['lang']['envoyer'].'</button>'."\n";
-	$out .= '</p>'."\n";
-	$out .= hidden_input('token', new_token());
-	$out .= hidden_input('verif_envoi', 1);
-	$out .= '</fieldset>'."\n";
-	$out .= '</form>'."\n";
-	*/
 
 	// Form edit + list feeds.
 	$out .= '<form id="form-rss-config" method="post" action="feed.php?config">'."\n";
-	foreach($GLOBALS['liste_flux'] as $i => $flux) {
-		$out .= '<div class="feed-item">'."\n";
-		$out .= "\t".'<p'.( ($flux['iserror'] > 2) ? ' class="feed-error" title="('.$flux['iserror'].' last requests were errors.)" ' : ''  ).'>'."\n";
-		$out .= "\t\t".'<label for="i_'.$flux['checksum'].'">'.$GLOBALS['lang']['rss_label_titre_flux'].'</label>'."\n";
-		$out .= "\t\t".'<input id="i_'.$flux['checksum'].'" name="i_'.$flux['checksum'].'" type="text" class="text" value="'.htmlspecialchars($flux['title']).'">'."\n";
-		$out .= "\t".'</p>'."\n";
-		$out .= "\t".'<p>'."\n";
-		$out .= "\t\t".'<label for="j_'.$flux['checksum'].'">'.$GLOBALS['lang']['rss_label_url_flux'].'</label>'."\n";
-		$out .= "\t\t".'<input id="j_'.$flux['checksum'].'" name="j_'.$flux['checksum'].'" type="text" class="text" value="'.htmlspecialchars($flux['link']).'">'."\n";
-		$out .= "\t".'</p>'."\n";
-		$out .= "\t".'<p>'."\n";
-		$out .= "\t\t".'<label for="l_'.$flux['checksum'].'">'.$GLOBALS['lang']['rss_label_dossier'].'</label>'."\n";
-		$out .= "\t\t".'<input id="l_'.$flux['checksum'].'" name="l_'.$flux['checksum'].'" type="text" class="text" value="'.htmlspecialchars($flux['folder']).'">'."\n";
-		$out .= "\t\t".'<input class="remove-feed" name="k_'.$flux['checksum'].'" type="hidden" value="1">'."\n";
-		$out .= "\t".'</p>'."\n";
-		$out .= "\t".'<p>'."\n";
-		$out .= "\t\t".'<button type="button" class="submit button-cancel" onclick="unMarkAsRemove(this)">'.$GLOBALS['lang']['annuler'].'</button>'."\n";
-		$out .= "\t\t".'<button type="button" class="submit button-delete" onclick="markAsRemove(this)">'.$GLOBALS['lang']['supprimer'].'</button>'."\n";
-		$out .= "\t".'</p>';
-		$out .= '</div>'."\n";
+
+	$out .= '<table id="rss-feed" spellcheck="false">'."\n";
+	$out .= '<thead>'."\n";
+	$out .= "\t".'<tr>'."\n";
+	$out .= "\t\t".'<th></th>'."\n";
+	$out .= "\t\t".'<th>'.$GLOBALS['lang']['rss_label_titre_flux'].'</th>'."\n";
+	$out .= "\t\t".'<th>'.$GLOBALS['lang']['rss_label_url_flux'].'</th>'."\n";
+	$out .= "\t\t".'<th>'.$GLOBALS['lang']['rss_label_dossier'].'</th>'."\n";
+	$out .= "\t\t".'<th></th>'."\n";
+	$out .= "\t\t".'<th></th>'."\n";
+	$out .= "\t".'</tr>'."\n";
+	$out .= '</thead>'."\n";
+	$out .= '<tbody>'."\n";
+
+	foreach($GLOBALS['liste_flux'] as $i => $feed) {
+		$out .= "\t".'<tr data-feed-hash="'.$feed['checksum'].'" '.( ($feed['iserror'] > 2) ? ' class="feed-error" title="('.$feed['iserror'].' last requests were errors.)" ' : ''  ).'>'."\n";
+		$out .= "\t\t".'<td class="icon"><a href="'.$feed['link'].'"><img src="'.URL_ROOT.'favatar.php?w=favicon&amp;q='.parse_url($feed['link'], PHP_URL_HOST).'" alt="i" height="20" width="20" /></a></td>'."\n";
+		$out .= "\t\t".'<td class="title" contenteditable>'.htmlspecialchars($feed['title']).'</td>'."\n";
+		$out .= "\t\t".'<td class="link" contenteditable>'.htmlspecialchars($feed['link']).'</td>'."\n";
+		$out .= "\t\t".'<td class="folder" contenteditable>'.htmlspecialchars($feed['folder']).'</td>'."\n";
+		$out .= "\t\t".'<td class="dtime">'.date_formate($feed['time'], 7).'</td>'."\n";
+		$out .= "\t\t".'<td class="suppr"><button type="button" title="'.$GLOBALS['lang']['supprimer'].'"></button></td>'."\n";
+		$out .= "\t".'</tr>'."\n";
 	}
-	$out .= '<p class="submit-bttns">'."\n";
-	$out .= "\t".'<button class="submit button-submit" type="submit" name="send">'.$GLOBALS['lang']['envoyer'].'</button>'."\n";
-	$out .= '</p>'."\n";
-	$out .= hidden_input('token', new_token());
-	$out .= hidden_input('verif_envoi', 1);
+	$out .= '</tbody>'."\n";
+	$out .= '</table>'."\n";
 	$out .= '</form>'."\n";
 
 	return $out;
 }
 
-
-$erreurs = array();
-if (isset($_POST['verif_envoi'])) {
-	$erreurs = valider_form_rss();
-	if (empty($erreurs)) {
-		traiter_form_rssconf();
-	}
-}
 
 $tableau = array();
 if (!empty($_GET['q'])) {
@@ -167,22 +124,34 @@ if (!empty($_GET['q'])) {
 
 
 $html_sub_menu = '';
+$html_sub_menu .= "\t".'<div id="sub-menu">'."\n";
+
 if (!isset($_GET['config'])) {
-	$html_sub_menu .= "\t".'<div id="sub-menu">'."\n";
-	$html_sub_menu .= "\t\t".'<span id="count-posts"><span id="counter"></span></span>'."\n";
-	$html_sub_menu .= "\t\t".'<span id="message-return"></span>'."\n";
-	$html_sub_menu .= "\t\t".'<ul class="rss-menu-buttons sub-menu-buttons">'."\n";
-	$html_sub_menu .= "\t\t\t".'<li><button type="button" id="refreshAll" title="'.$GLOBALS['lang']['rss_label_refresh'].'"></button></li>'."\n";
-	$html_sub_menu .= "\t\t\t".'<li><button type="button" onclick="goToUrl(\'?config\')" title="'.$GLOBALS['lang']['rss_label_config'].'"></button></li>'."\n";
-	$html_sub_menu .= "\t\t\t".'<li><button type="button" onclick="goToUrl(\'maintenance.php#form_import\')" title="Import/export"></button></li>'."\n";
-	$html_sub_menu .= "\t\t\t".'<li><button type="button" id="deleteOld" title="'.$GLOBALS['lang']['rss_label_clean'].'"></button></li>'."\n";
-	$html_sub_menu .= "\t\t".'</ul>'."\n";
-//	$html_sub_menu .= "\t\t".'<ul class="rss-menu-tags sub-menu-buttons">'."\n";
-//	$html_sub_menu .= "\t\t\t".'<li>AZE</li>'."\n";
-//	$html_sub_menu .= "\t\t".'</ul>'."\n";
-	$html_sub_menu .= "\t".'</div>'."\n";
-	$html_sub_menu .= "\t".'<button type="button" id="fab" class="add-feed" title="'.$GLOBALS['lang']['rss_label_config'].'">'.$GLOBALS['lang']['rss_label_addfeed'].'</button>'."\n";
+	$html_sub_menu .= "\t\t".'<button id="hide-feed-list"></button>'."\n";
 }
+$html_sub_menu .= "\t\t".'<span id="counter-wraper">'."\n";
+$html_sub_menu .= "\t\t\t".'<span id="count-posts"><span id="counter"></span></span>'."\n";
+$html_sub_menu .= "\t\t\t".'<span id="message-return"></span>'."\n";
+$html_sub_menu .= "\t\t".'</span>'."\n";
+
+if (!isset($_GET['config'])) {
+	$html_sub_menu .= "\t\t".'<div class="rss-menu-buttons sub-menu-buttons">'."\n";
+	$html_sub_menu .= "\t\t\t".'<div class="item-menu-options">'."\n";
+	$html_sub_menu .= "\t\t\t\t".'<ul>'."\n";
+	$html_sub_menu .= "\t\t\t\t\t".'<li><button type="button" id="refreshAll">'.$GLOBALS['lang']['rss_label_refresh'].'</button></li>'."\n";
+	$html_sub_menu .= "\t\t\t\t\t".'<li><button type="button" onclick="goToUrl(\'?config\')">'.$GLOBALS['lang']['rss_label_config'].'</button></li>'."\n";
+	$html_sub_menu .= "\t\t\t\t\t".'<li><button type="button" onclick="goToUrl(\'maintenance.php#form_import\')">Import/export</button></li>'."\n";
+	$html_sub_menu .= "\t\t\t\t\t".'<li><button type="button" id="deleteOld">'.$GLOBALS['lang']['rss_label_clean'].'</button></li>'."\n";
+	$html_sub_menu .= "\t\t\t\t".'</ul>'."\n";
+	$html_sub_menu .= "\t\t\t".'</div>'."\n";
+	$html_sub_menu .= "\t\t".'</div>'."\n";
+} else {
+	$html_sub_menu .= "\t".'<ul class="sub-menu-buttons">'."\n";
+	$html_sub_menu .= "\t\t".'<li><button class="submit button-submit" type="submit" name="enregistrer" id="enregistrer" disabled>'.$GLOBALS['lang']['enregistrer'].'</button></li>'."\n";
+	$html_sub_menu .= "\t".'</ul>'."\n";
+}
+$html_sub_menu .= "\t".'</div>'."\n";
+
 
 // DEBUT PAGE
 afficher_html_head($GLOBALS['lang']['mesabonnements'], "feeds");
@@ -193,41 +162,13 @@ echo '<div id="page">'."\n";
 $out_html = '';
 
 if (isset($_GET['config'])) {
-	$out_html .=  afficher_form_rssconf($erreurs);
-	$out_html .=  "\n".'<script src="style/javascript.js" type="text/javascript"></script>'."\n";
-	$out_html .=  "\n".'<script type="text/javascript">'."\n";
-	$out_html .=  'var token = \''.new_token().'\';'."\n";
-	$out_html .=  'var scrollPos = 0;'."\n";
-	$out_html .=  'window.addEventListener(\'scroll\', function(){ scrollingFabHideShow() });'."\n";
-	$out_html .=  php_lang_to_js(0);
-	$out_html .=  '
-
-	var fabButton = document.getElementById(\'fab\');
-	fabButton.addEventListener(\'click\', addNewFeed);
-
-	function addNewFeed() {
-		var newLink = window.prompt(BTlang.rssJsAlertNewLink, \'\');
-		if (!newLink) return false;
-		var newFolder = window.prompt(BTlang.rssJsAlertNewLinkFolder, \'\');
-		var xhr = new XMLHttpRequest();
-		xhr.open(\'POST\', \'_rss.ajax.php\');
-		xhr.onload = function() {
-			location.reload();
-		};
-
-		xhr.onerror = function(e) {
-			alert(e);
-		};
-		// prepare and send FormData
-		var formData = new FormData();
-		formData.append(\'token\', token);
-		formData.append(\'add-feed\', newLink);
-		formData.append(\'add-feed-folder\', newFolder);
-		xhr.send(formData);
-		return false;
-	}';
-
-	$out_html .=  "\n".'</script>'."\n";
+	$out_html .= afficher_form_rssconf();
+	$out_html .= php_lang_to_js();
+	$out_html .= "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
+	$out_html .= "\n".'<script>'."\n";
+	$out_html .= 'var token = \''.new_token().'\';'."\n";
+	$out_html .= 'new RssConfig();'."\n";
+	$out_html .= "\n".'</script>'."\n";
 	echo $out_html;
 }
 
@@ -237,37 +178,48 @@ else {
 	$out_html .= feed_list_html();
 	$out_html .= "\t".'</ul>'."\n";
 
-	// get list of posts from DB
-	// send to browser
-	$out_html .= send_rss_json($tableau, true);
 	$out_html .= '<div id="rss-list">'."\n";
 	$out_html .= "\t".'<div id="posts-wrapper">'."\n";
-	$out_html .= "\t\t\t".'<div id="post-list-title">'."\n";
+	$out_html .= "\t\t".'<div id="post-list-title">'."\n";
 	$out_html .= "\t\t\t".'<ul>'."\n";
 	$out_html .= "\t\t\t\t".'<li><button type="button" id="markasread" title="'.$GLOBALS['lang']['rss_label_markasread'].'"></button></li>'."\n";
 	$out_html .= "\t\t\t\t".'<li><button type="button" id="openallitemsbutton" title="'.$GLOBALS['lang']['rss_label_unfoldall'].'"></button></li>'."\n";
 	$out_html .= "\t\t\t".'</ul>'."\n";
 	$out_html .= "\t\t\t".'<p><span id="post-counter"></span> '.$GLOBALS['lang']['label_elements'].'</p>'."\n";
-
-	$out_html .= "\t\t\t".'</div>'."\n";
-
-	$out_html .= "\t\t\t".'<ul id="post-list"></ul>'."\n";
-
-	if (empty($GLOBALS['liste_flux'])) {
-		$out_html .= $GLOBALS['lang']['rss_nothing_here_note'].'<a href="maintenance.php#form_import">import OPML</a>.';
-	}
+	$out_html .= "\t\t".'</div>'."\n";
+	$out_html .= "\t\t".'<ul id="post-list">'."\n";
+	$out_html .= "\t\t\t".'<li id="i_" data-sitehash="" hidden>'."\n";
+	$out_html .= "\t\t\t\t".'<div class="post-head">'."\n";
+	$out_html .= "\t\t\t\t\t".'<a href="#" class="lien-fav" data-is-fav="" data-fav-id=""></a>'."\n";
+	$out_html .= "\t\t\t\t\t".'<div class="site"></div>'."\n";
+	$out_html .= "\t\t\t\t\t".'<div class="folder"></div>'."\n";
+	$out_html .= "\t\t\t\t\t".'<a href="#" title="" class="post-title" target="_blank" data-id=""></a>'."\n";
+	$out_html .= "\t\t\t\t\t".'<div class="share">'."\n";
+	$out_html .= "\t\t\t\t\t\t".'<a href="" target="_blank" class="lien-share"></a>'."\n";
+	$out_html .= "\t\t\t\t\t\t".'<a href="" target="_blank" class="lien-open"></a>'."\n";
+	$out_html .= "\t\t\t\t\t\t".'<a href="" target="_blank" class="lien-mail"></a>'."\n";
+	$out_html .= "\t\t\t\t\t".'</div>'."\n";
+	$out_html .= "\t\t\t\t\t".'<div class="date"></div>'."\n";
+	$out_html .= "\t\t\t\t".'</div>'."\n";
+	$out_html .= "\t\t\t\t".'<div class="rss-item-content"></div>'."\n";
+	$out_html .= "\t\t\t\t".'<hr class="clearboth">'."\n";
+	$out_html .= "\t\t\t".'</li>'."\n";
+	$out_html .= "\t\t\t".'</ul>'."\n";
 	$out_html .= "\t".'</div>'."\n";
 	$out_html .= "\t".'<div class="keyshortcut">'.$GLOBALS['lang']['rss_raccourcis_clavier'].'</div>'."\n";
 	$out_html .= '</div>'."\n";
 
-	$out_html .=  "\n".'<script src="style/javascript.js" type="text/javascript"></script>'."\n";
-	$out_html .=  "\n".'<script type="text/javascript">'."\n";
-	$out_html .=  'var token = \''.new_token().'\';'."\n";
-	$out_html .=  'var RssWall = new RssReader();'."\n";
-	$out_html .=  'var scrollPos = 0;'."\n";
-	$out_html .=  'window.addEventListener(\'scroll\', function(){ scrollingFabHideShow() });'."\n";
+	$out_html .= "\t".'<button type="button" id="fab" class="add-feed" title="'.$GLOBALS['lang']['rss_label_config'].'">'.$GLOBALS['lang']['rss_label_addfeed'].'</button>'."\n";
 
-	$out_html .=  php_lang_to_js(0);
+	// get list of posts from DB
+	// send to browser
+	$out_html .= send_rss_json($tableau, true);
+	$out_html .= php_lang_to_js();
+	$out_html .=  "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
+	$out_html .=  "\n".'<script>'."\n";
+	$out_html .=  'var token = \''.new_token().'\';'."\n";
+	$out_html .=  'new RssReader();'."\n";
+	$out_html .=  'var scrollPos = 0;'."\n";
 	$out_html .=  "\n".'</script>'."\n";
 
 	echo $out_html;

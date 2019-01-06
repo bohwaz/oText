@@ -20,7 +20,9 @@ function send_files_json($files) {
 			'"folder":'.json_encode($im['bt_folder']).', '.
 			'"absPath":'.json_encode($dossier.'/'.$im['bt_path'].'/').', '.
 			'"fileName":'.json_encode($im['bt_filename']).', '.
-			'"thbPath":'.json_encode(chemin_thb_img_test($dossier.'/'.$im['bt_path'].'/'.$im['bt_filename'])).
+			'"thbPath":'.json_encode(chemin_thb_img_test($dossier.'/'.$im['bt_path'].'/'.$im['bt_filename'])).', '.
+			'"w":'.json_encode($im['bt_dim_w']).', '.
+			'"h":'.json_encode($im['bt_dim_h']).
 		'},'."\n";
 	}
 	$json_img = trim(trim($json_img), ',')."\n".']';
@@ -37,11 +39,13 @@ function send_files_json($files) {
 			'"fileName":'.json_encode($doc['bt_filename']).
 		'},'."\n";
 	}
-	$json_files = trim(trim($json_files), ',')."\n".']';
+	$json_files = trim(trim($json_files), ',')."\n".']'."\n";
 
-	$out = '<script type="text/javascript">'."\n";
-	$out .= 'var images = {"list": '.$json_img.'};'."\n\n";
-	$out .= 'var docs = {"list": '.$json_files.'};'."\n";
+	$out  = '<script id="json_images" type="application/json">'."\n";
+	$out .= $json_img."\n";
+	$out .= '</script>'."\n";
+	$out .= '<script id="json_docs" type="application/json">'."\n";
+	$out .= $json_files."\n";
 	$out .= '</script>'."\n";
 
 	return $out;
@@ -312,23 +316,24 @@ else {
 	echo $out_html;
 }
 
-echo "\n".'<script src="style/javascript.js" type="text/javascript"></script>'."\n";
-echo "\n".'<script type="text/javascript">'."\n";
+echo "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
+echo "\n".'<script>'."\n";
 echo 'var counter = 0;'."\n";
 echo 'var nbDraged = false;'."\n";
 echo 'var nbDone = 0;'."\n";
 echo 'var list = []; // list of uploaded files'."\n";
 
-echo 'document.getElementById(\'dragndrop-area\').addEventListener(\'dragenter\', handleDragEnter, false);'."\n";
-echo 'document.getElementById(\'dragndrop-area\').addEventListener(\'dragover\', handleDragOver, true);'."\n";
-echo 'document.getElementById(\'dragndrop-area\').addEventListener(\'dragleave\', handleDragLeave, false);'."\n";
-echo 'document.getElementById(\'dragndrop-area\').addEventListener(\'dragend\', handleDragEnd, false);'."\n";
+echo 'if (null != document.getElementById(\'dragndrop-area\')) {'."\n";
+echo "\t".'document.getElementById(\'dragndrop-area\').addEventListener(\'dragenter\', handleDragEnter, false);'."\n";
+echo "\t".'document.getElementById(\'dragndrop-area\').addEventListener(\'dragover\', handleDragOver, true);'."\n";
+echo "\t".'document.getElementById(\'dragndrop-area\').addEventListener(\'dragleave\', handleDragLeave, false);'."\n";
+echo "\t".'document.getElementById(\'dragndrop-area\').addEventListener(\'dragend\', handleDragEnd, false);'."\n";
+echo '}'."\n";
 
 echo 'var imageWall = new imgListWall();'."\n";
 echo 'var filesWall = new docListWall();'."\n";
-
-echo php_lang_to_js(0);
 echo "\n".'</script>'."\n";
+echo php_lang_to_js();
 
 
 footer($begin);

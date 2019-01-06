@@ -33,7 +33,7 @@ if ($_GET['w'] == 'favicon') {
 	$domain = parse_url($_GET['q'], PHP_URL_HOST); // full URL given?
 	if ($domain === NULL) { $domain = parse_url($_GET['q'], PHP_URL_PATH); } // or only domain name?
 	if ($domain === NULL) { header("HTTP/1.0 400 Bad Request"); exit; } // or some unusable crap?
-	$source_file = 'http://www.google.com/s2/favicons?domain='.$domain;
+	$source_file = 'https://api.faviconkit.com/'.$domain.'/32';
 	// dest file
 	$target_file = $target_dir.'/'.md5($domain).'.png';
 	// expiration delay

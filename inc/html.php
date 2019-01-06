@@ -9,12 +9,12 @@
 
 function afficher_html_head($titre, $page_css_class) {
 	$html = '<!DOCTYPE html>'."\n";
-	$html .= '<html>'."\n";
+	$html .= '<html lang="'.$GLOBALS['lang']['id'].'">'."\n";
 	$html .= '<head>'."\n";
 	$html .= "\t".'<meta charset="UTF-8" />'."\n";
 	$html .= "\t".'<title>'.$titre.' | '.BLOGOTEXT_NAME.'</title>'."\n";
 	$html .= "\t".'<meta name="viewport" content="initial-scale=1.0, user-scalable=yes" />'."\n";
-	$html .= "\t".'<link type="text/css" rel="stylesheet" href="style/style.css.php" />'."\n";
+	$html .= "\t".'<link type="text/css" rel="stylesheet" href="style/styles/style.css.php" />'."\n";
 	$html .= '</head>'."\n";
 	$html .= '<body id="body" class="'.$page_css_class.'">'."\n";
 	echo $html;
@@ -44,6 +44,16 @@ function afficher_topnav($titre, $html_sub_menu) {
 
 	$html .= "\t".'<div id="top">'."\n";
 
+
+	// page title
+	$html .=  "\t\t".'<h1 id="titre-page"><a href="'.$tab.'">'.$titre.'</a></h1>'."\n";
+
+	// search form
+	if (in_array($tab, array('articles.php', 'commentaires.php', 'fichiers.php', 'links.php', 'notes.php', 'feed.php', 'agenda.php'))) {
+		$html .= moteur_recherche();
+	}
+
+	// app navs
 	$html .= "\t\t".'<div id="nav">'."\n";
 	$html .= "\t\t\t".'<ul>'."\n";
 	$html .= "\t\t\t\t".'<li><a href="index.php" id="lien-index">'.$GLOBALS['lang']['label_resume'].'</a></li>'."\n";
@@ -58,17 +68,10 @@ function afficher_topnav($titre, $html_sub_menu) {
 	$html .= "\t\t\t".'</ul>'."\n";
 	$html .= "\t\t".'</div>'."\n";
 
-	$html .=  "\t\t".'<h1 id="titre-page"><a href="'.$tab.'">'.$titre.'</a></h1>'."\n";
-
-	// search form
-	if (!in_array($tab, array('preferences.php', 'ecrire.php', 'maintenance.php'))) {
-		$html .= moteur_recherche();
-	}
-
 	// notif icons
 	$html .= get_notifications();
 
-	// right nav
+	// account nav
 	$html .= "\t\t".'<div id="nav-acc">'."\n";
 	$html .= "\t\t\t".'<ul>'."\n";
 	$html .= "\t\t\t\t".'<li><a href="preferences.php" id="lien-preferences">'.$GLOBALS['lang']['preferences'].'</a></li>'."\n";
@@ -76,6 +79,7 @@ function afficher_topnav($titre, $html_sub_menu) {
 	$html .= "\t\t\t\t".'<li><a href="logout.php" id="lien-deconnexion">'.$GLOBALS['lang']['deconnexion'].'</a></li>'."\n";
 	$html .= "\t\t\t".'</ul>'."\n";
 	$html .= "\t\t".'</div>'."\n";
+
 
 	$html .= "\t".'</div>'."\n";
 
@@ -104,9 +108,6 @@ function get_notifications() {
 	$html = '';
 	$lis = '';
 	$hasNotifs = 0;
-
-	$html .= "\t\t".'<div id="notif-icon"'.($hasNotifs ? ' class="hasNotifs" data-nb-notifs="'.$hasNotifs.'"' : '').'>'."\n";
-	$html .= "\t\t\t".'<ul>'."\n";
 
 	// get last RSS posts
 	if (isset($_COOKIE['lastAccessRss']) and is_numeric($_COOKIE['lastAccessRss'])) {
@@ -141,8 +142,10 @@ function get_notifications() {
 	}
 //}
 
-	$lis .= ($lis) ? '' : "\t\t\t\t".'<li>'.$GLOBALS['lang']['note_no_notifs'].'</li>'."\n";
+	$html .= "\t\t".'<div id="notif-icon" data-nb-notifs="'.$hasNotifs.'">'."\n";
+	$html .= "\t\t\t".'<ul>'."\n";
 
+	$lis .= ($lis) ? '' : "\t\t\t\t".'<li>'.$GLOBALS['lang']['note_no_notifs'].'</li>'."\n";
 
 	$html .= $lis;
 
@@ -488,7 +491,7 @@ function html_readmore() {
 function html_get_image_from_article($article) {
 	// extract image from $article
 	preg_match('#<img *.* src=(["|\']?)([^\1 ]*)(\1)[^>]*>#', $article, $matches);
-	$img = array('<img src=favicon.png />', '', 'favicon.png', '');
+	$img = array('<img src="favicon.ico" alt="default_favicon" />', '', 'favicon.ico', '');
 	if (!empty($matches)) {
 		$img = $matches;
 	}
@@ -497,44 +500,42 @@ function html_get_image_from_article($article) {
 }
 
 
-function php_lang_to_js($a) {
+function php_lang_to_js() {
 	$frontend_str = array();
 	$frontend_str['maxFilesSize'] = min(return_bytes(ini_get('upload_max_filesize')), return_bytes(ini_get('post_max_size')));
 	$frontend_str['rssJsAlertNewLink'] = $GLOBALS['lang']['rss_jsalert_new_link'];
 	$frontend_str['rssJsAlertNewLinkFolder'] = $GLOBALS['lang']['rss_jsalert_new_link_folder'];
 	$frontend_str['confirmFeedClean'] = $GLOBALS['lang']['confirm_feed_clean'];
+	$frontend_str['confirmFeedSaved'] = $GLOBALS['lang']['confirm_feeds_edit'];
 	$frontend_str['confirmCommentSuppr'] = $GLOBALS['lang']['confirm_comment_suppr'];
 	$frontend_str['confirmNotesSaved'] = $GLOBALS['lang']['confirm_note_enregistree'];
 	$frontend_str['confirmEventsSaved'] = $GLOBALS['lang']['confirm_agenda_updated'];
 	$frontend_str['activer'] = $GLOBALS['lang']['activer'];
 	$frontend_str['desactiver'] = $GLOBALS['lang']['desactiver'];
 	$frontend_str['supprimer'] = $GLOBALS['lang']['supprimer'];
-	$frontend_str['save'] = $GLOBALS['lang']['enregistrer'];
-	$frontend_str['add_title'] = $GLOBALS['lang']['label_add_title'];
-	$frontend_str['add_description'] = $GLOBALS['lang']['label_add_description'];
-	$frontend_str['add_location'] = $GLOBALS['lang']['label_add_location'];
-	$frontend_str['cancel'] = $GLOBALS['lang']['annuler'];
+	//$frontend_str['save'] = $GLOBALS['lang']['enregistrer'];
+	//$frontend_str['add_title'] = $GLOBALS['lang']['label_add_title'];
+	//$frontend_str['add_description'] = $GLOBALS['lang']['label_add_description'];
+	//$frontend_str['add_location'] = $GLOBALS['lang']['label_add_location'];
+	//$frontend_str['cancel'] = $GLOBALS['lang']['annuler'];
 	$frontend_str['errorPhpAjax'] = $GLOBALS['lang']['error_phpajax'];
 	$frontend_str['errorCommentSuppr'] = $GLOBALS['lang']['error_comment_suppr'];
 	$frontend_str['errorCommentValid'] = $GLOBALS['lang']['error_comment_valid'];
 	$frontend_str['questionQuitPage'] = $GLOBALS['lang']['question_quit_page'];
-	$frontend_str['questionCleanRss'] = $GLOBALS['lang']['question_clean_rss'];
+	//$frontend_str['questionCleanRss'] = $GLOBALS['lang']['question_clean_rss'];
 	$frontend_str['questionSupprComment'] = $GLOBALS['lang']['question_suppr_comment'];
 	$frontend_str['questionSupprArticle'] = $GLOBALS['lang']['question_suppr_article'];
 	$frontend_str['questionSupprFichier'] = $GLOBALS['lang']['question_suppr_fichier'];
+	$frontend_str['questionSupprFlux'] = $GLOBALS['lang']['question_suppr_feed'];
 	$frontend_str['questionSupprNote'] = $GLOBALS['lang']['question_suppr_note'];
 	$frontend_str['questionSupprEvent'] = $GLOBALS['lang']['question_suppr_event'];
 	$frontend_str['notesLabelTitle'] = $GLOBALS['lang']['label_titre'];
-	$frontend_str['notesLabelContent'] = $GLOBALS['lang']['label_contenu'];
-	$frontend_str['createdOn'] = $GLOBALS['lang']['label_creee_le'];
-	$frontend_str['lmmjvsd'] = $GLOBALS['lang']['days_initials'];
-	$frontend_str['questionPastEvents'] = $GLOBALS['lang']['question_show_past_events'];
-	$frontend_str['entireDay'] = $GLOBALS['lang']['question_entire_day'];
+	//$frontend_str['notesLabelContent'] = $GLOBALS['lang']['label_contenu'];
+	//$frontend_str['createdOn'] = $GLOBALS['lang']['label_creee_le'];
+	//$frontend_str['questionPastEvents'] = $GLOBALS['lang']['question_show_past_events'];
+	//$frontend_str['entireDay'] = $GLOBALS['lang']['question_entire_day'];
 
-	$sc = 'var BTlang = '.json_encode($frontend_str).';';
-
-	if ($a == 1) {
-		$sc = "\n".'<script type="text/javascript">'."\n".$sc."\n".'</script>'."\n";
-	}
+	$sc = json_encode($frontend_str, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+	$sc = '<script id="jsonLang" type="application/json">'."\n".$sc."\n".'</script>'."\n";
 	return $sc;
 }

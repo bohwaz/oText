@@ -11,7 +11,7 @@
 	top: 50px;
 	height: 50px;
 	box-sizing: border-box;
-	border-radius: 15px 15px 0 0;
+	border-radius: 4px 4px 0 0;
 	margin-top: -30px;
 }
 
@@ -65,12 +65,12 @@
 }
 
 .billets > li.on > a.titre::before {
-	content: "\e91c";
+	content: "\E8F4";
 	color: rgba(101, 234, 143, 1);
 }
 
 .billets > li.off > a.titre::before {
-	content: "\e917";
+	content: "\E8F5";
 	color: rgba(252, 101, 101, 1);
 }
 
@@ -84,7 +84,7 @@
 }
 
 .billets > li > a.date::before {
-	content: "\e918";
+	content: "\E616";
 }
 
 .billets > li > a.comments { /*comms*/
@@ -93,10 +93,10 @@
 }
 
 .billets > li > a.comments::before {
-	content: "\e91b";
+	content: "\e8af";
 }
 
 .billets > li > a.preview::before { /* prev */
-	content: "\e902";
+	content: "\E0E2";
 }
 

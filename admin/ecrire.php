@@ -173,9 +173,9 @@ echo '<div id="page">'."\n";
 apercu($post);
 afficher_form_billet($post, $erreurs_form);
 
-echo "\n".'<script src="style/javascript.js" type="text/javascript"></script>'."\n";
-echo '<script type="text/javascript">';
-echo php_lang_to_js(0);
+echo php_lang_to_js();
+echo "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
+echo '<script>';
 echo '
 new writeForm();
 
@@ -198,11 +198,8 @@ window.addEventListener("beforeunload", function (e) {
 	if (!form.dataset.edited) { return true; };
 	(e || window.event).returnValue = confirmationMessage || \'\'; //Gecko + IE
 	return confirmationMessage;                                   // Webkit : ignore this.
-});
-
-
-';
-echo '</script>';
+});';
+echo '</script>'."\n";
 
 
 footer($begin);

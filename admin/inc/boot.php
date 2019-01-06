@@ -19,5 +19,5 @@ require_once '../inc/boot.php';
 
 require_once 'inc/lang.php';
 
-
 $GLOBALS['db_handle'] = open_base();
+

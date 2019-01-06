@@ -2,6 +2,9 @@
 	#header {
 		position: relative;
 	}
+	#titre-page > a {
+		display: inline;
+	}
 
 	#axe {
 		padding: 10px 2px;
@@ -159,44 +162,73 @@
 	#sub-menu {
 		padding: 0 10px;
 	}
-
-	#rss-list {
-		padding-left: 25px;
-		margin: auto 0;
-	}
-
-	#posts-menu ul {
-		margin: 7px 0px;
-	}
-
-	#posts-menu button {
-		margin: 0px;
-	}
-
 	#feed-list {
-		transform: translateX(-100%) translateX(10px);
-		padding-right: 12px;
-		position: absolute;
-		z-index: 1;
-		left: 0;
-		max-width: 80%;
-		overflow: visible;
-		transition: transform .5s ease-in-out .15s;
+		margin-right: 5px;
+		transform: translateX(-280px);	
+	}
+	#rss-list {
+		margin-right: 5px;
+		margin-left: 5px;
+	}
+	#feed-list.hidden-list {
+		transform: translateX(0px);
 	}
 
-	#feed-list:hover {
-		transform: translateX(0);
-	}
-
-	#post-list > li > .post-head > .site {
+	#feed-list.hidden-list + #rss-list {
+		margin-left: 5px;
 		display: none;
 	}
 
-	#post-list > li > .post-head .date {
-		white-space: normal;
-		text-align: center;
-		flex-basis: 70px;
+	#body.feeds #fab {
+		left: -82px;
 	}
+	#feed-list.hidden-list ~ #fab {
+		left: 198px;
+	}
+
+
+	#post-list > li {
+		padding: 0 5px 0 0;
+	}
+	#post-list > li > .post-head {
+		flex-wrap: wrap;
+	}
+	#post-list > li > .post-head > .site,
+	#post-list > li > .post-head > .folder {
+		display: none;
+	}
+	#post-list > li > .post-head > .post-title,
+	#post-list > li > .post-head > .post-title:hover {
+		flex: 1 1 250px;
+	}
+	#post-list > li > .post-head > .share {
+		display: block;
+		flex: 1 0 auto;
+		text-align: right;
+		visibility: hidden;
+	}
+	#post-list > li:hover > .post-head > .share {
+		visibility: visible;
+	}
+	#post-list > li .post-head .date {
+		flex: 1 0 auto;
+		text-align: right;
+	}
+
+	/* feed list config */
+	#form-rss-config {
+		margin: 25px 5px;
+	}
+	#rss-feed th,
+	#rss-feed td {
+		padding-left: 5px;
+		padding-right: 5px;
+	}
+	#rss-feed th:nth-of-type(5),
+	#rss-feed td:nth-of-type(5) {
+		display: none;
+	}
+
 
 	/* page fichiers */
 	#file-list td:nth-of-type(3),
@@ -205,19 +237,41 @@
 	}
 
 	/* Page agenda */
-	#event-list > tbody > tr > td,
-	#event-list > thead > tr > th {
-		padding: 20px 10px;
-		white-space: normal;
+	#calendar-table {
+		border-collapse: collapse;
 	}
 
-	#event-list > tbody > tr > td:nth-of-type(2) {
+	.eventDate {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		grid-template-rows: auto 1fr;
+		align-items: center;
+		justify-items: center;
+		grid-gap: 2px 20px;
+	}
+	#daily-events > div .eventDate > .event-dd {
+		grid-column: 1;
+		grid-row: 1 / span 2;
+	}
+	#daily-events > div .eventDate > .event-mmdd {
+		grid-column: 2;
+		grid-row: 1;
 		width: auto;
+		margin: 0;
+	}
+	#daily-events > div .eventDate > .event-hhii {
+		grid-column: 2;
+		grid-row: 2;
+		width: auto;
+		margin: 0;
+	}
+	#daily-events > div.pastEvent .eventSummary {
+		display: flex;
 	}
 
-	#event-list > tbody > tr > td:nth-of-type(3),
-	#event-list > thead > tr > th:nth-of-type(3) {
-	    display: none;
+	#daily-events > div.pastEvent .eventSummary .loc,
+	#daily-events > div.pastEvent .eventSummary .content {
+		display: none;
 	}
 }
 

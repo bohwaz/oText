@@ -61,6 +61,6 @@ readfile('style-mobile-lt850px.css');
 readfile('style-mobile-lt700px.css');
 
 /* Custon UserCSS */
-if (is_file('../../config/custom-styles.css')) {
-	readfile('../../config/custom-styles.css');
+if (is_file('../../../config/custom-styles.css')) {
+	readfile('../../../config/custom-styles.css');
 }
