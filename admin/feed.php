@@ -37,7 +37,7 @@ function feed_list_html() {
 		$folder_count = 0;
 		foreach ($folder as $j => $feed) {
 			$t = ($i != '') ? "\t\t" : "";
-			$li_html .= $t."\t\t".'<li class="feed-site'.(($feed['iserror'] > 2) ? ' feed-error': '' ).'" data-nbrun="'.$feed['nbrun'].'" data-feed-hash="'.crc32($feed['link']).'" style="background-image: url('.URL_ROOT.'favatar.php?w=favicon&amp;q='.parse_url($feed['link'], PHP_URL_HOST).')">'.htmlspecialchars($feed['title']).'</li>'."\n";
+			$li_html .= $t."\t\t".'<li class="feed-site'.(($feed['iserror'] != '0' ) ? ' feed-error': '' ).'" data-nbrun="'.$feed['nbrun'].'" data-feed-hash="'.crc32($feed['link']).'" style="background-image: url('.URL_ROOT.'favatar.php?w=favicon&amp;q='.parse_url($feed['link'], PHP_URL_HOST).')">'.htmlspecialchars($feed['title']).'</li>'."\n";
 			$folder_count += $feed['nbrun'];
 		}
 
@@ -80,7 +80,7 @@ function afficher_form_rssconf() {
 	$out .= '<tbody>'."\n";
 
 	foreach($GLOBALS['liste_flux'] as $i => $feed) {
-		$out .= "\t".'<tr data-feed-hash="'.$feed['checksum'].'" '.( ($feed['iserror'] > 2) ? ' class="feed-error" title="('.$feed['iserror'].' last requests were errors.)" ' : ''  ).'>'."\n";
+		$out .= "\t".'<tr data-feed-hash="'.$feed['checksum'].'" '.( ($feed['iserror'] != '0') ? ' class="feed-error" title="Feed Error: '.$feed['iserror'].'" ' : ''  ).'>'."\n";
 		$out .= "\t\t".'<td class="icon"><a href="'.$feed['link'].'"><img src="'.URL_ROOT.'favatar.php?w=favicon&amp;q='.parse_url($feed['link'], PHP_URL_HOST).'" alt="i" height="20" width="20" /></a></td>'."\n";
 		$out .= "\t\t".'<td class="title" contenteditable>'.htmlspecialchars($feed['title']).'</td>'."\n";
 		$out .= "\t\t".'<td class="link" contenteditable>'.htmlspecialchars($feed['link']).'</td>'."\n";

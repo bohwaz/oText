@@ -275,6 +275,10 @@
 	font-size: 1.5em;
 }
 
+#post-list-title > ul button:hover {
+	background-color: rgba(0, 0, 0, .1);
+}
+
 #post-list-title ul > li:nth-of-type(1) > button::before        { content: "\e8f4"; }
 #post-list-title ul > li:nth-of-type(2) > button::before        { content: "\e5d7"; }
 #post-list-title ul > li:nth-of-type(2) > button.unfold::before { content: "\e5d6"; }
@@ -369,7 +373,8 @@
 #post-list > li > .post-head > .folder {
 	margin: 0 10px 0 0;
 	padding: 1px 10px;
-	background-color: lightblue;
+	background-color: var(--md-primary-color);
+	color: var(--main-md-text-color);
 	border-radius: 10px;
 	font-style: italic;
 }
@@ -503,6 +508,10 @@
 #rss-feed > tbody > tr:hover {
 	background-color: rgba(0, 0, 0, .1);
 	transition: background-color .5s;
+}
+
+#rss-feed > tbody > tr.feed-error {
+	background: lightpink;
 }
 
 #rss-feed > tbody > tr.edited {

@@ -6,13 +6,11 @@
 // See "LICENSE" file for info.
 // *** LICENSE ***
 
-require_once 'inc/boot.php';
-
 header('Content-Type: application/atom+xml; charset=UTF-8');
 
 // second level caching file.
 $lv2_cache_file = 'var/cache/static/c_atom_'.substr(md5(isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : ''), 0, 8).'.dat';
-
+/*
 // if cache file exists
 if (file_exists($lv2_cache_file)) {
 	// if cache not too old
@@ -23,6 +21,8 @@ if (file_exists($lv2_cache_file)) {
 	// file too old: delete it and go on (and create new file)
 	@unlink($lv2_cache_file);
 }
+*/
+require_once 'inc/boot.php';
 
 $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
 $xml .= '<feed xmlns="http://www.w3.org/2005/Atom">'."\n";
@@ -35,19 +35,20 @@ if (isset($_GET['id'])) {
 	$GLOBALS['db_handle'] = open_base();
 	$article_id = htmlspecialchars($_GET['id']);
 
-	$liste = liste_elements("SELECT c.*, a.bt_title FROM commentaires AS c, articles AS a WHERE c.bt_article_id=? AND c.bt_article_id=a.bt_id AND c.bt_statut=1 ORDER BY c.bt_id DESC", array($article_id), 'commentaires');
+	$liste = liste_elements("SELECT c.*, a.bt_title FROM commentaires AS c, articles AS a WHERE c.bt_article_id=? AND c.bt_article_id=a.bt_id AND c.bt_statut=1 ORDER BY c.bt_id DESC", array($article_id));
 
 	if (!empty($liste)) {
 		$xml .= '<title>Commentaires sur '.$liste[0]['bt_title'].' - '.$GLOBALS['nom_du_site'].'</title>'."\n";
 		$xml .= '<link href="'.$liste[0]['bt_link'].'" />'."\n";
 		$xml .= '<id>'.$liste[0]['bt_link'].'</id>';
 
+
 		foreach ($liste as $comment) {
 			$dec = decode_id($comment['bt_id']);
 			$tag = 'tag:'.parse_url($GLOBALS['racine'], PHP_URL_HOST).''.$dec['y'].'-'.$dec['m'].'-'.$dec['d'].':'.$comment['bt_id'];
 			$xml .= '<entry>'."\n";
 				$xml .= '<title>'.$comment['bt_author'].'</title>'."\n";
-				$xml .= '<link href="'.$comment['bt_link'].'"/>'."\n";
+				$xml .= '<link href="'.URL_ROOT.get_blogpath($comment['bt_article_id'], $comment['bt_title']).$comment['bt_link'].'"/>'."\n";
 				$xml .= '<id>'.$tag.'</id>'."\n";
 				$xml .= '<updated>'.date('c', mktime($dec['h'], $dec['i'], $dec['s'], $dec['m'], $dec['d'], $dec['y'])).'</updated>'."\n";
 				$xml .= '<content type="html">'.htmlspecialchars($comment['bt_content']).'</content>'."\n";
@@ -156,7 +157,7 @@ else {
 		$xml_post .= '<id>'.$tag.'</id>'."\n";
 		$xml_post .= '<updated>'.date_create_from_format('YmdHis', $time)->format('c').'</updated>'."\n";
 
-		if ($elem['bt_type'] == 'link') {
+		if ($elem['bt_type'] == 'link' or $elem['bt_type'] == 'note') {
 			if ($invert) {
 				$xml_post .= '<link href="'.$GLOBALS['racine'].'?id='.$elem['bt_id'].'"/>'."\n";
 				$xml_post .= '<content type="html">'.htmlspecialchars(rel2abs($elem['bt_content']).'<br/> — (<a href="'.$elem['bt_link'].'">link</a>)').'</content>'."\n";
@@ -165,7 +166,7 @@ else {
 				$xml_post .= '<content type="html">'.htmlspecialchars(rel2abs($elem['bt_content']).'<br/> — (<a href="'.$GLOBALS['racine'].'?id='.$elem['bt_id'].'">permalink</a>)').'</content>'."\n";
 			}
 		} else {
-			$xml_post .= '<link href="'.$elem['bt_link'].'"/>'."\n";
+			$xml_post .= '<link href="'.URL_ROOT.$elem['bt_link'].'"/>'."\n";
 			$xml_post .= '<content type="html">'.htmlspecialchars(rel2abs($elem['bt_content'])).'</content>'."\n";
 		}
 		if (isset($elem['bt_tags']) and !empty($elem['bt_tags'])) {

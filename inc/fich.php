@@ -390,7 +390,7 @@ function refresh_rss($feeds) {
 
 
 function retrieve_new_feeds($feedlinks) {
-	if (!$feeds = request_external_files($feedlinks, 15, true)) { // timeout = 25s
+	if (!$feeds = request_external_files($feedlinks, 25, true)) { // timeout = 25s
 		return FALSE;
 	}
 
@@ -405,12 +405,16 @@ function retrieve_new_feeds($feedlinks) {
 					$return[$url] = $data_array;
 					$GLOBALS['liste_flux'][$url]['checksum'] = $new_md5;
 					$GLOBALS['liste_flux'][$url]['iserror'] = 0;
+				// array IS false : XML error
 				} else {
-					if (isset($GLOBALS['liste_flux'][$url])) { // error on feed update (else would be on adding new feed)
-						$GLOBALS['liste_flux'][$url]['iserror'] += 1;
+					if (isset($GLOBALS['liste_flux'][$url])) { // if not set : error on feed-add (this one is handled further)
+						$GLOBALS['liste_flux'][$url]['iserror'] = 'XML Parsing Error';
 					}
 				}
 			}
+		}
+		else {
+			$GLOBALS['liste_flux'][$url]['iserror'] = 'Empty HTTP Response.';
 		}
 	}
 

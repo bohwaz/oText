@@ -169,25 +169,7 @@
 		padding: 0;
 	}
 
-	#popup.popup-note {
-		height: 100%;
-		width: 100%;
-		animation: none;
-	}
-
 	/* AGENDA */
-	#popup.popup-event,
-	#popup.popup-edit-event {
-		height: 100%;
-		width: 100%;
-		min-width: 0;
-		animation: none;
-	}
-
-	#popup.popup-edit-event {
-		display: flex;
-		flex-direction: column;
-	}
 
 	#popup.popup-edit-event .event-content-descr {
 		flex: 1;
@@ -213,6 +195,22 @@
 
 	#form-ecrire .main-form #contenu {
 		padding-top: 84px;
+	}
+
+	/* Contacts */
+	#table-contacts tr > .tel,
+	#table-contacts tr > .email,
+	#table-contacts tr > .label,
+	#table-contacts tr > .buttons {
+		display: none;
+	}
+
+	#popup-wrapper > #popup {
+		height: 100%;
+		width: 100%;
+		min-width: 0;
+		max-height: none;
+		animation: none;
 	}
 
 }

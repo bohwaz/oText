@@ -128,7 +128,7 @@ echo '<div id="subnav">'."\n";
 	afficher_form_filtre('links', (isset($_GET['filtre'])) ? htmlspecialchars($_GET['filtre']) : '');
 	if ($step != 'edit' and $step != 2) {
 		echo "\t".'<div class="nombre-elem">';
-		echo "\t\t".ucfirst(nombre_objets(count($tableau), 'link')).' '.$GLOBALS['lang']['sur'].' '.liste_elements_count("SELECT count(*) AS nbr FROM links", array(), 'links')."\n";
+		echo "\t\t".ucfirst(nombre_objets(count($tableau), 'link')).' '.$GLOBALS['lang']['sur'].' '.liste_elements_count("SELECT count(*) AS nbr FROM links", array())."\n";
 		echo "\t".'</div>'."\n";
 	}
 echo '</div>'."\n";
@@ -150,6 +150,7 @@ else { // aucun lien à ajouter ou éditer : champ nouveau lien + listage des li
 	echo '</div>'."\n";
 }
 
+echo php_lang_to_js();
 echo "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
 echo '<script>'."\n";
 if ($step == 1) {
@@ -158,7 +159,6 @@ if ($step == 1) {
 	echo 'document.getElementById(\'url\').addEventListener(\'blur\', function(){ document.getElementById(\'post-new-lien\').classList.remove(\'focusedField\'); }, false);'."\n";
 }
 echo '</script>';
-echo php_lang_to_js();
 
 
 footer($begin);

@@ -177,15 +177,8 @@ function afficher_form_fichier($erreurs, $fichiers, $what) { // ajout d’un fic
 	echo $form;
 }
 
-
-
 // recherche / tri
 if ( !empty($_GET['filtre']) ) {
-	// for "type" the requests is "type.$search" : here we split the type of search and what we search.
-	$type = substr($_GET['filtre'], 0, -strlen(strstr($_GET['filtre'], '.')));
-	$search = htmlspecialchars(ltrim(strstr($_GET['filtre'], '.'), '.'));
-
-
 	if ( preg_match('#^\d{6}(\d{1,8})?$#', $_GET['filtre']) ) {
 		$query = "SELECT * FROM images WHERE bt_id LIKE ? ORDER BY bt_id DESC";
 		$tableau = liste_elements($query, array($_GET['filtre'].'%'), 'images');
@@ -194,15 +187,15 @@ if ( !empty($_GET['filtre']) ) {
 		$query = "SELECT * FROM images WHERE bt_statut=? ORDER BY bt_id DESC";
 		$tableau = liste_elements($query, array((($_GET['filtre'] == 'draft') ? 0 : 1)), 'images');
 	}
-	elseif ($type == 'type' and $search != '') {
-		$query = "SELECT * FROM images WHERE bt_type LIKE ? OR bt_type LIKE ? OR bt_type LIKE ? OR bt_type LIKE ? ORDER BY bt_id DESC";
-		$tableau = liste_elements($query, array($search, $search.',%', '%, '.$search, '%, '.$search.', %'), 'images');
+	elseif (strpos($_GET['filtre'], 'type.') === 0) {
+		$search = htmlspecialchars(ltrim(strstr($_GET['filtre'], '.'), '.'));
+		$query = "SELECT * FROM images WHERE bt_type LIKE=? ORDER BY bt_id DESC";
+		$tableau = liste_elements($query, array($search), 'images');
 	}
 	else {
 		$query = "SELECT * FROM images ORDER BY bt_id DESC";
 		$tableau = liste_elements($query, array(), 'images');
 	}
-
 // recheche par mot clé
 } elseif (!empty($_GET['q'])) {
 	$arr = parse_search($_GET['q']);
@@ -212,10 +205,8 @@ if ( !empty($_GET['filtre']) ) {
 
 // par extension
 } elseif (!empty($_GET['extension'])) {
-
 	$query = "SELECT * FROM images WHERE bt_fileext=? ORDER BY bt_id DESC";
 	$tableau = liste_elements($query, array($_GET['extension']), 'images');
-
 // par fichier unique (id)
 } elseif (isset($_GET['file_id']) and preg_match('/\d{14}/',($_GET['file_id']))) {
 	$query = "SELECT * FROM images WHERE bt_id=? LIMIT 1";
@@ -244,7 +235,7 @@ afficher_topnav($GLOBALS['lang']['titre_fichier'], ''); #top
 
 echo '<div id="axe">'."\n";
 echo '<div id="subnav">'."\n";
-afficher_form_filtre('fichiers', (isset($_GET['filtre'])) ? htmlspecialchars($_GET['filtre']) : '');
+afficher_form_filtre('images', (isset($_GET['filtre'])) ? htmlspecialchars($_GET['filtre']) : '');
 echo '<div class="nombre-elem">'."\n";
 echo ucfirst(nombre_objets(count($tableau), 'fichier')).' '.$GLOBALS['lang']['sur'].' '.liste_elements_count("SELECT count(ID) AS nbr FROM images", array());
 echo '</div>'."\n";
@@ -259,7 +250,7 @@ if ( isset($_GET['file_id']) ) {
 }
 // affichage de la liste des fichiers.
 else {
-	if (empty($_GET['filtre']) && empty($_GET['q']) ) {
+	if (empty($_GET['filtre']) && empty($_GET['q']) && empty($_GET['extension']) ) {
 		afficher_form_fichier($erreurs, '', 'fichier');
 	}
 

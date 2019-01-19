@@ -12,31 +12,21 @@ if (document.getElementById('jsonLang')) {
 	var BTlang = JSON.parse(document.getElementById('jsonLang').textContent);
 }
 
-/* reproduces the PHP « date(#, 'c') » output format */
-Date.prototype.dateToISO8601String  = function() {
-	var padDigits = function padDigits(number, digits) {
-		return Array(Math.max(digits - String(number).length + 1, 0)).join(0) + number;
+// simple FNV hash from string (8char long)
+function hashFnv32a(str) {
+	var i, l, hval = 0x811c9dc5;
+	for (i = 0, l = str.length; i < l; i++) {
+		hval ^= str.charCodeAt(i);
+		hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
 	}
+	return ("0000000" + (hval >>> 0).toString(16)).substr(-8);
+}
 
-	var offsetMinutes = - this.getTimezoneOffset();
-	var offsetHours = offsetMinutes / 60;
-	var offset= "Z";
-	if (offsetHours < 0)
-		offset = "-" + padDigits((offsetHours.toString()).replace("-","") + ":00", 5);
-	else if (offsetHours > 0)
-		offset = "+" + padDigits(offsetHours  + ":00", 5);
-
-
-	return this.getFullYear()
-		+ "-" + padDigits((this.getMonth()+1),2)
-		+ "-" + padDigits(this.getDate(),2)
-		+ "T"
-		+ padDigits(this.getHours(),2)
-		+ ":" + padDigits(this.getMinutes(),2)
-		+ ":" + padDigits(this.getSeconds(),2)
-		//+ "." + padDigits(this.getMilliseconds(),2)
-		+ offset;
-
+// Date.toISOString() returns a UTC related time (with "Z" timezone offset). This one is local time (without timezone offset)
+Date.prototype.toLocalISOString  = function() {
+	var tzoffset = this.getTimezoneOffset() * 60000; //offset in milliseconds
+	var localISOTime = (new Date(this - tzoffset)).toISOString().slice(0, -1);
+	return localISOTime;
 }
 
 Date.prototype.ymdhis = function() {
@@ -49,13 +39,6 @@ Date.prototype.ymdhis = function() {
 
 	return "".y + m + d;
 }
-
-/*Date.dateFromISO8601 = function(isoDateString) {
-	var parts = isoDateString.match(/\d+/g);
-	var isoTime = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
-	var isoDate = new Date(isoTime);
-	return isoDate;       
-}*/
 
 Date.prototype.getWeekNumber = function () {
     var target  = new Date(this.valueOf());
@@ -75,8 +58,6 @@ Date.dateFromYMDHIS = function(d) {
 	//var d = d.substr(0, 4) + '' + d.substr(4, 2) - 1 + d.substr(6, 2) + d.substr(8, 2) + d.substr(10, 2) + d.substr(12, 2);
 	return d;
 }
-
-
 
 /*
 	menu icons : onclick.
@@ -665,7 +646,7 @@ function uploadNext() {
 
 			// prepare XMLHttpRequest
 			var xhr = new XMLHttpRequest();
-			xhr.open('POST', '_files.ajax.php');
+			xhr.open('POST', 'ajax/files.ajax.php');
 
 			// if request itself is OK
 			xhr.onload = function() {
@@ -906,7 +887,7 @@ function imgListWall() {
 		if (!window.confirm(BTlang.questionSupprFichier)) { return false; }
 		// prepare XMLHttpRequest
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', '_files.ajax.php');
+		xhr.open('POST', 'ajax/files.ajax.php');
 		xhr.onload = function() {
 			if (this.responseText == 'success') {
 				// remove image form page
@@ -1030,7 +1011,7 @@ function docListWall() {
 		if (!window.confirm(BTlang.questionSupprFichier)) { return false; }
 		// prepare XMLHttpRequest
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', '_files.ajax.php');
+		xhr.open('POST', 'ajax/files.ajax.php');
 		xhr.onload = function() {
 			if (this.responseText == 'success') {
 				// remove image form page
@@ -1535,7 +1516,7 @@ function RssReader() {
 		var notifDiv = document.createElement('div');
 
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', '_rss.ajax.php', true);
+		xhr.open('POST', 'ajax/rss.ajax.php', true);
 
 		// onload
 		xhr.onload = function() {
@@ -1568,7 +1549,7 @@ function RssReader() {
 		if (this.readQueue.urlList.length == 0) return true;
 
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', '_rss.ajax.php', false);
+		xhr.open('POST', 'ajax/rss.ajax.php', false);
 
 		// onload
 		xhr.onload = function() {
@@ -1610,7 +1591,7 @@ function RssReader() {
 		var notifDiv = document.createElement('div');
 
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', '_rss.ajax.php', true);
+		xhr.open('POST', 'ajax/rss.ajax.php', true);
 
 		// onload
 		xhr.onload = function() {
@@ -1659,7 +1640,7 @@ function RssReader() {
 
 		// prepare XMLHttpRequest
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', '_rss.ajax.php', true);
+		xhr.open('POST', 'ajax/rss.ajax.php', true);
 
 		// Counts the feeds that have been updated already and displays it like « 10/42 feeds »
 		var glLength = 0;
@@ -1724,7 +1705,7 @@ function RssReader() {
 		var notifDiv = document.createElement('div');
 
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', '_rss.ajax.php', true);
+		xhr.open('POST', 'ajax/rss.ajax.php', true);
 
 		xhr.onload = function() {
 			var resp = this.responseText;
@@ -1771,7 +1752,7 @@ function RssReader() {
 		loading_animation('on');
 
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', '_rss.ajax.php');
+		xhr.open('POST', 'ajax/rss.ajax.php');
 
 		xhr.onload = function() {
 			var resp = this.responseText;
@@ -1892,7 +1873,7 @@ function RssConfig() {
 		var notifDiv = document.createElement('div');
 		// create XHR
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', '_rss.ajax.php', true);
+		xhr.open('POST', 'ajax/rss.ajax.php', true);
 
 		// onload
 		xhr.onload = function() {
@@ -2044,16 +2025,16 @@ function draw(container) {
 
 
 /**************************************************************************************************************************************
-	***     ***   ************   ***********    *********      ****
-	****    ***   ************   ***********    *********    ********
-	*****   ***   ***      ***       ***        ***        ***      ***
- 	******  ***   ***      ***       ***        *******    ***
-	*** *** ***   ***      ***       ***        *******     **********
-	***  ******   ***      ***       ***        ***         **********
-	***   *****   ***      ***       ***        ***                 ***
-	***    ****   ***      ***       ***        ***        ***      ***
-	***     ***   ************       ***        **********   ********
-	***     ***   ************       ***        **********     ****
+	***     ***   ************   ***********    *********      ****     
+	****    ***   ************   ***********    *********    ********   
+	*****   ***   ***      ***       ***        ***        ***      *** 
+	******  ***   ***      ***       ***        *******    ***          
+	*** *** ***   ***      ***       ***        *******     **********  
+	***  ******   ***      ***       ***        ***         **********  
+	***   *****   ***      ***       ***        ***                 *** 
+	***    ****   ***      ***       ***        ***        ***      *** 
+	***     ***   ************       ***        **********   ********   
+	***     ***   ************       ***        **********     ****     
 	NOTES MANAGEMENT
 **************************************************************************************************************************************/
 function NoteBlock() {
@@ -2078,7 +2059,6 @@ function NoteBlock() {
 
 	this.notePopupTemplate = document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
 	this.notePopupTemplate.removeAttribute('hidden');
-
 
 	document.getElementById('post-new-note').addEventListener('click', function(e) { _this.addNewNote(); });
 
@@ -2121,10 +2101,9 @@ function NoteBlock() {
 			div.dataset.indexId = i;
 			div.querySelector('.title > h2').textContent = item.title;
 			div.querySelector('.content').textContent = item.content;
-			div.addEventListener('click',
-			function(e) {
+			div.addEventListener('click', function(e) {
 				_this.showNotePopup(NotesData[this.dataset.indexId]);
-			} );
+			});
 
 			if (item.ispinned == 1) {
 				notesPinned.appendChild(div);
@@ -2174,13 +2153,17 @@ function NoteBlock() {
 		}
 
 		var popupWrapper = this.notePopupTemplate.cloneNode(true);
+		document.body.classList.add('noscroll');
+
 		popupWrapper.addEventListener('click', function(e) {
 			// clic is outside popup: closes popup
 			if (e.target == this) {
 				popupWrapper.parentNode.removeChild(popupWrapper);
+				document.body.classList.remove('noscroll');
 				if (noteNode) noteNode.style.opacity = null;
 			}
 		} );
+
 		popupWrapper.querySelector('#popup').style.backgroundColor = item.color;
 		popupWrapper.querySelector('#popup').dataset.ispinned = item.ispinned;
 		popupWrapper.querySelector('#popup > .title > h2').textContent = item.title;
@@ -2188,7 +2171,7 @@ function NoteBlock() {
 			popupWrapper.querySelector('#popup').dataset.ispinned = Math.abs(popupWrapper.querySelector('#popup').dataset.ispinned -1);
 		});
 		popupWrapper.querySelector('#popup > .content').value = item.content;
-		popupWrapper.querySelector('#popup > .date').textContent = Date.dateFromYMDHIS(item.id).toLocaleDateString('fr', {weekday: "long", month: "long", year: "numeric", day: "numeric"});
+		popupWrapper.querySelector('#popup > .noteCtrls > .date').textContent = Date.dateFromYMDHIS(item.id).toLocaleDateString('fr', {weekday: "long", month: "long", year: "numeric", day: "numeric"});
 		popupWrapper.querySelector('#popup > .noteCtrls > .colors').addEventListener('click', function(e) {
 			if (e.target.tagName == 'LI') _this.changeColor(item, e);
 		});
@@ -2197,13 +2180,13 @@ function NoteBlock() {
 		});
 		popupWrapper.querySelector('#popup > .noteCtrls > .submit-bttns > .button-cancel').addEventListener('click', function(e) {
 			popupWrapper.parentNode.removeChild(popupWrapper);
+			document.body.classList.remove('noscroll');
 			if (noteNode) noteNode.style.opacity = null;
 		});
 		popupWrapper.querySelector('#popup > .noteCtrls > .submit-bttns > .button-submit').addEventListener('click', function(e) {
-			// mark as edited
 			_this.markAsEdited(item);
-			// closes popup
 			popupWrapper.parentNode.removeChild(popupWrapper);
+			document.body.classList.remove('noscroll');
 			if (noteNode) noteNode.style.opacity = null;
 		});
 
@@ -2338,7 +2321,7 @@ function NoteBlock() {
 		var notifDiv = document.createElement('div');
 		// create XHR
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', '_notes.ajax.php', true);
+		xhr.open('POST', 'ajax/notes.ajax.php', true);
 
 		// onload
 		xhr.onload = function() {
@@ -2455,16 +2438,13 @@ function EventAgenda() {
 		_this.rebuiltYearlyCal();
 	});
 
-	// get edit-popup template
-	this.editEventPopupTemplate = document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
-	this.editEventPopupTemplate.removeAttribute('hidden');
-
-
-
-
 	// get event template
 	this.eventTemplate = this.eventContainer.firstElementChild.parentNode.removeChild(this.eventContainer.firstElementChild);
 	this.eventTemplate.removeAttribute('hidden');
+
+	// get edit-popup template
+	this.editEventPopupTemplate = document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
+	this.editEventPopupTemplate.removeAttribute('hidden');
 
 	document.getElementById('fab').addEventListener('click', function(e) { _this.addNewEvent(); });
 
@@ -2539,13 +2519,13 @@ function EventAgenda() {
 
 				var button = document.createElement('button');
 				button.appendChild(document.createTextNode( dateOfCell.getDate() ) );
-				button.dataset.date = dateOfCell.dateToISO8601String();
+				button.dataset.date = dateOfCell.toLocalISOString();
 				button.addEventListener('click',
 					function(e) {
 						var oldInitDate = _this.initDate;
 						_this.initDate = new Date(this.dataset.date);
 						// on click on a cell, change the #select.value
-						_this.eventFilter.querySelector('option:first-of-type').value = _this.initDate.dateToISO8601String();
+						_this.eventFilter.querySelector('option:first-of-type').value = _this.initDate.toLocalISOString();
 						_this.eventFilter.querySelector('option:first-of-type').textContent = _this.initDate.toLocaleDateString('fr-FR', {weekday: "long", month: "long", day: "numeric", year: "numeric"})
 						_this.eventFilter.selectedIndex = 0;
 						// sort the events for the actual selected date
@@ -2662,8 +2642,7 @@ function EventAgenda() {
 			// ignore deleted events
 			if (item.action == 'deleteEvent') continue;
 			div.dataset.id = item.id;
-			div.addEventListener('click',
-				function() {
+			div.addEventListener('click', function() {
 					_this.showEventPopup(this.dataset.id);
 				} );
 
@@ -2773,10 +2752,12 @@ function EventAgenda() {
 			// clic is outside popup: closes popup
 			if (e.target == this) {
 				popupWrapper.parentNode.removeChild(popupWrapper);
+				document.body.classList.remove('noscroll');
 			}
 		});
 		popupWrapper.querySelector('.popup-event').id = 'popup';
 		popupWrapper.querySelector('.popup-event').removeAttribute('hidden');
+		document.body.classList.add('noscroll');
 
 		popupWrapper.querySelector('#popup > .event-title > span').textContent = item.title;
 		popupWrapper.querySelector('#popup > .event-title > .item-menu-options > ul > li > a').addEventListener('click', function(e){
@@ -2784,9 +2765,11 @@ function EventAgenda() {
 		});
 		popupWrapper.querySelector('#popup > .event-title > .button-cancel').addEventListener('click', function() {
 			popupWrapper.parentNode.removeChild(popupWrapper);
+			document.body.classList.remove('noscroll');
 		});
 		popupWrapper.querySelector('#popup > .event-title > .button-edit').addEventListener('click', function() {
 			popupWrapper.parentNode.removeChild(popupWrapper);
+			document.body.classList.remove('noscroll');
 			_this.showEventEditPopup(item);
 		});
 
@@ -2808,22 +2791,20 @@ function EventAgenda() {
 			// clic is outside popup: closes popup
 			if (e.target == this) {
 				popupWrapper.parentNode.removeChild(popupWrapper);
+				document.body.classList.remove('noscroll');
 			}
 		});
 
 		popupWrapper.querySelector('.popup-edit-event').id = 'popup';
 		popupWrapper.querySelector('.popup-edit-event').removeAttribute('hidden');
+		document.body.classList.add('noscroll');
 
 		popupWrapper.querySelector('#popup > .event-title > .button-cancel').addEventListener('click', function() {
 			popupWrapper.parentNode.removeChild(popupWrapper);
+			document.body.classList.remove('noscroll');
 		});
-		popupWrapper.querySelector('#popup > .event-title > .button-submit').addEventListener('click', function() {
-			_this.markAsEdited(item);
-			popupWrapper.parentNode.removeChild(popupWrapper);
-		});
-
 		popupWrapper.querySelector('#popup > .event-title > input').value = item.title;
-		popupWrapper.querySelector('#popup > .event-content-date #allDay').addEventListener('change', function() {
+		popupWrapper.querySelector('#popup > .event-content > .event-content-date #allDay').addEventListener('change', function() {
 			var timeInput = document.getElementById('time');
 			if (this.checked) {
 				timeInput.classList.add('hidden');
@@ -2833,10 +2814,16 @@ function EventAgenda() {
 			}
 		});
 
-		popupWrapper.querySelector('#popup > .event-content-date #time').value = item.date.substr(11, 5); // FIXME don’t do SUBSTR : use date()
-		popupWrapper.querySelector('#popup > .event-content-date #date').value = item.date.substr(0, 10); // FIXME don’t do SUBSTR : use date()
-		popupWrapper.querySelector('#popup > .event-content-loc input').value = item.loc;
-		popupWrapper.querySelector('#popup > .event-content-descr textarea').value = item.content;
+		popupWrapper.querySelector('#popup > .event-content > .event-content-date #time').value = item.date.substr(11, 5); // FIXME don’t do SUBSTR : use date()
+		popupWrapper.querySelector('#popup > .event-content > .event-content-date #date').value = item.date.substr(0, 10); // FIXME don’t do SUBSTR : use date()
+		popupWrapper.querySelector('#popup > .event-content > .event-content-loc input').value = item.loc;
+		popupWrapper.querySelector('#popup > .event-content > .event-content-descr textarea').value = item.content;
+
+		popupWrapper.querySelector('#popup > .event-footer > .button-submit').addEventListener('click', function() {
+			_this.markAsEdited(item);
+			document.body.classList.remove('noscroll');
+			popupWrapper.parentNode.removeChild(popupWrapper);
+		});
 
 		this.domPage.appendChild(popupWrapper);
 	}
@@ -2863,7 +2850,7 @@ function EventAgenda() {
 		item.content = popup.querySelector('.event-content-descr .text').value;
 		item.loc = popup.querySelector('.event-content-loc .text').value;
 		var newDate = new Date(document.getElementById('date').value + " " + document.getElementById('time').value);
-		item.date = newDate.dateToISO8601String();
+		item.date = newDate.toLocalISOString();
 
 		// event is new:
 		if (!isEdit) {
@@ -2891,7 +2878,7 @@ function EventAgenda() {
 		var date = this.initDate;
 		var newEv = {
 			"id": '',
-			"date": date.dateToISO8601String(),
+			"date": date.toLocalISOString(),
 			"title": '',
 			"content": '',
 			"loc" : '',
@@ -2960,7 +2947,7 @@ function EventAgenda() {
 		var notifDiv = document.createElement('div');
 		// create XHR
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', '_agenda.ajax.php', true);
+		xhr.open('POST', 'ajax/agenda.ajax.php', true);
 
 		// onload
 		xhr.onload = function() {
@@ -3005,3 +2992,665 @@ function EventAgenda() {
 	}
 }
 
+
+
+
+
+/**************************************************************************************************************************************
+   ***********   ************   ***     ***   ***********        ***        ***********   ***********       ****      
+   ***********   ************   ****    ***   ***********       *****       ***********   ***********     ********    
+   ***           ***      ***   *****   ***       ***          *** ***      ***               ***       ***      *** 
+   ***           ***      ***   ******  ***       ***          *** ***      ***               ***       ***          
+   ***           ***      ***   *** *** ***       ***         ***   ***     ***               ***        **********   
+   ***           ***      ***   ***  ******       ***         *********     ***               ***        **********  
+   ***           ***      ***   ***   *****       ***        ***********    ***               ***                *** 
+   ***           ***      ***   ***    ****       ***        ***     ***    ***               ***       ***      *** 
+   ***********   ************   ***     ***       ***       ***       ***   ***********       ***         ********   
+   ***********   ************   ***     ***       ***       ***       ***   ***********       ***           ****     
+
+	CONTACTS MANAGEMENT
+**************************************************************************************************************************************/
+
+
+function ContactsList() {
+	var _this = this;
+
+	/***********************************
+	** Some properties & misc actions
+	*/
+	// init JSON List
+	this.contactList = JSON.parse(document.getElementById('json_contacts').textContent);
+
+	// init a flag aimed to determine if changes have yet to be pushed
+	this.hasUpdated = false;
+
+	// get some DOM elements
+	this.domPage = document.getElementById('page');
+	this.notifNode = document.getElementById('message-return');
+	this.contactTable = document.getElementById('table-contacts');
+	this.contactTBody = document.getElementById('table-contacts').tBodies[0];
+
+	// get contact row template
+	this.contactTemplate = this.contactTBody.removeChild(this.contactTBody.firstElementChild);
+	this.contactTemplate.removeAttribute('hidden');
+
+
+	// get popup template
+	this.contactPopupTemplate = this.domPage.firstElementChild.parentNode.removeChild(this.domPage.firstElementChild);
+	this.contactPopupTemplate.removeAttribute('hidden');
+
+	document.getElementById('fab').addEventListener('click', function(e) { _this.addNewContact(); });
+
+	// Global Page listeners
+	// beforeunload : warns the user if some data is not saved when page closes
+	window.addEventListener("beforeunload", function(e) {
+			if (_this.hasUpdated) {
+				var confirmationMessage = BTlang.questionQuitPage;
+				(e || window.event).returnValue = confirmationMessage;	//Gecko + IE
+				return confirmationMessage;								// Webkit: ignore this shit.
+			}
+			else { return true; }
+		});
+
+	// Save button
+	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveContactsXHR(); } );
+
+	this.rebuiltContactsTable = function(ContactsData) {
+		// empties the node
+		if (this.contactTBody.firstChild) {
+			while (this.contactTBody.firstChild) {this.contactTBody.removeChild(this.contactTBody.firstChild);}
+		}
+		// TODO : add "no contact" message
+		if (0 === ContactsData.length) return false;
+
+		var ctList = document.createDocumentFragment();
+
+		// populates the new list
+		for (var i = 0, len = ContactsData.length ; i < len ; i++) {
+			if (this.contactList[i].action == "deleteContact") continue;
+
+			var item = ContactsData[i]; // sort in reverse order
+			var tr = this.contactTemplate.cloneNode(true);
+			tr.setAttribute('data-id', item.id);
+
+			if (item.img != "") {
+				tr.querySelector('.icon > span').style.backgroundImage = 'url('+item.img+')';
+			} else {
+				var color = "#" + hashFnv32a(item.fullname).substring(0, 3);
+				tr.querySelector('.icon > span').style.backgroundImage = 'linear-gradient('+color+', '+color+')';
+			}
+
+			tr.querySelector('.name').textContent = item.title + ' ' + item.fullname;
+
+			tr.querySelector('.icon').addEventListener('click', function() { _this.showContactPopup(this.parentNode.dataset.id); })
+			tr.querySelector('.name').addEventListener('click', function() { _this.showContactPopup(this.parentNode.dataset.id); })
+
+			var aTempl = tr.querySelector('.tel').removeChild(tr.querySelector('.tel').firstChild);
+			item.tel.forEach(function(tel) {
+				var a = aTempl.cloneNode(true);
+				a.textContent = tel;
+				a.href = 'tel:' + tel;
+				tr.querySelector('.tel').appendChild(a);
+			});
+
+
+			var aTempl = tr.querySelector('.email').removeChild(tr.querySelector('.email').firstChild);
+			item.email.forEach(function(mail) {
+				var a = aTempl.cloneNode(true);
+				a.textContent = mail;
+				a.href = 'mailto:' + mail;
+				tr.querySelector('.email').appendChild(a);
+			});
+
+
+			tr.querySelector('.label > span').textContent = item.label;
+			if (item.label.trim().length === 0) tr.querySelector('.label').removeChild(tr.querySelector('.label > span'));
+
+			tr.querySelector('.button-edit').addEventListener('click', function() {
+				_this.showContactEditPopup(item);
+			});
+
+			ctList.appendChild(tr);
+		}
+
+		this.contactTBody.appendChild(ctList);
+
+	}
+	this.rebuiltContactsTable(this.contactList);
+
+
+	/**************************************
+	 * Displays the "show contact" popup
+	*/
+	this.showContactPopup = function(id) {
+		for (var i = 0, len = this.contactList.length ; i < len ; i++) {
+			if (this.contactList[i].id === id) {
+				var item = this.contactList[i];
+				break;
+			}
+		}
+
+		var popupWrapper = this.contactPopupTemplate.cloneNode(true);
+		popupWrapper.addEventListener('click', function(e) {
+			// clic is outside popup: closes popup
+			if (e.target == this) {
+				popupWrapper.parentNode.removeChild(popupWrapper);
+				document.body.classList.remove('noscroll');
+			}
+		});
+		popupWrapper.querySelector('.popup-contact').id = 'popup';
+		popupWrapper.querySelector('.popup-contact').removeAttribute('hidden');
+		document.body.classList.add('noscroll');
+
+		// POPUP TITLE
+		var popupTitle = popupWrapper.querySelector('#popup > .contact-title');
+
+		// misc events
+		popupTitle.querySelector('.item-menu-options > ul > li > a').addEventListener('click', function(e){
+			document.body.classList.remove('noscroll');
+			_this.markAsDeleted(item);
+		});
+		popupTitle.querySelector('.button-cancel').addEventListener('click', function() {
+			popupWrapper.parentNode.removeChild(popupWrapper);
+			document.body.classList.remove('noscroll');
+		});
+		popupTitle.querySelector('.button-edit').addEventListener('click', function() {
+			popupWrapper.parentNode.removeChild(popupWrapper);
+			document.body.classList.remove('noscroll');
+			_this.showContactEditPopup(item);
+		});
+
+		// icon
+		if (item.img != "") {
+			popupTitle.querySelector('.contact-img').style.backgroundImage = 'url('+item.img+')';
+		} else {
+			var color = "#" + hashFnv32a(item.fullname).substring(0, 3);
+			popupTitle.querySelector('.contact-img').style.backgroundImage = 'linear-gradient('+color+', '+color+')';
+		}
+
+		// name & label
+		popupTitle.querySelector('.contact-name').textContent = item.title + ' ' + item.fullname;
+		popupTitle.querySelector('.contact-label').textContent = item.label;
+		if (item.label.trim().length === 0) popupTitle.querySelector('.contact-label').parentNode.removeChild(popupTitle.querySelector('.contact-label'));
+
+		// POPUP CONTENT
+		// name + pseudo
+		var popupContent = popupWrapper.querySelector('#popup > .contact-content');
+		popupContent.querySelector('.contact-names > span').textContent = item.fullname;
+		if (item.pseudo != "") {
+			var s = popupContent.querySelector('.contact-names > span').cloneNode(false);
+			s.textContent = item.pseudo;
+			popupContent.querySelector('.contact-names').appendChild(s);
+		}
+
+		// email(s)
+		var aT = popupContent.querySelector('.contact-emails').removeChild(popupContent.querySelector('.contact-emails').firstChild);
+		item.email.forEach(function(m) {
+			var a = aT.cloneNode(true);
+			a.textContent = m;
+			a.href = 'mailto:' + m;
+			popupContent.querySelector('.contact-emails').appendChild(a);
+		});
+
+		// phone number(s)
+		var aT = popupContent.querySelector('.contact-phones').removeChild(popupContent.querySelector('.contact-phones').firstChild);
+		item.tel.forEach(function(t) {
+			var a = aT.cloneNode(true);
+			a.textContent = t;
+			a.href = 'tel:' + t;
+			popupContent.querySelector('.contact-phones').appendChild(a);
+		});
+
+		// address
+		popupContent.querySelector('.contact-address > span:nth-of-type(1)').textContent = item.address.nb + " " + item.address.st;
+		popupContent.querySelector('.contact-address > span:nth-of-type(2)').textContent = item.address.co;
+		popupContent.querySelector('.contact-address > span:nth-of-type(3)').textContent = item.address.cp + " " + item.address.ci;
+		popupContent.querySelector('.contact-address > span:nth-of-type(4)').textContent = item.address.sa + " " + item.address.cn;
+
+		// birthday
+		if (item.birthday != "") {
+			popupContent.querySelector('.contact-birthday').textContent = Date.dateFromYMDHIS(item.birthday).toLocaleDateString('fr', {year: "numeric", month: "long", day: "numeric"});
+		}
+
+		// websites link(s)
+		var aT = popupContent.querySelector('.contact-links').removeChild(popupContent.querySelector('.contact-links').firstChild);
+		item.websites.forEach(function(s) {
+			var a = aT.cloneNode(true);
+			a.textContent = s;
+			a.href = s;
+			popupContent.querySelector('.contact-links').appendChild(a);
+		});
+
+		// social media link(s)
+		var aT = popupContent.querySelector('.contact-social').removeChild(popupContent.querySelector('.contact-social').firstChild);
+		item.social.forEach(function(s) {
+			var a = aT.cloneNode(true);
+			a.textContent = s;
+			a.href = s;
+			popupContent.querySelector('.contact-social').appendChild(a);
+		});
+
+		// notes & other
+		popupContent.querySelector('.contact-notes').textContent = item.notes;
+		popupContent.querySelector('.contact-other').textContent = item.other;
+
+		// remove empty nodes
+		var nodes = popupContent.querySelectorAll('*');
+		for (let node of nodes) {
+			if (node.textContent.trim().length === 0) node.parentNode.removeChild(node);
+		}
+		// remove not used section titles
+		while (popupContent.lastElementChild.tagName === 'DIV') {
+			popupContent.removeChild(popupContent.lastElementChild);
+		}
+		var divs = popupContent.querySelectorAll('div');
+		for (let div of divs) {
+			if (div.nextElementSibling.tagName === 'DIV') div.parentNode.removeChild(div);
+		}
+
+		this.domPage.appendChild(popupWrapper);
+	}
+
+
+
+	this.showContactEditPopup = function(item) {
+
+		var popupWrapper = this.contactPopupTemplate.cloneNode(true);
+		popupWrapper.addEventListener('click', function(e) {
+			// clic is outside popup: closes popup
+			if (e.target == this) {
+				popupWrapper.parentNode.removeChild(popupWrapper);
+				document.body.classList.remove('noscroll');
+			}
+		});
+		popupWrapper.querySelector('.popup-edit-contact').id = 'popup';
+		popupWrapper.querySelector('.popup-edit-contact').removeAttribute('hidden');
+		document.body.classList.add('noscroll');
+
+		popupWrapper.querySelector('.popup-edit-contact .contact-title > .button-cancel').addEventListener('click', function() {
+			popupWrapper.parentNode.removeChild(popupWrapper);
+			document.body.classList.remove('noscroll');
+		});
+
+		popupWrapper.querySelector('#popup input[name="contact-title"]').value = item.title;
+		popupWrapper.querySelector('#popup input[name="contact-fullname"]').value = item.fullname;
+		popupWrapper.querySelector('#popup input[name="contact-label"]').value = item.label;
+
+		if (item.img != "") {
+			popupWrapper.querySelector('#popup .contact-img').style.backgroundImage = 'url('+item.img+')';
+		} else {
+			var color = "#" + hashFnv32a(item.fullname).substring(0, 3);
+			popupWrapper.querySelector('#popup .contact-img').style.backgroundImage = 'linear-gradient('+color+', '+color+')';
+		}
+
+
+		popupWrapper.querySelector('#popup .contact-img').addEventListener('click', function(e) {
+			_this.loadContactImage(e);
+			item.imgIsNew = true;
+		});
+
+
+		// email(s)
+		var labelField = popupWrapper.querySelector('#popup label[for="contact-email"]');
+		item.email.forEach(function(m) {
+			labelField.querySelector('input').value = m;
+			var fieldParent = labelField.parentNode;
+			labelField = labelField.cloneNode(true);
+			labelField.querySelector('input').value = "";
+			fieldParent.appendChild(labelField);
+		});
+		// phone(s)
+		var labelField = popupWrapper.querySelector('#popup label[for="contact-phone"]');
+		item.tel.forEach(function(t) {
+			labelField.querySelector('input').value = t;
+			var fieldParent = labelField.parentNode;
+			labelField = labelField.cloneNode(true);
+			labelField.querySelector('input').value = "";
+			fieldParent.appendChild(labelField);
+		});
+
+		popupWrapper.querySelector('#popup input[name="contact-nb"]').value = item.address.nb;
+		popupWrapper.querySelector('#popup input[name="contact-st"]').value = item.address.st;
+		popupWrapper.querySelector('#popup input[name="contact-co"]').value = item.address.co;
+		popupWrapper.querySelector('#popup input[name="contact-cp"]').value = item.address.cp;
+		popupWrapper.querySelector('#popup input[name="contact-ci"]').value = item.address.ci;
+		popupWrapper.querySelector('#popup input[name="contact-sa"]').value = item.address.sa;
+		popupWrapper.querySelector('#popup input[name="contact-cn"]').value = item.address.cn;
+		popupWrapper.querySelector('#popup input[name="contact-birthday"]').value = item.birthday.replace(/(....)(..)(..)/, "$1-$2-$3");
+		popupWrapper.querySelector('#popup input[name="contact-surname"]').value = item.pseudo;
+
+
+		// website(s)
+		var labelField = popupWrapper.querySelector('#popup label[for="contact-links"]');
+		item.websites.forEach(function(s) {
+			labelField.querySelector('input').value = s;
+			var fieldParent = labelField.parentNode;
+			labelField = labelField.cloneNode(true);
+			labelField.querySelector('input').value = "";
+			fieldParent.appendChild(labelField);
+		});
+
+		// Social media links(s)
+		var labelField = popupWrapper.querySelector('#popup label[for="contact-social"]');
+		item.social.forEach(function(s) {
+			labelField.querySelector('input').value = s;
+			var fieldParent = labelField.parentNode;
+			labelField = labelField.cloneNode(true);
+			labelField.querySelector('input').value = "";
+			fieldParent.appendChild(labelField);
+		});
+
+		this.showContactEditPopup.duplicateLabelGroup = function(e) {
+			var newLabel = e.parentNode.cloneNode(true);
+			newLabel.querySelector('input').value = "";
+			newLabel.querySelector('button.add').addEventListener('click', function() {
+				_this.showContactEditPopup.duplicateLabelGroup(this);
+			});
+			newLabel.querySelector('button.rem').addEventListener('click', function() {
+				_this.showContactEditPopup.removeLabelGroup(this);
+			});
+			e.parentNode.parentNode.appendChild(newLabel);
+		}
+		this.showContactEditPopup.removeLabelGroup = function(e) {
+			e.parentNode.parentNode.removeChild(e.parentNode);
+		}
+
+		// Buttons « + »
+		popupWrapper.querySelectorAll('#popup button.add').forEach(function(add) {
+			add.addEventListener('click', function() {
+				_this.showContactEditPopup.duplicateLabelGroup(this);
+			});
+		});
+
+		// Buttons « × »
+		popupWrapper.querySelectorAll('#popup button.rem').forEach(function(rem) {
+			rem.addEventListener('click', function() {
+				_this.showContactEditPopup.removeLabelGroup(this);
+			});
+		});
+
+		popupWrapper.querySelector('#popup input[name="contact-notes"]').value = item.notes;
+		popupWrapper.querySelector('#popup input[name="contact-other"]').value = item.other;
+
+		popupWrapper.querySelector('#popup .contact-footer > .button-showmore').addEventListener('click', function() {
+			popupWrapper.querySelectorAll('#popup .contact-content > .onshowmore').forEach(function(hidden) {
+				hidden.classList.remove('onshowmore');
+			});
+			this.style.visibility = "hidden";
+		});
+
+		popupWrapper.querySelector('#popup .contact-footer > .button-submit').addEventListener('click', function() {
+			_this.markAsEdited(item);
+			popupWrapper.parentNode.removeChild(popupWrapper);
+			document.body.classList.remove('noscroll');
+		});
+
+		this.domPage.appendChild(popupWrapper);
+	}
+
+
+	/**************************************
+	 * Creates a new Contact, init it, display it and add it to list.
+	*/
+	this.addNewContact = function() {
+		var date = this.initDate;
+		var newCt = {
+			"id": (new Date()).toLocalISOString().substr(0,19).replace(/[:T-]/g, ''),
+			"title": '',
+			"type": 'person',
+			"fullname": '',
+			"pseudo": '',
+			"tel": [],
+			"email": [],
+			"address": {'nb':'','st':'','co':'','cp':'','ci':'','sa':'','cn':''},
+			"birthday": '',
+			"websites": [],
+			"social": [],
+			"label": '',
+			"star": '0',
+			"notes": '',
+			"other": '',
+			"img": '',
+			"imgIsNew": '',
+			"action": 'newContact'
+		};
+
+
+		// opens freshly created event popup
+		this.showContactEditPopup(newCt);
+	}
+
+
+
+	/**************************************
+	 * Deletes a Contact
+	*/
+	this.markAsDeleted = function(item) {
+		if (!window.confirm(BTlang.questionSupprContact)) { return false; }
+		item.action = 'deleteContact';
+
+		// rebuilt table with contacts
+		this.rebuiltContactsTable(this.contactList);
+
+		// close popup
+		document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
+
+		// raises global "updated" flag.
+		this.raiseUpdateFlag(true);
+	}
+
+
+	/**************************************
+	 * Mark a Contact object as having been edited
+	*/
+	this.markAsEdited = function(item) {
+		var popup = document.getElementById('popup');
+
+		// is Edit ?
+		// search item in eventsList.
+		// Can’t test on "item.action == newEvent", since an edited-new event remains "new" (not "edited").
+		var isEdit = false;
+		for (var i = 0, len = this.contactList.length ; i < len ; i++) {
+			if (item.id == this.contactList[i].id) {
+				var isEdit = true;
+				break;
+			}
+		}
+
+		item.title = popup.querySelector('input[name="contact-title"]').value;
+		item.fullname = popup.querySelector('input[name="contact-fullname"]').value;
+		item.label = popup.querySelector('input[name="contact-label"]').value;
+
+		item.tel = new Array();
+		popup.querySelectorAll('input[name="contact-phone"]').forEach(function(t) {
+			if (t.value.trim().length !== 0) item.tel.push(t.value);
+		});
+
+		item.email = new Array();
+		popup.querySelectorAll('input[name="contact-email"]').forEach(function(em) {
+			if (em.value.trim().length !== 0) item.email.push(em.value);
+		});
+
+		item.address = {
+			'nb': popup.querySelector('input[name="contact-nb"]').value,
+			'st': popup.querySelector('input[name="contact-st"]').value,
+			'co': popup.querySelector('input[name="contact-co"]').value,
+			'cp': popup.querySelector('input[name="contact-cp"]').value,
+			'ci': popup.querySelector('input[name="contact-ci"]').value,
+			'sa': popup.querySelector('input[name="contact-sa"]').value,
+			'cn': popup.querySelector('input[name="contact-cn"]').value,
+		};
+		item.birthday = popup.querySelector('input[name="contact-birthday"]').value.replace(/(....)\-(..)\-(..)/, "$1$2$3");
+		item.pseudo = popup.querySelector('input[name="contact-surname"]').value;
+
+		item.websites = new Array();
+		popup.querySelectorAll('input[name="contact-links"]').forEach(function(li) {
+			if (li.value.trim().length !== 0) item.websites.push(li.value);
+		});
+		item.social = new Array();
+		popup.querySelectorAll('input[name="contact-social"]').forEach(function(so) {
+			if (so.value.trim().length !== 0) item.social.push(so.value);
+		});
+
+		item.label = popup.querySelector('input[name="contact-label"]').value;
+		item.star = '' // TODO
+		item.notes = popup.querySelector('input[name="contact-notes"]').value;
+		item.other = popup.querySelector('input[name="contact-other"]').value;
+
+		// check image : image is only sent to server if it has been changer (since is is quite a bit of data)
+		if (item.imgIsNew === true) {
+			if ( (null !== popup.querySelector('.contact-img').style.backgroundImage.match(/^url\(\"(.*)\"\)$/)) 
+			&& (undefined !== popup.querySelector('.contact-img').style.backgroundImage.match(/^url\(\"(.*)\"\)$/)[1]) ) {
+				item.img = popup.querySelector('.contact-img').style.backgroundImage.match(/^url\(\"(.*)\"\)$/)[1];
+			} else {
+				item.imgIsNew = false;
+			}
+		}
+
+		if (!isEdit) {
+			this.contactList.push(item); // append it to the contactList
+		}
+
+		// rebuilt table with contacts
+		this.rebuiltContactsTable(this.contactList);
+
+		item.action = item.action || 'updateContact';
+
+		// raises global "updated" flag.
+		this.raiseUpdateFlag(true);
+	}
+
+
+
+	/**************************************
+	 * Each change triggers a flag. If is(flag) : the save button displays
+	*/
+	this.raiseUpdateFlag = function(flagRaised) {
+		if (flagRaised) {
+			this.hasUpdated = true;
+			document.getElementById('enregistrer').disabled = false;
+		} else {
+			this.hasUpdated = false;
+			document.getElementById('enregistrer').disabled = true;
+		}
+	}
+
+
+	/**************************************
+	 * Loads an image for a contact.
+	*/
+	this.loadContactImage = function(e) {
+		// create a virtual file input
+		var input = document.createElement('input');
+		input.type = 'file';
+
+		// add .onchange()
+		input.addEventListener('change', function() {
+	
+			// create a virtual image		
+			var img = new Image();
+			// on image load, we use canvas to resize image
+			img.onload = function () {
+				// we resize the image using Canvas.
+				// smoth scalling is not yet fully supported. So we use multiple steps-down scalling (emulating bi-cubic filtering).
+			 	//octx.imageSmoothingEnabled = true;
+			 	//octx.imageSmoothingQuality = "high"
+
+				// step 1
+				var oc = document.createElement('canvas');
+				oc.width = oc.height = 320;
+				var octx = oc.getContext('2d');
+				octx.drawImage(img, 0, 0, oc.width, oc.height);
+				// step 2
+				var oc2 = document.createElement('canvas');
+				oc2.width = oc2.height = oc.height * 0.5;
+				var octx2 = oc2.getContext('2d');
+				octx2.drawImage(oc, 0, 0, oc2.width, oc2.height);
+				// step 3
+				var oc3 = document.createElement('canvas');
+				oc3.width = oc3.height = oc2.height * 0.5;
+				var octx3 = oc3.getContext('2d');
+				octx3.drawImage(oc2, 0, 0, oc3.width, oc3.height);
+
+				// we put the image (using base64) on the real <img> on the screen.
+				e.target.style.backgroundImage = 'url('+oc3.toDataURL('image/jpeg', .8)+')';
+			}
+
+			var reader = new FileReader();
+			reader.onload = function() {
+				var dataURL = reader.result;
+				img.src = dataURL;
+			}
+			reader.readAsDataURL(this.files[0]);
+		});
+		input.click();
+
+	}
+
+	/**************************************
+	 * AJAX call to save events to DB
+	*/
+	this.saveContactsXHR = function() {
+		loading_animation('on');
+		// only keep modified contacts
+		var toSaveContacts = Array();
+		for (var i=0, len=this.contactList.length; i<len ; i++) {
+			if (this.contactList[i].action && 0 !== this.contactList[i].action.length) {
+				var ct = this.contactList[i];
+				//ct.ymdhisDate = ev.date.substr(0,19).replace(/[:T-]/g, '');
+				toSaveContacts.push(ct);
+			}
+		}
+
+		// make a string out of it
+		var contactsDataText = JSON.stringify(toSaveContacts);
+
+		var notifDiv = document.createElement('div');
+		// create XHR
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', 'ajax/contacts.ajax.php', true);
+
+		// onload
+		xhr.onload = function() {
+			if (this.responseText.indexOf("Success") == 0) {
+				loading_animation('off');
+				_this.raiseUpdateFlag(false);
+				// adding notif
+				notifDiv.textContent = BTlang.confirmContactsSaved;
+				notifDiv.classList.add('confirmation');
+				document.getElementById('top').appendChild(notifDiv);
+
+				// reset flags on contacts
+				for (var i=0, len=toSaveContacts.length; i<len ; i++) {
+					toSaveContacts[i].action = "";
+				}
+				return true;
+			} else {
+				loading_animation('off');
+				// adding notif
+				notifDiv.textContent = this.responseText;
+				notifDiv.classList.add('no_confirmation');
+				document.getElementById('top').appendChild(notifDiv);
+				return false;
+			}
+		};
+
+		// onerror
+		xhr.onerror = function(e) {
+			loading_animation('off');
+			// adding notif
+			notifDiv.textContent = 'AJAX Error ' +e.target.status;
+			notifDiv.classList.add('no_confirmation');
+			document.getElementById('top').appendChild(notifDiv);
+			_this.notifNode.appendChild(document.createTextNode(this.responseText));
+		};
+
+		// prepare and send FormData
+		var formData = new FormData();
+		formData.append('token', token);
+		formData.append('save_contacts', contactsDataText);
+		xhr.send(formData);
+	}
+
+
+}

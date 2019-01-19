@@ -49,7 +49,7 @@ function afficher_topnav($titre, $html_sub_menu) {
 	$html .=  "\t\t".'<h1 id="titre-page"><a href="'.$tab.'">'.$titre.'</a></h1>'."\n";
 
 	// search form
-	if (in_array($tab, array('articles.php', 'commentaires.php', 'fichiers.php', 'links.php', 'notes.php', 'feed.php', 'agenda.php'))) {
+	if (in_array($tab, array('articles.php', 'commentaires.php', 'fichiers.php', 'links.php', 'notes.php', 'feed.php', 'agenda.php', 'contacts.php'))) {
 		$html .= moteur_recherche();
 	}
 
@@ -65,6 +65,7 @@ function afficher_topnav($titre, $html_sub_menu) {
 	$html .= "\t\t\t\t".'<li><a href="notes.php" id="lien-notes">'.ucfirst($GLOBALS['lang']['label_notes']).'</a></li>'."\n";
 	$html .= "\t\t\t\t".'<li><a href="feed.php" id="lien-rss">'.ucfirst($GLOBALS['lang']['label_feeds']).'</a></li>'."\n";
 	$html .= "\t\t\t\t".'<li><a href="agenda.php" id="lien-agenda">'.ucfirst($GLOBALS['lang']['label_agenda']).'</a></li>'."\n";
+	$html .= "\t\t\t\t".'<li><a href="contacts.php" id="lien-contacts">'.ucfirst($GLOBALS['lang']['label_contacts']).'</a></li>'."\n";
 	$html .= "\t\t\t".'</ul>'."\n";
 	$html .= "\t\t".'</div>'."\n";
 
@@ -184,7 +185,7 @@ function moteur_recherche() {
 }
 
 function encart_commentaires() {
-	$query = "SELECT a.bt_title, c.bt_author, c.bt_id, c.bt_article_id, c.bt_content FROM commentaires c LEFT JOIN articles a ON a.bt_id=c.bt_article_id WHERE c.bt_statut=1 AND a.bt_statut=1 ORDER BY c.bt_id DESC LIMIT 5";
+	$query = "SELECT a.bt_title, a.bt_link AS bt_art_link, c.bt_author, c.bt_id, c.bt_article_id, c.bt_content, c.bt_link FROM commentaires c LEFT JOIN articles a ON a.bt_id=c.bt_article_id WHERE c.bt_statut=1 AND a.bt_statut=1 ORDER BY c.bt_id DESC LIMIT 5";
 	$tableau = liste_elements($query, array(), 'commentaires');
 	if (isset($tableau)) {
 		$listeLastComments = '<ul class="encart_lastcom">'."\n";
@@ -197,7 +198,8 @@ function encart_commentaires() {
 			if (strlen($comment['bt_author']) >= 30) {
 				$comment['bt_author'] = mb_substr($comment['bt_author'], 0, 29).'…';
 			}
-			$listeLastComments .= '<li title="'.date_formate($comment['bt_id']).'"><strong>'.$comment['bt_author'].' : </strong><a href="'.$comment['bt_link'].'">'.$comment['contenu_abbr'].'</a>'.'</li>'."\n";
+			$comm_link = URL_ROOT . $comment['bt_art_link'] . $comment['bt_link'];
+			$listeLastComments .= '<li title="'.date_formate($comment['bt_id']).'"><strong>'.$comment['bt_author'].' : </strong><a href="'.$comm_link.'">'.$comment['contenu_abbr'].'</a>'.'</li>'."\n";
 		}
 		$listeLastComments .= '</ul>'."\n";
 		return $listeLastComments;
@@ -469,13 +471,13 @@ function html_readmore() {
 		}
 		unset($articles[$i]['bt_content']);
 		// generates link
-		$articles[$i]['bt_link'] = get_blogpath($article['bt_id'], $article['bt_title']);
+		//$articles[$i]['bt_link'] = get_blogpath($article['bt_id'], $article['bt_title']);
 	}
 
 	// generates the UL/LI list.
 	$html = '<ul>'."\n";
 	foreach ($articles as $art) {
-		$html .= "\t".'<li style="background-image: url('.$art['bt_img'].');"><a href="'.$art['bt_link'].'">'.$art['bt_title'].'</a></li>'."\n";
+		$html .= "\t".'<li style="background-image: url('.$art['bt_img'].');"><a href="'.URL_ROOT.$art['bt_link'].'">'.$art['bt_title'].'</a></li>'."\n";
 	}
 	$html .= '</ul>'."\n";
 
@@ -509,6 +511,7 @@ function php_lang_to_js() {
 	$frontend_str['confirmFeedSaved'] = $GLOBALS['lang']['confirm_feeds_edit'];
 	$frontend_str['confirmCommentSuppr'] = $GLOBALS['lang']['confirm_comment_suppr'];
 	$frontend_str['confirmNotesSaved'] = $GLOBALS['lang']['confirm_note_enregistree'];
+	$frontend_str['confirmContactsSaved'] = $GLOBALS['lang']['confirm_contacts_saved'];
 	$frontend_str['confirmEventsSaved'] = $GLOBALS['lang']['confirm_agenda_updated'];
 	$frontend_str['activer'] = $GLOBALS['lang']['activer'];
 	$frontend_str['desactiver'] = $GLOBALS['lang']['desactiver'];
@@ -529,6 +532,7 @@ function php_lang_to_js() {
 	$frontend_str['questionSupprFlux'] = $GLOBALS['lang']['question_suppr_feed'];
 	$frontend_str['questionSupprNote'] = $GLOBALS['lang']['question_suppr_note'];
 	$frontend_str['questionSupprEvent'] = $GLOBALS['lang']['question_suppr_event'];
+	$frontend_str['questionSupprContact'] = $GLOBALS['lang']['question_suppr_contact'];
 	$frontend_str['notesLabelTitle'] = $GLOBALS['lang']['label_titre'];
 	//$frontend_str['notesLabelContent'] = $GLOBALS['lang']['label_contenu'];
 	//$frontend_str['createdOn'] = $GLOBALS['lang']['label_creee_le'];

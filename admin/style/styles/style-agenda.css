@@ -179,6 +179,7 @@
 	padding: 0;
 	margin-left: 25px;
 	flex: 1;
+	width: 100%;
 }
 
 #daily-events-wrapper > p {
@@ -264,41 +265,15 @@
 /* the display-event popup
 ----------------------------------------------- */
 
-#popup-wrapper {
-	position: fixed;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	background: rgba(0,0,0, .5);
-	background: rgba(229, 229, 229, .75);
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	z-index: 150;
-	animation: fade-in .2s;
-}
-
-#popup.popup-event,
-#popup.popup-edit-event {
-	display: block;
-	min-height: 300px;
-	min-width: 600px;
-	background: white;
-	box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.3), 0 0px 12px 0 rgba(0, 0, 0, 0.3);
-	padding: 0;
-	overflow: hidden; /* for rounded corners */
-	border-radius: 2px;
-}
-
 #popup.popup-event {
 	animation:  appearSlow .1s;
 }
 
 #popup.popup-event > .event-title {
 	background: #F6F6F6;
-	padding: 60px 20px 20px 70px;
+	padding: 15px 15px 35px;
 	position: relative;
+	display: flex;
 }
 
 #popup.popup-event > .event-title > span {
@@ -307,7 +282,7 @@
 }
 
 #popup.popup-event > .event-title > .item-menu-options {
-	right: 5px;
+	right: 45px;
 	top: 5px;
 }
 
@@ -315,10 +290,13 @@
 #popup.popup-edit-event > .event-title > .button-cancel {
 	position: absolute;
 	top: 5px;
-	left: 5px;
+	right: 5px;
 	background: transparent;
 	border: 0;
 	min-width: 0;
+	padding: 10px;
+	color: inherit;
+	margin-right: 0;
 }
 
 #popup.popup-event > .event-title > .button-cancel:hover,
@@ -330,7 +308,12 @@
 #popup.popup-edit-event > .event-title > .button-cancel::before {
 	content: "\e5cd";
 	display: inline-block;
-	font-size: 1.7em;
+	font-size: 1.4em;
+}
+
+#popup.popup-event > .event-title > .item-menu-options::before,
+#popup.popup-edit-event > .event-title > .item-menu-options::before {
+	font-size: 1.4em;
 }
 
 #popup.popup-event > .event-title > .button-edit {
@@ -357,10 +340,10 @@
 }
 
 #popup.popup-event > .event-content {
-	padding: 35px 15px 15px;
-	max-width: 900px;
+	padding: 15px;
 	white-space: pre-line;
-
+	overflow-y: scroll;
+	height: 100%;
 }
 
 #popup.popup-event > .event-content ul {
@@ -401,20 +384,13 @@
 #popup.popup-edit-event .event-title {
 	position: relative;
 	background: var(--md-primary-color);
-	padding: 10px 10px 0 20px;
-	text-align: right;
 	color: white;
 	color: var(--main-md-text-color);
+	padding: 0 45px 0 15px;
 }
 
 #popup.popup-edit-event > .event-title > button {
 	color: var(--scnd-md-text-color);
-}
-
-#popup.popup-edit-event .event-title .submit {
-	background: transparent;
-	min-width: 0;
-	box-shadow: none;
 }
 
 #popup.popup-edit-event .event-title .text {
@@ -423,8 +399,8 @@
 	font-size: 1.2em;
 	display: block;
 	width: 100%;
-	margin-top: 10px;
 	box-shadow: none;
+	padding: 35px 15px 15px 0px;
 }
 
 #popup.popup-edit-event .event-title .text:focus {
@@ -432,15 +408,19 @@
 }
 
 #popup.popup-edit-event .event-content {
+	height: 100%;
+	overflow-y: scroll;
+}
+#popup.popup-edit-event .event-content > div {
 	position: relative;
-	padding: 20px 20px 20px 60px;
+	padding: 15px 15px 15px 60px;
 }
 
-#popup.popup-edit-event .event-content > p:first-of-type {
+#popup.popup-edit-event .event-content > div > p:first-of-type {
 	margin-right: 55px;
 }
 
-#popup.popup-edit-event .event-content::before {
+#popup.popup-edit-event .event-content > div::before {
 	font-size: 1.4em;
 	position: absolute;
 	left: 20px;
@@ -462,7 +442,26 @@
 	width: 100%;
 }
 
+#popup.popup-edit-event .event-content-descr {
+}
+
+#popup.popup-edit-event .event-content-descr .text {
+	height: 100%;
+	resize: vertical;
+}
+
 #popup.popup-edit-event #allDay+label {
 	flex: 1;
 }
 
+#popup.popup-edit-event .event-footer {
+	padding: 10px;
+	text-align: right;
+}
+
+#popup.popup-edit-event .event-footer > .submit {
+	background: white;
+	box-shadow: none;
+	color: #222;
+	font-size: .9em;
+}

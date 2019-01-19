@@ -98,7 +98,7 @@ function create_tables() {
 			ID INTEGER PRIMARY KEY $auto_increment,
 			bt_id BIGINT,
 			bt_type TEXT,
-			bt_fileext TEXT,
+			bt_fileext TINYTEXT,
 			bt_filename TEXT,
 			bt_filesize INT,
 			bt_content TEXT,
@@ -119,6 +119,28 @@ function create_tables() {
 			bt_title TEXT,
 			bt_content TEXT
 		); CREATE INDEX $if_not_exists dateE ON agenda ( bt_id );";
+
+	$dbase_structure['contacts'] = "CREATE TABLE IF NOT EXISTS contacts
+		(
+			ID INTEGER PRIMARY KEY $auto_increment,
+			bt_id BIGINT,
+			bt_type TEXT,
+			bt_title TINYTEXT,
+			bt_fullname TINYTEXT,
+			bt_surname TEXT,
+			bt_birthday BIGINT,
+			bt_address TEXT,
+			bt_phone TEXT,
+			bt_email TEXT,
+			bt_websites TEXT,
+			bt_social TEXT,
+			bt_image TEXT,
+			bt_label TEXT,
+			bt_notes TEXT,
+			bt_stared TINYINT,
+			bt_other TEXT
+
+		); CREATE INDEX $if_not_exists idId ON contacts ( bt_id );";
 
 
 	/*
@@ -183,40 +205,17 @@ function open_base() {
 
 
 /* lists articles with search criterias given in $array. Returns an array containing the data*/
-function liste_elements($query, $array, $data_type) {
+function liste_elements($query, $array, $data_type='') {
 	try {
 		$req = $GLOBALS['db_handle']->prepare($query);
 		$req->execute($array);
 		$return = array();
-
-		switch ($data_type) {
-			case 'articles':
-				while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
-					$return[] = init_list_articles($row);
-				}
-				break;
-			case 'commentaires':
-				while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
-					$return[] = init_list_comments($row);
-				}
-				break;
-			case 'links':
-			case 'rss':
-			case 'notes':
-			case 'images':
-			case 'agenda':
-				while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
-					$return[] = $row;
-				}
-				break;
-			default:
-				break;
+		while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
+			$return[] = $row;
 		}
-
 		return $return;
 	} catch (Exception $e) {
-		die($query);
-		die('Erreur 89208 : '.$e->getMessage());
+		die('Erreur 89208 : '.$e->getMessage() . "\n<br/>".$query);
 	}
 }
 
@@ -254,27 +253,6 @@ function get_entry($table, $entry, $id, $retour_mode) {
 }
 
 
-
-// from an array given by SQLite's requests, this function adds some more stuf to data stored by DB.
-function init_list_articles($article) {
-	if (!empty($article)) {
-		//$article = array_merge($article, decode_id($article['bt_date']));
-		$article['bt_link'] = get_blogpath($article['bt_id'], $article['bt_title']);
-	}
-	return $article;
-}
-
-function init_list_comments($comment) {
-		$comment['auteur_lien'] = (!empty($comment['bt_webpage'])) ? '<a href="'.$comment['bt_webpage'].'" class="webpage">'.$comment['bt_author'].'</a>' : $comment['bt_author'] ;
-		$comment['anchor'] = article_anchor($comment['bt_id']);
-		if (isset($comment['bt_title'])) {
-			$comment['bt_link'] = get_blogpath($comment['bt_article_id'], $comment['bt_title']).'#'.$comment['anchor'];
-		}
-		//$comment = array_merge($comment, decode_id($comment['bt_id']));
-	return $comment;
-}
-
-
 // POST ARTICLE
 /*
  * On post of an article (always on admin sides)
@@ -304,7 +282,7 @@ function init_post_article() { //no $mode : it's always admin.
 		'bt_notes'			=> protect($_POST['notes']),
 		'bt_content'		=> $formated_contenu,
 		'bt_wiki_content'	=> clean_txt($_POST['contenu']),
-		'bt_link'			=> '', // this one is not needed yet. Maybe in the futur. I dunno why it is still in the DB…
+		'bt_link'			=> get_blogpath($id, protect($_POST['titre'])),
 		'bt_keywords'		=> $keywords,
 		'bt_tags'			=> (isset($_POST['categories']) ? htmlspecialchars(traiter_tags($_POST['categories'])) : ''),
 		'bt_statut'			=> $_POST['statut'],
@@ -355,7 +333,7 @@ function init_post_comment($article_id, $mode) {
 			'bt_wiki_content'	=> clean_txt($_POST['commentaire']),
 			'bt_author'			=> protect($_POST['auteur']),
 			'bt_email'			=> protect($_POST['email']),
-			'bt_link'			=> '', // this is empty, 'cause bt_link is created on reading of DB, not written in DB (useful if we change server or site name some day).
+			'bt_link'			=> '#'.article_anchor($comment_id),
 			'bt_webpage'		=> $url,
 			'bt_subscribe'		=> (isset($_POST['subscribe']) and $_POST['subscribe'] == 'on') ? '1' : '0',
 			'bt_statut'			=> $status,
@@ -793,7 +771,7 @@ function nb_entries_as($table, $what) {
 	}
 }
 
-
+/* FOR TAGS (articles & notes) */
 function list_all_tags($table, $statut) {
 	try {
 		if ($statut !== FALSE) {

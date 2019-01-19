@@ -59,9 +59,7 @@ function afficher_form_commentaire($article_id, $mode, $erreurs, $edit_comm) {
 		$comm['bt_author'] = $form_cont['author'];
 		$comm['bt_email'] = $form_cont['e_mail'];
 		$comm['bt_webpage'] = $form_cont['webpage'];
-		$comm['anchor'] = article_anchor($comm['bt_id']);
 		$comm['bt_link'] = '';
-		$comm['auteur_lien'] = ($comm['bt_webpage'] != '') ? '<a href="'.$comm['bt_webpage'].'" class="webpage">'.$comm['bt_author'].'</a>' : $comm['bt_author'];
 		$form_html .= '<div id="erreurs"><ul><li>Prévisualisation :</li></ul></div>'."\n";
 		$form_html .= '<div id="previsualisation">'."\n";
 		$form_html .= conversions_theme_commentaire(file_get_contents($GLOBALS['theme_post_comm']), $comm);

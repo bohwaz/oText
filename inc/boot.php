@@ -14,8 +14,10 @@ $begin = microtime(true);
 mb_internal_encoding('UTF-8');
 mb_substitute_character('none');
 
-
-define('BT_ROOT', dirname(dirname(__file__)).'/');
+// Root folder. Might be defined in /admin/boot files.
+if (!defined('BT_ROOT')) {
+	define('BT_ROOT', dirname(dirname(__file__)).'/');
+}
 
 // if dev mod
 error_reporting(-1);
@@ -37,9 +39,7 @@ function import_ini_file($file_path) {
 	return false;
 }
 
-
 // Constants: folders
-define('DIR_ADMIN', BT_ROOT.'admin/');
 define('DIR_IMAGES', BT_ROOT.'img/');
 define('DIR_DOCUMENTS', BT_ROOT.'files/');
 define('DIR_THEMES', BT_ROOT.'themes/');
@@ -64,14 +64,18 @@ define('FILE_MYSQL', DIR_CONFIG.'mysql.ini');
 // Constants: general
 define('BLOGOTEXT_NAME', 'oText');
 define('BLOGOTEXT_SITE', 'https://lehollandaisvolant.net/');
-define('BLOGOTEXT_VERSION', '1812-1');
-define('MINIMAL_PHP_REQUIRED_VERSION', '5.5');
+define('BLOGOTEXT_VERSION', '1901-1');
+define('MINIMAL_PHP_REQUIRED_VERSION', '5.6');
 define('BLOGOTEXT_UA', 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0');
 
 // init some vars
-
 // ADVANCED CONFIG OPTIONS
 import_ini_file(FILE_SETTINGS_ADV);
+if (defined('CUSTOM_DIR_ADMIN')) {
+	define('DIR_ADMIN', BT_ROOT.CUSTOM_DIR_ADMIN.'/');
+} else {
+	define('DIR_ADMIN', BT_ROOT.'admin/');
+}
 
 // DATABASE OPTIONS + MySQL DB PARAMS
 import_ini_file(FILE_MYSQL);

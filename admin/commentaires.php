@@ -9,11 +9,40 @@
 require_once 'inc/boot.php';
 operate_session();
 
+
+
+/*
+$query = "SELECT bt_id, bt_link FROM commentaires";
+$req = $GLOBALS['db_handle']->prepare($query);
+$req->execute(array());
+$result = $req->fetch();
+while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
+	$return[] = $row;
+}
+
+debug($return);
+
+try {
+
+	$GLOBALS['db_handle']->beginTransaction();
+
+	foreach ($return as $i => $com) {
+		$req = $GLOBALS['db_handle']->prepare('UPDATE commentaires SET bt_link=? WHERE bt_id=?');
+		$req->execute(array('#'.article_anchor($com['bt_id']), $com['bt_id']));
+	}
+
+	$GLOBALS['db_handle']->commit();
+
+} catch (Exception $e) {
+	return 'Erreur : '.$e->getMessage();
+}
+
+die('done');*/
+
 setcookie('lastAccessComments', time(), time()+365*24*60*60, null, null, false, true);
 
 
 function afficher_commentaire($comment) {
-	//afficher_form_commentaire($comment['bt_article_id'], 'admin', '', $comment);
 	echo '<div class="commentbloc'.(!$comment['bt_statut'] ? ' privatebloc' : '').'" id="'.article_anchor($comment['bt_id']).'">'."\n";
 	echo '<div class="comm-side-icon">'."\n";
 	echo "\t".'<div class="comm-title">'."\n";
@@ -101,9 +130,6 @@ if ( isset($_GET['post_id']))  {
 // else, no ID
 else {
 	if ( !empty($_GET['filtre']) ) {
-		// for "authors" the requests is "auteur.$search" : here we split the type of search and what we search.
-		$type = substr($_GET['filtre'], 0, -strlen(strstr($_GET['filtre'], '.')));
-		$search = htmlspecialchars(ltrim(strstr($_GET['filtre'], '.'), '.'));
 		// filter for date
 		if (preg_match('#^\d{6}(\d{1,8})?$#', ($_GET['filtre'])) ) {
 			$query = "SELECT c.*, a.bt_title FROM commentaires c LEFT JOIN articles a ON a.bt_id = c.bt_article_id WHERE c.bt_id LIKE ? ORDER BY c.bt_id DESC";
@@ -119,7 +145,8 @@ else {
 			$commentaires = liste_elements($query, array(), 'commentaires');
 		}
 		// filter for author
-		elseif ($type == 'auteur' and $search != '') {
+		elseif (substr($_GET['filtre'], 0, -strlen(strstr($_GET['filtre'], '.'))) == 'auteur') { //and $search != '') { // for "authors" the requests is "auteur.$search"
+			$search = htmlspecialchars(ltrim(strstr($_GET['filtre'], '.'), '.'));
 			$query = "SELECT c.*, a.bt_title FROM commentaires c LEFT JOIN articles a ON a.bt_id=c.bt_article_id WHERE c.bt_author=? ORDER BY c.bt_id DESC";
 			$commentaires = liste_elements($query, array($search), 'commentaires');
 		}
@@ -151,10 +178,9 @@ echo '<div id="subnav">'."\n";
 	afficher_form_filtre('commentaires', (isset($_GET['filtre'])) ? htmlspecialchars($_GET['filtre']) : '');
 	echo '<div class="nombre-elem">'."\n";
 	if (!empty($article_id)) {
-		$article_link = get_blogpath($article_id, $article_title);
 		echo '<ul>'."\n";
 		echo "\t".'<li><a href="ecrire.php?post_id='.$article_id.'">'.$GLOBALS['lang']['ecrire'].$article_title.'</a></li>'."\n";
-		echo "\t".'<li><a href="'.$article_link.'">'.$GLOBALS['lang']['lien_article'].'</a></li>'."\n";
+		echo "\t".'<li><a href="'.URL_ROOT.get_blogpath($article_id, $article_title).'">'.$GLOBALS['lang']['lien_article'].'</a></li>'."\n";
 		echo '</ul>'."\n";
 		echo '– &nbsp; '.ucfirst(nombre_objets(count($commentaires), 'commentaire'));
 	} else {
@@ -191,12 +217,12 @@ if (!empty($article_id)) {
 	echo '</div>'."\n";
 }
 
+echo php_lang_to_js();
 echo "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
 echo '<script>';
 echo 'var csrf_token = \''.new_token().'\''."\n";
 echo 'new writeForm();'."\n";
 echo '</script>'."\n";
-echo php_lang_to_js();
 
 footer($begin);
 

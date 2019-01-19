@@ -6,8 +6,6 @@
 // See "LICENSE" file for info.
 // *** LICENSE ***
 
-require_once 'inc/boot.php';
-
 header('Content-Type: application/rss+xml; charset=UTF-8');
 
 // second level caching file.
@@ -24,6 +22,8 @@ if (file_exists($lv2_cache_file)) {
 	@unlink($lv2_cache_file);
 }
 
+require_once 'inc/boot.php';
+
 $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
 $xml .= '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">'."\n";
 $xml .= '<channel>'."\n";
@@ -35,7 +35,7 @@ if (isset($_GET['id'])) {
 	$GLOBALS['db_handle'] = open_base();
 	$article_id = htmlspecialchars($_GET['id']);
 
-	$liste = liste_elements("SELECT c.*, a.bt_title FROM commentaires AS c, articles AS a WHERE c.bt_article_id=? AND c.bt_article_id=a.bt_id AND c.bt_statut=1 ORDER BY c.bt_id DESC", array($article_id), 'commentaires');
+	$liste = liste_elements("SELECT c.*, a.bt_title FROM commentaires AS c, articles AS a WHERE c.bt_article_id=? AND c.bt_article_id=a.bt_id AND c.bt_statut=1 ORDER BY c.bt_id DESC", array($article_id));
 
 	if (!empty($liste)) {
 		$xml .= '<title>Commentaires sur '.$liste[0]['bt_title'].' - '.$GLOBALS['nom_du_site'].'</title>'."\n";
@@ -132,6 +132,7 @@ else {
 		}
 	}
 
+
 	// tri selon la date (qui est une sous-clé du tableau, d’où cette manœuvre)
 	foreach ($liste_rss as $key => $item) {
 		 $bt_id[$key] = (isset($item['bt_date'])) ? $item['bt_date'] : $item['bt_id'];
@@ -157,7 +158,7 @@ else {
 		$xml_post .= '<title>'.$title.'</title>'."\n";
 		$xml_post .= '<guid isPermaLink="false">'.$elem['bt_id'].'-'.$elem['bt_type'].'</guid>'."\n";
 		$xml_post .= '<pubDate>'.date_create_from_format('YmdHis', $time)->format('r').'</pubDate>'."\n";
-		if ($elem['bt_type'] == 'link') {
+		if ($elem['bt_type'] == 'link' or $elem['bt_type'] == 'note') {
 			if ($invert) {
 				$xml_post .= '<link>'.$GLOBALS['racine'].'?id='.$elem['bt_id'].'</link>'."\n";
 				$xml_post .= '<description><![CDATA['.rel2abs($elem['bt_content']). '<br/> — (<a href="'.$elem['bt_link'].'">link</a>)]]></description>'."\n";
@@ -166,7 +167,7 @@ else {
 				$xml_post .= '<description><![CDATA['.rel2abs($elem['bt_content']).'<br/> — (<a href="'.$GLOBALS['racine'].'?id='.$elem['bt_id'].'">permalink</a>)]]></description>'."\n";
 			}
 		} else {
-			$xml_post .= '<link>'.$elem['bt_link'].'</link>'."\n";
+			$xml_post .= '<link>'.URL_ROOT.$elem['bt_link'].'</link>'."\n";
 			$xml_post .= '<description><![CDATA['.rel2abs($elem['bt_content']).']]></description>'."\n";
 		}
 		if (isset($elem['bt_tags']) and !empty($elem['bt_tags'])) {

@@ -38,7 +38,7 @@ $tableau = array();
 // on affiche les notes
 if ( !empty($_GET['filtre']) and preg_match('#^\d{6}(\d{1,8})?$#', $_GET['filtre']) ) { // date
 	$query = "SELECT * FROM notes WHERE bt_id LIKE ? ORDER BY bt_id DESC";
-	$tableau = liste_elements($query, array($_GET['filtre'].'%'), 'links');
+	$tableau = liste_elements($query, array($_GET['filtre'].'%'), 'notes');
 } elseif (!empty($_GET['q'])) { // mot clé
 	$arr = parse_search($_GET['q']);
 	$sql_where = implode(array_fill(0, count($arr), '( bt_content || bt_title ) LIKE ? '), 'AND '); // AND operator between words
@@ -67,7 +67,7 @@ afficher_topnav($GLOBALS['lang']['mesnotes'], $html_sub_menu); #top
 echo '<div id="axe">'."\n";
 echo '<div id="subnav">'."\n";
 	afficher_form_filtre('notes', (isset($_GET['filtre'])) ? htmlspecialchars($_GET['filtre']) : '');
-	echo "\t".'<div class="nombre-elem">'.ucfirst(nombre_objets($nb_notes_displayed, 'note')).' '.$GLOBALS['lang']['sur'].' '.liste_elements_count("SELECT count(*) AS nbr FROM notes", array(), 'notes').'</div>'."\n";
+	echo "\t".'<div class="nombre-elem">'.ucfirst(nombre_objets($nb_notes_displayed, 'note')).' '.$GLOBALS['lang']['sur'].' '.liste_elements_count("SELECT count(*) AS nbr FROM notes", array()).'</div>'."\n";
 echo '</div>'."\n";
 
 $out_html = '';
@@ -81,8 +81,8 @@ $out_html .= "\t\t\t\t".'<button type="button" class="archiveIcon"></button>'."\
 $out_html .= "\t\t\t\t".'<button type="button" class="pinnedIcon"></button>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
 $out_html .= "\t\t\t".'<textarea class="content" cols="30" rows="8" placeholder="Content"></textarea>'."\n";
-$out_html .= "\t\t\t".'<div class="date"></div>'."\n";
 $out_html .= "\t\t\t".'<div class="noteCtrls">'."\n";
+$out_html .= "\t\t\t\t".'<div class="date"></div>'."\n";
 $out_html .= "\t\t\t\t".'<button type="button" class="colorIcon"></button>'."\n";
 $out_html .= "\t\t\t\t".'<ul class="colors">'."\n";
 $out_html .= "\t\t\t\t\t".'<li style="background-color: rgb(255, 255, 255);"></li>'."\n";

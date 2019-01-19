@@ -6,7 +6,7 @@
 // See "LICENSE" file for info.
 // *** LICENSE ***
 
-require_once 'inc/boot.php';
+require_once '../inc/boot.php';
 operate_session();
 
 // gets events in JOSN format and saves them to DB

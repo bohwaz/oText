@@ -115,10 +115,10 @@ function form_fuseau_horaire($defaut) {
 
 function form_format_heure($defaut) {
 	$formats = array (
-		'0' => date('H\:i\:s'),		// 23:56:04
-		'1' => date('H\:i'),			// 23:56
-		'2' => date('h\:i\:s A'),	// 11:56:04 PM
-		'3' => date('h\:i A'),		// 11:56 PM
+		'0' => date('H\:i\:s'),     // 23:56:04
+		'1' => date('H\:i'),        // 23:56
+		'2' => date('h\:i\:s A'),   // 11:56:04 PM
+		'3' => date('h\:i A'),      // 11:56 PM
 	);
 	$form = '<label>'.$GLOBALS['lang']['pref_format_heure'].'</label>'."\n";
 	$form .= '<select name="format_heure">'."\n";
@@ -161,7 +161,7 @@ function afficher_form_filtre($type, $filtre) {
 	echo $ret;
 }
 
-function filtre($type, $filtre) { // cette fonction est très gourmande en ressources.
+function filtre($type, $filtre) {
 	$liste_des_types = array();
 	$ret = '';
 	$ret .= "\n".'<select name="filtre">'."\n" ;
@@ -169,84 +169,111 @@ function filtre($type, $filtre) { // cette fonction est très gourmande en resso
 	if ($type == 'articles') {
 		$ret .= '<option value="">'.$GLOBALS['lang']['label_article_derniers'].'</option>'."\n";
 		$query = "SELECT DISTINCT substr(bt_date, 1, 6) AS date FROM articles ORDER BY date DESC";
-		$tab_tags = list_all_tags('articles', FALSE);
 	// Commentaires
 	} elseif ($type == 'commentaires') {
 		$ret .= '<option value="">'.$GLOBALS['lang']['label_comment_derniers'].'</option>'."\n";
-		$tab_auteur = nb_entries_as('commentaires', 'bt_author');
 		$query = "SELECT DISTINCT substr(bt_id, 1, 6) AS date FROM commentaires ORDER BY bt_id DESC";
 	// Liens
 	} elseif ($type == 'links') {
 		$ret .= '<option value="">'.$GLOBALS['lang']['label_link_derniers'].'</option>'."\n";
-		$tab_tags = list_all_tags('links', FALSE);
 		$query = "SELECT DISTINCT substr(bt_id, 1, 6) AS date FROM links ORDER BY bt_id DESC";
 	// Notes
 	} elseif ($type == 'notes') {
 		$ret .= '<option value="">'.$GLOBALS['lang']['label_note_derniers'].'</option>'."\n";
 		$query = "SELECT DISTINCT substr(bt_id, 1, 6) AS date FROM notes ORDER BY bt_id DESC";
+	// Contacts
+	} elseif ($type == 'contacts') {
+		$ret .= '<option value="">'.$GLOBALS['lang']['label_contacts_all'].'</option>'."\n";
 	// Fichiers
-	} elseif ($type == 'fichiers') {
+	} elseif ($type == 'images') {
 		$ret .= '<option value="">'.$GLOBALS['lang']['label_fichier_derniers'].'</option>'."\n";
-		$tab_type = nb_entries_as('images', 'bt_type');
 		$query = "SELECT DISTINCT substr(bt_id, 1, 6) AS date FROM images ORDER BY bt_id DESC";
 	}
 
-	try {
-		$req = $GLOBALS['db_handle']->prepare($query);
-		$req->execute(array());
-		while ($row = $req->fetch()) {
-			$tableau_mois[$row['date']] = mois_en_lettres(substr($row['date'], 4, 2)).' '.substr($row['date'], 0, 4);
-		}
-	} catch (Exception $x) {
-		die('Erreur affichage form_filtre() : '.$x->getMessage());
-	}
 
-	/// BROUILLONS vs PUBLIES
-	if ($type !== 'notes') {
+	/// PUBLISHED vs DRAFTS (or private)
+	if (in_array($type, array('articles', 'commentaires', 'links', 'images') )) {
 		$ret .= '<option value="draft"'.(($filtre == 'draft') ? ' selected="selected"' : '').'>'.$GLOBALS['lang']['label_invisibles'].'</option>'."\n";
 		$ret .= '<option value="pub"'.(($filtre == 'pub') ? ' selected="selected"' : '').'>'.$GLOBALS['lang']['label_publies'].'</option>'."\n";
 	}
 
-	/// PAR DATE
-	if (!empty($tableau_mois)) {
-		$ret .= '<optgroup label="'.$GLOBALS['lang']['label_date'].'">'."\n";
-		foreach ($tableau_mois as $mois => $label) {
-			$ret .= "\t".'<option value="' . htmlentities($mois) . '"'.((substr($filtre, 0, 6) == $mois) ? ' selected="selected"' : '').'>'.$label.'</option>'."\n";
-		}
-		$ret .= '</optgroup>'."\n";
-	}
-
-	/// PAR AUTEUR S'IL S'AGIT DES COMMENTAIRES
-	if (!empty($tab_auteur)) {
-		$ret .= '<optgroup label="'.$GLOBALS['lang']['pref_auteur'].'">'."\n";
-		foreach ($tab_auteur as $nom) {
-			if (!empty($nom['nb']) ) {
-				$ret .= "\t".'<option value="auteur.'.$nom['bt_author'].'"'.(($filtre == 'auteur.'.$nom['bt_author']) ? ' selected="selected"' : '').'>'.$nom['bt_author'].' ('.$nom['nb'].')'.'</option>'."\n";
+	/// BY DATE
+	if (in_array($type, array('articles', 'commentaires', 'links', 'images', 'notes')) ) {
+		try {
+			$req = $GLOBALS['db_handle']->prepare($query);
+			$req->execute(array());
+			while ($row = $req->fetch()) {
+				$tableau_mois[$row['date']] = mois_en_lettres(substr($row['date'], 4, 2)).' '.substr($row['date'], 0, 4);
 			}
+		} catch (Exception $x) {
+			die('Erreur affichage form_filtre() : '.$x->getMessage());
 		}
-		$ret .= '</optgroup>'."\n";
-	}
-
-	/// PAR TYPE S'IL S'AGIT DES FICHIERS
-	if (!empty($tab_type)) {
-		$ret .= '<optgroup label="'.'Type'.'">'."\n";
-		foreach ($tab_type as $type) {
-			if (!empty($type) ) {
-				$ret .= "\t".'<option value="type.'.$type['bt_type'].'"'.(($filtre == 'type.'.$type['bt_type']) ? ' selected="selected"' : '').'>'.$type['bt_type'].' ('.$type['nb'].')'.'</option>'."\n";
+		if (!empty($tableau_mois)) {
+			$ret .= '<optgroup label="'.$GLOBALS['lang']['label_date'].'">'."\n";
+			foreach ($tableau_mois as $mois => $label) {
+				$ret .= "\t".'<option value="'.htmlentities($mois).'"'.((substr($filtre, 0, 6) == $mois) ? ' selected="selected"' : '').'>'.$label.'</option>'."\n";
 			}
+			$ret .= '</optgroup>'."\n";
 		}
-		$ret .= '</optgroup>'."\n";
 	}
 
-	///PAR TAGS POUR LES LIENS & ARTICLES
-	if (!empty($tab_tags)) {
-		$ret .= '<optgroup label="'.'Tags'.'">'."\n";
-		foreach ($tab_tags as $tag => $nb) {
-			$ret .= "\t".'<option value="tag.'.$tag.'"'.(($filtre == 'tag.'.$tag) ? ' selected="selected"' : '').'>'.$tag.' ('.$nb.')</option>'."\n";
+	/// BY AUTHOR, FOR COMMENTS
+	if (in_array($type, array('commentaires') )) {
+		$tab_auteur = nb_entries_as($type, 'bt_author');
+		if (!empty($tab_auteur)) {
+			$ret .= '<optgroup label="'.$GLOBALS['lang']['pref_auteur'].'">'."\n";
+			foreach ($tab_auteur as $nom) {
+				if (!empty($nom['nb']) ) {
+					$ret .= "\t".'<option value="auteur.'.$nom['bt_author'].'"'.(($filtre == 'auteur.'.$nom['bt_author']) ? ' selected="selected"' : '').'>'.$nom['bt_author'].' ('.$nom['nb'].')'.'</option>'."\n";
+				}
+			}
+			$ret .= '</optgroup>'."\n";
 		}
-		$ret .= '</optgroup>'."\n";
 	}
+
+	/// BY FILETYPE, FOR IMAGES/FILES
+	if (in_array($type, array('images') )) {
+		$tab_type = nb_entries_as('images', 'bt_type');
+		if (!empty($tab_type)) {
+			$ret .= '<optgroup label="'.'Type'.'">'."\n";
+			foreach ($tab_type as $type) {
+				if (!empty($type) ) {
+					$ret .= "\t".'<option value="type.'.$type['bt_type'].'"'.(($filtre == 'type.'.$type['bt_type']) ? ' selected="selected"' : '').'>'.$type['bt_type'].' ('.$type['nb'].')'.'</option>'."\n";
+				}
+			}
+			$ret .= '</optgroup>'."\n";
+		}
+	}
+
+	/// BY TAGES, FOR ARTICLES AND LINKS
+	if (in_array($type, array('links', 'articles') )) {
+		$tab_tags = list_all_tags($type, FALSE);
+		if (!empty($tab_tags)) {
+			$ret .= '<optgroup label="'.'Tags'.'">'."\n";
+			foreach ($tab_tags as $tag => $nb) {
+				$ret .= "\t".'<option value="tag.'.$tag.'"'.(($filtre == 'tag.'.$tag) ? ' selected="selected"' : '').'>'.$tag.' ('.$nb.')</option>'."\n";
+			}
+			$ret .= '</optgroup>'."\n";
+		}
+	}
+
+	/// BY LABEL FOR CONTACTS
+	if (in_array($type, array('contacts') )) {
+		$tab_label = nb_entries_as('contacts', 'bt_label');
+		if (!empty($tab_label)) {
+			$ret .= '<optgroup label="'.$GLOBALS['lang']['label-ctc-label'].'">'."\n";
+			foreach ($tab_label as $label) {
+				if (!empty($label['bt_label']) ) {
+					$ret .= "\t".'<option value="label.'.$label['bt_label'].'"'.(($filtre == 'label.'.$label['bt_label']) ? ' selected="selected"' : '').'>'.$label['bt_label'].' ('.$label['nb'].')'.'</option>'."\n";
+				}
+			}
+			$ret .= '</optgroup>'."\n";
+		}
+	}
+
+
 	$ret .= '</select> '."\n\n";
+
 
 	return $ret;
 }

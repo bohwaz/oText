@@ -161,7 +161,7 @@ echo '<div id="axe">'."\n";
 if (!empty($post)) {
 	echo '<div id="subnav">'."\n";
 		echo '<div class="nombre-elem">';
-		echo '<a href="'.$post['bt_link'].'">'.$GLOBALS['lang']['lien_article'].'</a> &nbsp; – &nbsp; ';
+		echo '<a href="'.URL_ROOT.$post['bt_link'].'">'.$GLOBALS['lang']['lien_article'].'</a> &nbsp; – &nbsp; ';
 		echo '<a href="commentaires.php?post_id='.$article_id.'">'.ucfirst(nombre_objets($post['bt_nb_comments'], 'commentaire')).'</a>';
 		echo '</div>'."\n";
 	echo '</div>'."\n";

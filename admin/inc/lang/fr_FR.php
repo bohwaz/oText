@@ -25,6 +25,7 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'mesnotes'	 					=> 'Mes notes',
 'mesabonnements'				=> 'Mes abonnements',
 'monagenda'						=> 'Mon agenda',
+'mescontacts'					=> 'Mes contacts',
 'nouveau' 						=> 'Nouvel article',
 'supprimer' 					=> 'Supprimer',
 'telecharger' 					=> 'Télécharger',
@@ -59,6 +60,7 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'question_suppr_article'		=> 'Cet article et ses commentaires seront définitivement supprimés !',
 'question_suppr_image'			=> 'Cette image sera définitivement supprimée !',
 'question_suppr_comment'		=> 'Ce commentaire sera définitivement supprimé !',
+'question_suppr_contact'		=> 'Ce contact sera définitivement supprimé !',
 'question_suppr_fichier'		=> 'Ce fichier sera définitivement supprimé !',
 'question_suppr_note'			=> 'Cette note sera définitivement supprimée !',
 'question_suppr_event'			=> 'Cet événement sera définitivement supprimé !',
@@ -89,6 +91,7 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'confirm_feed_clean'			=> 'Tous les anciens éléments ont été supprimés.',
 'confirm_note_enregistree'		=> 'Notes enregistrées.',
 'confirm_agenda_updated'		=> 'Agenda mis à jour.',
+'confirm_contacts_saved'		=> 'Contacts enregistrés.',
 
 // No-confirmation	
 'error_image_add'				=> 'Le fichier n’a pas pu être ajoutée',
@@ -170,7 +173,8 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 
 // Notes
 'note_no_note'					=> 'Aucune note',
-'note_no_event'					=> 'Aucune événement',
+'note_no_event'					=> 'Aucun événement',
+'note_no_contact'				=> 'Aucun contact',
 'note_no_image'					=> 'Aucune image',
 'note_no_fichier'				=> 'Aucun fichier',
 'note_no_feed'					=> 'Aucun flux RSS',
@@ -207,6 +211,7 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'bak_import_btjson'				=> 'Importer un fichier <strong>JSON</strong> de données oText',
 'bak_import_netscape'			=> 'Importer un fichier <strong>HTML</strong> de liens.',
 'bak_import_rssopml'			=> 'Importer un fichier <strong>OPML</strong> de flux RSS',
+'bak_import_ctctvcf'			=> 'Importer un fichier <strong>VCF</strong> de contacts',
 'bak_export_json'				=> 'Exporter les articles au format <strong>JSON</strong>',
 'bak_export_netscape'			=> 'Exporter les liens au format <strong>HTML</strong> de Netscape',
 'bak_export_zip'				=> 'Exporter les fichiers du Blog une archive <strong>ZIP</strong>',
@@ -337,6 +342,32 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'label_dl_fichier'				=> 'Également importer le fichier ? ',
 'label_all_comm_by_author'		=> 'Tous les commentaires de cet auteur',
 'label_planned'					=> 'planifié',
+'label_contact'					=> 'contact',
+'label_contacts'				=> 'contacts',
+'label_contacts_all'			=> 'Tous les contacts',
+'label_coordonnees'				=> 'Coordonnées',
+'label_profil'					=> 'Profil',
+
+'label-ctc-title'				=> 'Titre',
+'label-ctc-fullname'			=> 'Nom complet',
+'label-ctc-surname'				=> 'Surnom',
+'label-ctc-label'				=> 'Libelé',
+'label-ctc-email'				=> 'E-mail',
+'label-ctc-phone'				=> 'Téléphone',
+'label-ctc-nr'					=> 'N°',
+'label-ctc-street'				=> 'Rue',
+'label-ctc-complement'			=> 'Complément',
+'label-ctc-cpzip'				=> 'Code Postal',
+'label-ctc-city'				=> 'Ville',
+'label-ctc-state'				=> 'État/Province',
+'label-ctc-country'				=> 'Pays',
+'label-ctc-birthday'			=> 'Anniversaire',
+'label-ctc-link'				=> 'Liens',
+'label-ctc-socialmedia'			=> 'Réseau Social',
+'label-ctc-notes'				=> 'Notes',
+'label-ctc-other'				=> 'Autre',
+
+
 
 // Agenda
 'cemois'						=> 'Ce mois-ci',

@@ -176,23 +176,84 @@ function creer_fichier_xmlnotes() {
 
 
 
+///////////////////////////////////////////////////////////////////////////////////
+//
+// Creates the VCF file for contacts
+//
+
+function creer_fichier_vcfcontacts() {
+	// fetch contacts
+	$query = "SELECT * FROM contacts ORDER BY LOWER(bt_fullname) ASC";
+	$list = liste_elements($query, array(), 'contacts');
+
+	// parse some JSON stored elements
+	foreach ($list as $i => $contact) {
+		$list[$i]['bt_address'] = json_decode($contact['bt_address'], true); // true : to array() instead of object()
+		$list[$i]['bt_phone'] = json_decode($contact['bt_phone']);
+		$list[$i]['bt_email'] = json_decode($contact['bt_email']);
+		$list[$i]['bt_websites'] = json_decode($contact['bt_websites']);
+		$list[$i]['bt_social'] = json_decode($contact['bt_social']);
+	}
+
+	$vcard = '';
+
+	foreach ($list as $i => $contact) {
+		$vcard .= 'BEGIN:VCARD'."\n";
+		$vcard .= 'VERSION:3.0'."\n";
+
+		$vcard .= 'FN:'.$contact['bt_fullname']."\n";
+		$vcard .= ((strpos($contact['bt_fullname'], ' ') !== FALSE) ? 'N:'.implode(';', (explode(' ', $contact['bt_fullname'], 2))) : 'N:;'.$contact['bt_fullname']) . ';;'.$contact['bt_title'].';'."\n";
+
+		if ($contact['bt_surname'])
+		$vcard .= 'NICKNAME:'.$contact['bt_surname']."\n";
+
+		foreach ($contact['bt_phone'] as $tel => $value)
+		$vcard .= 'TEL;TYPE=CELL:'.$value."\n";
+
+		foreach ($contact['bt_email'] as $mail => $value)
+		$vcard .= 'EMAIL;TYPE=INTERNET:'.$value."\n";
+
+		foreach ($contact['bt_websites'] as $url => $value)
+		$vcard .= 'URL:'.$value."\n";
+
+		foreach ($contact['bt_social'] as $link => $value)
+		$vcard .= 'SOCIALPROFILE:'.$value."\n";
+
+		if ($contact['bt_notes'])
+		$vcard .= 'NOTES:'.$contact['bt_notes']."\n";
+
+		if ($contact['bt_birthday'])
+		$vcard .= 'BDAY:'.$contact['bt_birthday']."\n";
+
+		if (implode($contact['bt_address']))
+		$vcard .= 'ADR:'.$contact['bt_address']['nb'].";".$contact['bt_address']['co'].";".$contact['bt_address']['st'].";".$contact['bt_address']['ci'].";".$contact['bt_address']['sa'].";".$contact['bt_address']['cp'].";".$contact['bt_address']['cn']."\n";
+
+		if ($contact['bt_label'])
+		$vcard .= 'X-OLABEL:'.$contact['bt_label']."\n";
+
+		if ($contact['bt_image'])
+		$vcard .= 'PHOTO:'.$contact['bt_image']."\n";
+
+		$vcard .= 'END:VCARD'."\n";
+	}
+
+	$file = 'backup-contacts-'.date('Ymd-His').'.vcf';
+	$filepath = str_replace(realpath($_SERVER['DOCUMENT_ROOT']), '', dirname(__DIR__)).'/'.str_replace(BT_ROOT, '', DIR_BACKUP).$file;
+
+	return (file_put_contents(DIR_BACKUP.$file, $vcard) === FALSE) ? FALSE : $filepath;
+
+}
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/*
+ *
+ *
+ *
+ *
+ *
+ *  I M P O R T     F U N C T I O N S 
+ */
 
 
 /*
@@ -399,7 +460,6 @@ function import_json_file($json) {
 	try {
 		$GLOBALS['db_handle']->beginTransaction();
 
-
 		foreach ($data as $type => $array_type) {
 			// get only items that are not yet in DB (base on bt_identification)
 			$data[$type] = diff_trouve_base($type, $array_type);
@@ -409,10 +469,6 @@ function import_json_file($json) {
 				switch ($type) {
 					case 'articles':
 						foreach($data[$type] as $art) {
-							// if old syntax (< june 2018)
-							/*if (preg_match('#\d{14}#', $art['bt_id'])) {
-								$art['bt_id'] = substr(md5($art['bt_id']), 0, 6);
-							}*/
 							$query = 'INSERT INTO articles ( bt_type, bt_id, bt_date, bt_title, bt_abstract, bt_notes, bt_link, bt_content, bt_wiki_content, bt_tags, bt_keywords, bt_nb_comments, bt_allow_comments, bt_statut ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )';
 							$array = array( $art['bt_type'], $art['bt_id'], $art['bt_date'], $art['bt_title'], $art['bt_abstract'], $art['bt_notes'], $art['bt_link'], $art['bt_content'], $art['bt_wiki_content'], $art['bt_tags'], $art['bt_keywords'], $art['bt_nb_comments'], $art['bt_allow_comments'], $art['bt_statut'] );
 							$req = $GLOBALS['db_handle']->prepare($query);
@@ -451,8 +507,6 @@ function import_json_file($json) {
 
 	return $return;
 }
-
-
 
 // Parse et importe un fichier de liste de flux OPML
 function importer_opml($opml_content) {
@@ -548,6 +602,160 @@ function import_html_links($content) {
 	return count($to_save_links);
 }
 
+// Parse and import VCF contacts
+function importer_vcf($vcf_content) {
+
+	// get existing contacts (names and ID)
+	$query = "SELECT bt_fullname, bt_id FROM contacts";
+	$contacts_in_db = liste_elements($query, array(), 'contacts');
+
+	// rearange
+	foreach ($contacts_in_db as $i => $contact) {
+		$contacts_in_db[$contact['bt_fullname']] = $contact['bt_id'];
+		unset($contacts_in_db[$i]);
+	}
+
+	// ID-only array
+	$id_contacts = array_values($contacts_in_db);
+
+	// begin   //
+	// parsing //
+	$contacts_raw = explode("BEGIN:VCARD", $vcf_content);
+
+	foreach($contacts_raw as $i => $contact) {
+		$contacts_raw[$i] = explode("\n", $contact);
+		foreach ($contacts_raw[$i] as $line => $field) {
+			$contacts_raw[$i][$line] = trim($field);
+			if ($contacts_raw[$i][$line] == "") unset($contacts_raw[$i][$line]);
+			elseif ($contacts_raw[$i][$line] == "VERSION:3.0") unset($contacts_raw[$i][$line]);
+			elseif ($contacts_raw[$i][$line] == "END:VCARD") unset($contacts_raw[$i][$line]);
+		}
+		if (count($contacts_raw[$i]) == 0) unset($contacts_raw[$i]);
+	}
+
+	$contacts_parsed = array();
+	foreach($contacts_raw as $i => $contact) {
+		// create new ID (based on current time), and check if already exists. If it does, decrement is by one.
+		$date_for_id = time();
+		$new_id = date('YmdHis', $date_for_id);
+		while (in_array($new_id, $id_contacts)) { $new_id = date('YmdHis', $date_for_id--); } $id_contacts[] = $new_id;
+
+		$new = array(
+			'fullname' => '',
+			'title' => '',
+			'tel' => array(),
+			'email' => array(),
+			'pseudo' => '',
+			'birthday' => '',
+			'websites' => array(),
+			'notes' => '',
+			'img' => '',
+			'label' => '',
+			'star' => '',
+			'other' => '',
+			'imgIsNew' => FALSE,
+			'social' => array(),
+			'id' => $new_id,
+			'address' => array('nb' => '','st' => '','co' => '','cp' => '','ci' => '','sa' => '','cn' => ''),
+		);
+
+		foreach ($contacts_raw[$i] as $j => $field) {
+			// FN : formated name (required)
+			if (strpos($field, 'FN:') === 0) {
+				preg_match('#^FN:(.*)$#', $field, $matches);
+				$new['fullname'] = $matches[1];
+			}
+			// TITLE : Title
+			elseif (strpos($field, 'TITLE') !== FALSE) {
+				preg_match('#TITLE(.*):(.*)$#', $field, $matches);
+				$new['title'] = $matches[2];
+			}
+			// BDAY : Birthday
+			elseif (strpos($field, 'BDAY') !== FALSE) {
+				preg_match('#BDAY(.*):(.*)$#', $field, $matches);
+				$new['birthday'] = $matches[2];
+			}
+			// NICKNAME : Nickname
+			elseif (strpos($field, 'NICKNAME') !== FALSE) {
+				preg_match('#NICKNAME(.*):(.*)$#', $field, $matches);
+				$new['pseudo'] = $matches[2];
+			}
+			// TEL : phones
+			elseif (strpos($field, 'TEL') === 0) {
+				preg_match('#^TEL(.*):(.*)$#', $field, $matches);
+				$new['tel'][] = str_replace(array(' ', '-', '.', '_'), '', $matches[2]);
+			}
+			// EMAIL : emails
+			elseif (strpos($field, 'EMAIL') !== FALSE) {
+				preg_match('#EMAIL(.*):(.*)$#', $field, $matches);
+				$new['email'][] = $matches[2];
+			}
+			// URL : websites, blogs, url
+			elseif (strpos($field, 'URL') !== FALSE) {
+				preg_match('#URL:(.*)$#', $field, $matches);
+				$new['websites'][] = str_replace('\:', ':', $matches[1]);
+			}
+			// ADR : adress (nb;complement;street;city;state;zip;country)
+			elseif (strpos($field, 'ADR') !== FALSE) {
+				preg_match('#ADR(.*):(.*)$#', $field, $matches);
+				list($new['address']['nb'], $new['address']['co'], $new['address']['st'], $new['address']['ci'], $new['address']['sa'], $new['address']['cp'], $new['address']['cn']) = explode(';', $matches[2]);
+			}
+			// NOTE : some misc info
+			elseif (strpos($field, 'NOTE') !== FALSE) {
+				preg_match('#NOTE:(.*)$#', $field, $matches);
+				$new['note'] = $matches[1];
+			}
+			// PHOTO : some image (uri, base64…) associated with the person
+			elseif (strpos($field, 'PHOTO') !== FALSE) {
+				preg_match('#PHOTO:(.*)$#', $field, $matches);
+				$new['img'] = $matches[1];
+			}
+			// NON STANDARD FIELDS
+			elseif (strpos($field, 'X-') === 0) {
+				// oText Label
+				preg_match('#^X-OLABEL:(.*)$#', $field, $matches);
+				if (isset($matches[1])) {
+					$new['label'] = $matches[1];
+				}
+				else {
+					// X-TWITTER / X-FACEBOOK : some social media accounts 
+					preg_match('#^X-(AIM|ICQ|GTALK|JABBER|MSN|TWITTER|SKYPE|FACEBOOK|SOCIALPROFILE):(.+)$#', $field, $matches);
+					$new['social'][] = str_replace('\:', ':', $matches[2]);
+				}
+			}
+			elseif (strpos($field, 'SOCIALPROFILE') === 0) {
+				preg_match('#^SOCIALPROFILE:(.*)$#', $field, $matches);
+				$new['social'][] = $matches[1];
+			}
+		}
+		// if valid contact (with a name) AND not already existing
+		if (!empty($new['fullname']) and !isset($contacts_in_db[$new['fullname']])) {
+			$new['address'] = json_encode($new['address']);
+			$new['tel'] = json_encode($new['tel']);
+			$new['email'] = json_encode($new['email']);
+			$new['social'] = json_encode($new['social']);
+			$new['websites'] = json_encode($new['websites']);
+			$contacts_parsed[] = $new;
+		}
+	}
+
+	// finally, append them to DB.
+	try {
+		$GLOBALS['db_handle']->beginTransaction();
+
+		foreach ($contacts_parsed as $i => $contact) {
+			$req = $GLOBALS['db_handle']->prepare('INSERT INTO contacts ( bt_id, bt_type, bt_title, bt_fullname, bt_surname, bt_birthday, bt_address, bt_phone, bt_email, bt_websites, bt_social, bt_image, bt_label, bt_notes, bt_stared, bt_other ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+			$req->execute(array($contact['id'], 'person', $contact['title'], $contact['fullname'], $contact['pseudo'], $contact['birthday'], $contact['address'], $contact['tel'], $contact['email'], $contact['websites'], $contact['social'], $contact['img'], $contact['label'], $contact['notes'], $contact['star'], $contact['other']));
+		}
+
+		$GLOBALS['db_handle']->commit();
+
+	} catch (Exception $e) {
+		die('Erreur 8282 on import VCF contacts : '.$e->getMessage());
+	}
+
+	return count($contacts_parsed);
+}
 
 
 
@@ -586,12 +794,10 @@ if (!isset($_GET['do']) and !isset($_FILES['file'])) {
 		echo '<legend class="legend-backup">'.$GLOBALS['lang']['maintenance_export'].'</legend>';
 		echo "\t".'<p><label for="json">'.$GLOBALS['lang']['bak_export_json'].'</label><input type="radio" name="exp-format" value="json" id="json" onchange="switch_export_type(\'e_json\')" /></p>'."\n";
 		echo "\t".'<p><label for="html">'.$GLOBALS['lang']['bak_export_netscape'].'</label><input type="radio" name="exp-format" value="html" id="html" onchange="switch_export_type(\'e_html\')" /></p>'."\n";
-		echo "\t".'<p><label for="opml">'.$GLOBALS['lang']['bak_export_opml'].'</label><input type="radio" name="exp-format" value="opml" id="opml" /></p>'."\n";
-		echo "\t".'<p><label for="xmln">'.$GLOBALS['lang']['bak_export_xmln'].'</label><input type="radio" name="exp-format" value="xmln" id="xmln" /></p>'."\n";
+		echo "\t".'<p><label for="opml">'.$GLOBALS['lang']['bak_export_opml'].'</label><input type="radio" name="exp-format" value="opml" id="opml" onchange="switch_export_type(\'\')" /></p>'."\n";
+		echo "\t".'<p><label for="xmln">'.$GLOBALS['lang']['bak_export_xmln'].'</label><input type="radio" name="exp-format" value="xmln" id="xmln" onchange="switch_export_type(\'\')" /></p>'."\n";
 		echo "\t".'<p><label for="zip">'.$GLOBALS['lang']['bak_export_zip'].'</label><input type="radio" name="exp-format" value="zip" id="zip" onchange="switch_export_type(\'e_zip\')" /></p>'."\n";
-
-
-
+		echo "\t".'<p><label for="vcf">BAK_EXPORT_VCF</label><input type="radio" name="exp-format" value="vcf" id="vcf" onchange="switch_export_type(\'\')" /></p>'."\n";
 		echo '</fieldset>'."\n";
 
 		// export in JSON.
@@ -627,7 +833,8 @@ if (!isset($_GET['do']) and !isset($_FILES['file'])) {
 	$importformats = array(
 		'jsonbak' => $GLOBALS['lang']['bak_import_btjson'],
 		'htmllinks' => $GLOBALS['lang']['bak_import_netscape'],
-		'rssopml' => $GLOBALS['lang']['bak_import_rssopml']
+		'rssopml' => $GLOBALS['lang']['bak_import_rssopml'],
+		'ctctvcf' => $GLOBALS['lang']['bak_import_ctctvcf']
 	);
 	echo '<form action="maintenance.php" method="post" enctype="multipart/form-data" class="bordered-formbloc" id="form_import">'."\n";
 		echo '<fieldset class="pref valid-center">';
@@ -715,6 +922,10 @@ if (!isset($_GET['do']) and !isset($_FILES['file'])) {
 				} elseif (@$_GET['exp-format'] == 'xmln') {
 					$file_archive = creer_fichier_xmlnotes();
 
+				// Export an VCF contact files
+				} elseif (@$_GET['exp-format'] == 'vcf') {
+					$file_archive = creer_fichier_vcfcontacts();
+
 				} else {
 					echo 'nothing to do';
 				}
@@ -783,6 +994,10 @@ if (!isset($_GET['do']) and !isset($_FILES['file'])) {
 					case 'rssopml':
 						$xml = file_get_contents($_FILES['file']['tmp_name']);
 						$message['feeds'] = importer_opml($xml);
+					break;
+					case 'ctctvcf':
+						$vcf = file_get_contents($_FILES['file']['tmp_name']);
+						$message['contacts'] = importer_vcf($vcf);
 					break;
 					default: die('nothing'); break;
 				}

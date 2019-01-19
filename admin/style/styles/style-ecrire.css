@@ -52,6 +52,7 @@
 	background: rgba(0, 0, 0, .1);
 	flex: 0 0 45px;
 	text-align: center;
+	font-family: inherit;
 }
 
 #apercu pre > code,

@@ -6,7 +6,7 @@
 // See "LICENSE" file for info.
 // *** LICENSE ***
 
-require_once 'inc/boot.php';
+require_once '../inc/boot.php';
 
 // Update all RSS feeds using GET (for cron jobs).
 // only test here is on install UID.

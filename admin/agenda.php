@@ -43,11 +43,11 @@ if (!empty($_GET['q'])) {
 	$arr = parse_search($_GET['q']);
 	$sql_where = implode(array_fill(0, count($arr), '( bt_content || bt_title ) LIKE ? '), 'AND '); // AND operator between words
 	$query = "SELECT * FROM agenda WHERE ".$sql_where."ORDER BY bt_date DESC";
-	$tableau = liste_elements($query, $arr, 'agenda');
+	$tableau = liste_elements($query, $arr);
 // no filter, send everything
 } else {
 	$query = "SELECT * FROM agenda ORDER BY bt_date DESC";
-	$tableau = liste_elements($query, array(), 'agenda');
+	$tableau = liste_elements($query, array());
 }
 
 // count total nb of events
@@ -70,29 +70,36 @@ afficher_topnav($GLOBALS['lang']['monagenda'], $html_sub_menu); // #header #top
 echo '<div id="axe">'."\n";
 echo '<div id="subnav">'."\n";
 	echo "\t".'<div class="nombre-elem">';
-	echo "\t\t".ucfirst(nombre_objets($nb_events_displayed, 'event')).' '.$GLOBALS['lang']['sur'].' '.liste_elements_count("SELECT count(*) AS nbr FROM agenda", array(), 'events')."\n";
+	echo "\t\t".ucfirst(nombre_objets($nb_events_displayed, 'event')).' '.$GLOBALS['lang']['sur'].' '.liste_elements_count("SELECT count(*) AS nbr FROM agenda", array())."\n";
 	echo "\t".'</div>'."\n";
 echo '</div>'."\n";
 
 $out_html = '';
 $out_html .= '<div id="page">'."\n";
 $out_html .= "\t".'<div id="popup-wrapper" hidden>'."\n";
+
 $out_html .= "\t\t".'<form class="popup-edit-event" hidden>'."\n";
 $out_html .= "\t\t\t".'<div class="event-title">'."\n";
-$out_html .= "\t\t\t\t".'<button class="submit button-cancel" type="button"></button><button class="submit button-submit" type="submit" name="editer">'.$GLOBALS['lang']['enregistrer'].'</button>'."\n";
+$out_html .= "\t\t\t\t".'<button class="submit button-cancel" type="button"></button>'."\n";
 $out_html .= "\t\t\t\t".'<input type="text" class="text" name="itemTitle" required="" placeholder="'.$GLOBALS['lang']['label_add_title'].'">'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
-$out_html .= "\t\t\t".'<div class="event-content event-content-date">'."\n";
+$out_html .= "\t\t\t".'<div class="event-content">'."\n";
+$out_html .= "\t\t\t".'<div class="event-content-date">'."\n";
 $out_html .= "\t\t\t\t".'<p><input type="checkbox" name="allDay" id="allDay" class="checkbox-toggle"><label for="allDay">'.$GLOBALS['lang']['question_entire_day'].'</label></p>'."\n";
 $out_html .= "\t\t\t\t".'<p><input class="text" type="date" required="" name="date" id="date"><input class="text" type="time" required="" name="time" id="time"></p>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
-$out_html .= "\t\t\t".'<div class="event-content event-content-loc">'."\n";
+$out_html .= "\t\t\t".'<div class="event-content-loc">'."\n";
 $out_html .= "\t\t\t\t".'<input placeholder="'.$GLOBALS['lang']['label_add_location'].'" type="text" class="text" name="loc">'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
-$out_html .= "\t\t\t".'<div class="event-content event-content-descr">'."\n";
+$out_html .= "\t\t\t".'<div class="event-content-descr">'."\n";
 $out_html .= "\t\t\t\t".'<textarea placeholder="'.$GLOBALS['lang']['label_add_description'].'" cols="30" rows="3" class="text" name="descr"></textarea>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
+$out_html .= "\t\t\t".'</div>'."\n";
+$out_html .= "\t\t\t".'<div class="event-footer">'."\n";
+$out_html .= "\t\t\t\t".'<button class="submit button-submit" type="submit" name="editer">'.$GLOBALS['lang']['enregistrer'].'</button>'."\n";
+$out_html .= "\t\t\t".'</div>'."\n";
 $out_html .= "\t\t".'</form>'."\n";
+
 $out_html .= "\t\t".'<div class="popup-event" hidden>'."\n";
 $out_html .= "\t\t\t".'<div class="event-title">'."\n";
 $out_html .= "\t\t\t\t".'<span></span>'."\n";
@@ -112,6 +119,7 @@ $out_html .= "\t\t\t\t\t".'<li class="event-description"></li>'."\n";
 $out_html .= "\t\t\t\t".'</ul>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
 $out_html .= "\t\t".'</div>'."\n";
+
 $out_html .= "\t".'</div>'."\n";
 $out_html .= "\t".'<div id="cal-row">';
 $out_html .= "\t\t".'<div id="calendar">';

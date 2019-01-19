@@ -48,6 +48,9 @@ readfile('style-notes.css');
 /* Agenda page */
 readfile('style-agenda.css');
 
+/* Contacts page */
+readfile('style-contacts.css');
+
 /* Prefs + maintainance pages */
 readfile('style-preferences.css');
 

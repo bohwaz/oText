@@ -58,6 +58,7 @@
 .notebloc .title,
 #popup.popup-note .title {
 	display: flex;
+	position: relative;
 }
 
 .notebloc .title > h2,
@@ -82,13 +83,32 @@
 	flex: 1;
 }
 
-.popup-note > .noteCtrls {
-	padding: 0 5px 5px;
-	display: flex;
+/* popup */
+#popup.popup-note {
+	transition: .3s background-color ease;
 }
 
-.popup-note > .noteCtrls > button,
-.popup-note > .title > button {
+#popup.popup-note[data-ispinned="0"] > .title > .pinnedIcon::before { content: "\e16e"; }
+#popup.popup-note[data-ispinned="1"] > .title > .pinnedIcon::before { content: "\e153"; }
+
+#popup.popup-note > .title > .archiveIcon::before { content: "\e149"; }
+#popup.popup-note > .title > .archiveIcon:hover::before { content: "\e169"; }
+
+#popup.popup-note > .content {
+	background: transparent;
+	border: 0;
+	resize: none;
+}
+
+#popup.popup-note > .noteCtrls {
+	padding: 0 5px 5px;
+	display: flex;
+	flex-wrap: wrap;
+	position: relative;
+}
+
+#popup.popup-note > .noteCtrls > button,
+#popup.popup-note > .title > button {
 	background-color: transparent;
 	border: 1px solid transparent;
 	border-radius: 50%;
@@ -100,27 +120,20 @@
 	transition: opacity .2s ease-in;
 }
 
-.popup-note > .noteCtrls > button:hover,
-.popup-note > .title > button:hover {
+#popup.popup-note > .noteCtrls > button:hover,
+#popup.popup-note > .title > button:hover {
 	background-color: rgba(0, 0, 0, .1);
 }
 
-.popup-note > .noteCtrls > button::before,
-.popup-note > .title > button::before {
+#popup.popup-note > .noteCtrls > button::before,
+#popup.popup-note > .title > button::before {
 	font-size: 1.6em;
 }
 
-.popup-note > .noteCtrls > .colorIcon::before { content: "\e3b7"; }
-.popup-note > .noteCtrls > .supprIcon::before { content: "\e92b"; }
+#popup.popup-note > .noteCtrls > .colorIcon::before { content: "\e3b7"; }
+#popup.popup-note > .noteCtrls > .supprIcon::before { content: "\e92b"; }
 
-.popup-note > .title > .archiveIcon::before { content: "\e149"; }
-.popup-note > .title > .archiveIcon:hover::before { content: "\e169"; }
-
-
-.popup-note[data-ispinned="0"] > .title > .pinnedIcon::before { content: "\e16e"; }
-.popup-note[data-ispinned="1"] > .title > .pinnedIcon::before { content: "\e153"; }
-
-.popup-note > .noteCtrls > .colors {
+#popup.popup-note > .noteCtrls > .colors {
 	display: none;
 	position: absolute;
 	list-style: none;
@@ -136,12 +149,12 @@
 	font-size: 0;
 }
 
-.popup-note > .noteCtrls .colorIcon:focus + .colors,
-.popup-note > .noteCtrls .colors:hover {
+#popup.popup-note > .noteCtrls .colorIcon:focus + .colors,
+#popup.popup-note > .noteCtrls .colors:hover {
 	display: block;
 }
 
-.popup-note > .noteCtrls > .colors > li {
+#popup.popup-note > .noteCtrls > .colors > li {
 	box-sizing: border-box;
 	border: 1px silver solid;
 	cursor: pointer;
@@ -152,56 +165,34 @@
 	margin: 5px 0 0 5px;
 }
 
-.popup-note > .noteCtrls > .colors > li:hover {
+#popup.popup-note > .noteCtrls > .colors > li:hover {
 	opacity: .95;
 	border-color: gray;
 }
 
-.popup-note > .noteCtrls li > button:focus,
-.popup-note > .noteCtrls li > button::-moz-focus-inner {
+#popup.popup-note > .noteCtrls li > button:focus,
+#popup.popup-note > .noteCtrls li > button::-moz-focus-inner {
 	background-color: rgba(0, 0, 0, .05);
 	transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1) 0s;
 	outline: none;
 	border-color: transparent;
 }
 
-/* on popup display */
-#popup.popup-note {
-	min-height: 300px;
-	min-width: 360px;
-	width: 600px;
-	box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.3), 0 0px 12px 0 rgba(0, 0, 0, 0.3);
-	overflow: hidden; /* for rounded corners */
-	padding: 0;
-	max-width: 100%;
-	max-height: 100%;
-	resize: both;
-	display: flex;
-	flex-direction: column;
-	animation:  appearSlow .2s;
-	border-radius: 2px;
-	position: relative;
-	transition: .3s background-color ease;
-}
-
-#popup.popup-note > textarea.content {
-	background: transparent;
-	border: 0;
-	resize: none;
-}
-
-#popup.popup-note > .date {
+#popup.popup-note > .noteCtrls > .date {
 	padding: 0 15px;
 	text-align: right;
 	font-style: italic;
 	font-size: .9em;
 	color: #666;
+	width: 100%;
 }
+
 #popup.popup-note .submit-bttns {
 	padding: 0;
 	margin: 5px 10px;
 	width: auto;
 	flex: 1;
+	max-width: none;
 }
 
 #popup.popup-note .noteCtrls .submit {

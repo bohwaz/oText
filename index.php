@@ -52,7 +52,7 @@ $GLOBALS['db_handle'] = open_base();
 	$id = substr(md5($oldid), 0, 6);
 
  	header("HTTP/1.1 301 Moved Permanently");
-	header('Location: '.get_blogpath($id, substr(array_slice($tab, 5)[0], 3) ));
+	header('Location: '.URL_ROOT.get_blogpath($id, substr(array_slice($tab, 5)[0], 3) ));
 	exit;
 
 
@@ -67,12 +67,12 @@ if (isset($_GET['random'])) {
 			header('Location: '.$_SERVER['SCRIPT_NAME']);
 		}
 		$rand = mt_rand(0, $result[0] - 1);
-		$tableau = liste_elements("SELECT * FROM articles WHERE bt_statut=1  AND bt_date <= ".date('YmdHis')." LIMIT $rand, 1", array(), 'articles');
+		$tableau = liste_elements("SELECT * FROM articles WHERE bt_statut=1  AND bt_date <= ".date('YmdHis')." LIMIT $rand, 1", array());
 	} catch (Exception $e) {
 		die('Erreur rand: '.$e->getMessage());
 	}
 
-	header('Location: '.$tableau[0]['bt_link']);
+	header('Location: '.URL_ROOT.$tableau[0]['bt_link']);
 	exit;
 }
 
@@ -103,10 +103,10 @@ if ( isset($_GET['d']) and ( preg_match('#^\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2}#'
 	// 'admin' connected is allowed to see draft articles, but not 'public'. Same for article posted with a date in the future.
 	if (empty($_SESSION['user_id'])) {
 		$query = "SELECT * FROM articles WHERE bt_id=? AND bt_date <=? AND bt_statut=1 LIMIT 1";
-		$billets = liste_elements($query, array($id, date('YmdHis')), 'articles');
+		$billets = liste_elements($query, array($id, date('YmdHis')));
 	} else {
 		$query = "SELECT * FROM articles WHERE bt_id=? LIMIT 1";
-		$billets = liste_elements($query, array($id), 'articles');
+		$billets = liste_elements($query, array($id));
 	}
 	if ( !empty($billets[0]) ) {
 		// TRAITEMENT new commentaire
@@ -141,7 +141,7 @@ if ( isset($_GET['d']) and ( preg_match('#^\d{4}/\d{2}/\d{2}/\d{2}/\d{2}/\d{2}#'
 
 // single link post
 elseif ( isset($_GET['id']) and preg_match('#\d{14}#', $_GET['id']) ) {
-	$tableau = liste_elements("SELECT * FROM links WHERE bt_id=? AND bt_statut=1", array($_GET['id']), 'links');
+	$tableau = liste_elements("SELECT * FROM links WHERE bt_id=? AND bt_statut=1", array($_GET['id']));
 	afficher_index($tableau, 'list', '');
 }
 
@@ -149,7 +149,7 @@ elseif ( isset($_GET['id']) and preg_match('#\d{14}#', $_GET['id']) ) {
 // List of all articles
 elseif (isset($_GET['liste'])) {
 	$query = "SELECT bt_date,bt_id,bt_title,bt_nb_comments,bt_link FROM articles WHERE bt_date <= ".date('YmdHis')." AND bt_statut=1 ORDER BY bt_date DESC";
-	$tableau = liste_elements($query, array(), 'articles');
+	$tableau = liste_elements($query, array());
 	afficher_liste($tableau);
 }
 
@@ -320,7 +320,7 @@ else {
 	}
 
 	$query .= $glue.$sql_a_p.$sql_order.$sql_p;
-	$tableau = liste_elements($query, $array, $where);
+	$tableau = liste_elements($query, $array);
 	$GLOBALS['param_pagination'] = array('nb' => count($tableau), 'nb_par_page' => $GLOBALS['max_bill_acceuil']);
 	afficher_index($tableau, 'list', '');
 }

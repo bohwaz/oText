@@ -1,0 +1,509 @@
+/* Contacts Page CSS
+------------------------------------------------------------ */
+
+#body.contacts #fab::before {
+	content: "\e7fe";
+}
+
+#table-contacts {
+	width: 100%;
+	border-collapse: collapse;
+	background-color: white;
+	overflow: hidden;
+}
+
+#table-contacts,
+#table-contacts tr,
+#table-contacts td {
+	border: none;
+}
+
+#table-contacts > thead {
+	background-color: #f6f6f6;
+}
+
+#table-contacts tr {
+	border-bottom: 1px solid rgba(0, 0, 0, .05);
+}
+
+#table-contacts > tbody > tr:hover {
+	background-color: rgba(0, 0, 0, .05);
+	transition: background-color .5s;
+}
+
+#table-contacts th {
+	padding: 20px 10px 10px;
+	text-align: left;
+	white-space: nowrap;
+}
+
+#table-contacts td {
+	padding: 10px;
+	max-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	border-radius: 2px;
+}
+
+#table-contacts tr > td.icon {
+	width: 80px;
+	max-width: 80px;
+	cursor: pointer;
+}
+
+#table-contacts tr > td.icon > span {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	display: inline-block;
+	background-size: 40px 40px;
+	box-shadow: 0 0px 3px black inset;
+}
+
+#table-contacts tr > td.name {
+	max-width: 100%;
+	width: 220px;
+	cursor: pointer;
+}
+
+#table-contacts tr > td > a {
+	color: grey;
+	text-decoration: none;
+}
+#table-contacts tr > td > a+a {
+	margin-left: 7px;
+
+}
+
+#table-contacts tr > td > a:hover {
+	text-decoration: underline;
+}
+
+
+#table-contacts tr > td.label,
+#table-contacts tr > th.label {
+	text-align: center;
+}
+
+#table-contacts tr > td.label > span {
+	padding: 1px 10px;
+	background-color: lightblue;
+	border-radius: 10px;
+}
+
+#table-contacts tr > td.buttons {
+	width: 40px;
+	max-width: 40px;
+	position: relative;
+	background-size: 0;
+	opacity: 0;
+}
+#table-contacts tr:hover > td.buttons {
+	opacity: 1;
+}
+
+#table-contacts tr > td.buttons > button {
+	background-color: transparent;
+	border: 0;
+	border-radius: 50%;
+	padding: 0;
+}
+
+#table-contacts tr > td.buttons > button::before {
+	content: '\e3c9';
+	font-size: 1.4em;
+	color: rgba(0, 0, 0, .5);
+	display: block;
+	height: 30px;
+	width: 30px;
+	line-height: 28px;
+}
+
+#table-contacts tr > td.buttons > button:hover {
+	background-color: rgba(0, 0, 0, .1);
+}
+
+#table-contacts tr > td.buttons > button:focus {
+	background-color: rgba(0, 0, 0, .2);
+}
+
+
+
+/* the display-contact popup
+----------------------------------------------- */
+
+#popup.popup-contact {
+	animation:  appearSlow .1s;
+}
+
+#popup.popup-contact > .contact-title {
+	background: #F6F6F6;
+	padding: 15px 80px 25px 15px;
+	position: relative;
+}
+
+#popup.popup-contact > .contact-title .contact-img {
+	vertical-align: middle;
+	margin-right: 5px;
+	box-shadow: 0 0px 3px black inset;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	position: relative;
+	display: inline-block;
+	background-size: 40px 40px;
+
+}
+
+#popup.popup-contact > .contact-title span {
+	vertical-align: middle;
+}
+
+#popup.popup-contact > .contact-title span.contact-name {
+	font-size: 1.3em;
+	letter-spacing: 1px;
+}
+#popup.popup-contact > .contact-title span.contact-label {
+	padding: 1px 10px;
+	background-color: lightblue;
+	border-radius: 10px;
+	margin-left: 10px;
+}
+
+#popup.popup-contact > .contact-title > .item-menu-options {
+	right: 45px;
+	top: 5px;
+}
+
+#popup.popup-contact > .contact-title > .button-cancel,
+#popup.popup-edit-contact > .contact-title > .button-cancel {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	background: transparent;
+	border: 0;
+	min-width: 0;
+	padding: 10px;
+	color: inherit;
+	margin-right: 0;
+	border-radius: 50%;
+}
+
+#popup.popup-contact > .contact-title > .button-cancel:hover,
+#popup.popup-edit-contact > .contact-title > .button-cancel:hover {
+	box-shadow: none;
+	background: rgba(0, 0, 0, .1);
+}
+
+#popup.popup-contact > .contact-title > .button-cancel::before,
+#popup.popup-edit-contact > .contact-title > .button-cancel::before {
+	content: "\e5cd";
+	display: inline-block;
+	font-size: 1.4em;
+}
+
+#popup.popup-contact > .contact-title > .item-menu-options::before,
+#popup.popup-edit-contact > .contact-title > .item-menu-options::before {
+	font-size: 1.4em;
+}
+
+#popup.popup-contact > .contact-title > .button-edit {
+	border: 0;
+	background: transparent;
+	position: absolute;
+	right: 38px;
+	bottom: -17px;
+	z-index: 10;
+}
+
+#popup.popup-contact > .contact-title > .button-edit::before {
+	content: "\e3c9";
+	color: white;
+	color: var(--main-md-text-color);
+	height: 40px;
+	width: 40px;
+	background: var(--md-primary-color);
+	border-radius: 50%;
+	box-shadow: 0px 1px 2px rgba(0, 0, 0, .5);
+	display: inline-block;
+	line-height: 40px;
+	text-align: center;
+}
+
+#popup.popup-contact > .contact-content {
+	padding: 15px;
+	max-width: 900px;
+	overflow-y: scroll;
+}
+
+#popup.popup-contact > .contact-content ul {
+	line-height: 1.4em;
+	list-style-type: none;
+	padding: 10px 0 10px 60px;
+	margin: 0;
+}
+
+#popup.popup-contact > .contact-content ul > li::before {
+	font-size: 1.4em;
+	position: absolute;
+	left: -40px;
+	top: 10px;
+	color: rgba(0, 0, 0, .4)
+}
+
+#popup.popup-contact > .contact-content ul > li {
+	padding: 10px 0;
+	margin: 0;
+	position: relative;
+}
+
+#popup.popup-edit-contact .contact-content .contact-emails::before,
+#popup.popup-contact > .contact-content ul > li.contact-emails::before { content: '\e0be'; }
+#popup.popup-edit-contact .contact-content .contact-phones::before,
+#popup.popup-contact > .contact-content ul > li.contact-phones::before { content: '\e0cd'; }
+#popup.popup-edit-contact .contact-content .contact-address::before,
+#popup.popup-contact > .contact-content ul > li.contact-address::before { content: '\e0c8'; }
+#popup.popup-edit-contact .contact-content .contact-label::before,
+#popup.popup-contact > .contact-content ul > li.contact-label::before { content: '\e892'; }
+#popup.popup-edit-contact .contact-content .contact-birthday::before,
+#popup.popup-contact > .contact-content ul > li.contact-birthday::before { content: '\e7e9'; }
+#popup.popup-edit-contact .contact-content .contact-links::before,
+#popup.popup-contact > .contact-content ul > li.contact-links::before { content: '\e157'; }
+#popup.popup-edit-contact .contact-content .contact-social::before,
+#popup.popup-contact > .contact-content ul > li.contact-social::before { content: '\e8dc'; }
+#popup.popup-edit-contact .contact-content .contact-notes::before,
+#popup.popup-contact > .contact-content ul > li.contact-notes::before { content: '\e06f'; }
+#popup.popup-edit-contact .contact-content .contact-other::before,
+#popup.popup-contact > .contact-content ul > li.contact-other::before { content: '\e88e'; }
+
+
+#popup.popup-contact > .contact-content ul > li > span,
+#popup.popup-contact > .contact-content ul > li > a {
+	display: block;
+	text-decoration: none;
+}
+
+/* scroll shadow effect */
+#popup.popup-contact .contact-title::after,
+#popup.popup-edit-contact .contact-title::after {
+	content: "";
+	display: block;
+	background-color: transparent;
+	height: 5px;
+	width: 100%;
+	position: absolute;
+	bottom: 0px;
+	z-index: 1;
+	box-shadow: 0 3px 3px silver;
+	left: 0;
+}
+
+#popup.popup-contact .contact-content,
+#popup.popup-edit-contact .contact-content {
+	position: relative;
+	z-index: 1;
+}
+
+#popup.popup-contact .contact-content:before,
+#popup.popup-edit-contact .contact-content:before {
+	content: "";
+	display: block;
+	background: linear-gradient(white 50%, transparent);
+	height: 8px;
+	width: 100%;
+	position: absolute;
+	top: 0px;
+	z-index: 0;
+	left: 0;
+}
+
+
+/* the edit-contact popup
+----------------------------------------------- */
+
+#popup.popup-edit-contact .contact-title {
+	position: relative;
+	background: var(--md-primary-color);
+	text-align: right;
+	color: white;
+	color: var(--main-md-text-color);
+	padding: 25px;
+}
+
+#popup.popup-edit-contact .contact-content {
+	padding: 15px;
+	overflow-y: scroll;
+}
+
+#popup.popup-edit-contact .contact-content > .onshowmore {
+	display: none;
+}
+#popup.popup-edit-contact .contact-content.show-more > .onshowmore {
+	display: block;
+}
+
+#popup.popup-edit-contact .contact-content > div {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 5px 0;
+	position: relative;
+}
+
+#popup.popup-edit-contact .contact-content > div::before {
+	font-size: 1.4em;
+	position: absolute;
+	left: 20px;
+	top: 19px;
+	color: rgba(0, 0, 0, .4)
+}
+
+#popup.popup-edit-contact .contact-content > div {
+	padding-left: 55px;
+}
+
+#popup.popup-edit-contact .contact-content label {
+	margin: 0 0 0px;
+	padding: 5px;
+	position: relative;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	overflow: hidden;
+}
+
+#popup.popup-edit-contact .contact-content .text {
+	min-width: 0;
+	padding: 15px 5px 5px 5px;
+	width: 100%;
+	position: relative;
+	z-index: 1;
+	background-color: transparent;
+}
+
+#popup.popup-edit-contact .contact-content label > span {
+	position: absolute;
+	left: 5px;
+	padding: 15px 5px 5px 5px;
+	transition: all 200ms;
+	opacity: 0.5;
+	z-index: 0;
+	font-weight: 300;
+}
+
+#popup.popup-edit-contact .contact-content label > input:not(:placeholder-shown) + span,
+#popup.popup-edit-contact .contact-content label > input:focus + span {
+	transform: scale(.75) translateY(-14px);
+	transform-origin: top left;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+#popup.popup-edit-contact .contact-content label > input:focus + span,
+#popup.popup-edit-contact .contact-content label > input:invalid + span {
+	opacity: 1;
+	color: #000;
+}
+#popup.popup-edit-contact .contact-content label > input:invalid + span {
+	color: red;
+}
+#popup.popup-edit-contact .contact-content label:not(:last-of-type) > button.add {
+	display: none;
+}
+
+#popup.popup-edit-contact .contact-content label:last-of-type > button.rem {
+	visibility: collapse;
+}
+
+#popup.popup-edit-contact .contact-content label > button.rem {
+	visibility: hidden;
+	visibility: collapse;
+	opacity: 0;
+}
+
+#popup.popup-edit-contact .contact-content label:not(:only-of-type):hover > input:not(:placeholder-shown) ~ button.rem,
+#popup.popup-edit-contact .contact-content label:not(:only-of-type):not(:last-of-type):hover > input:placeholder-shown ~ button.rem,
+#popup.popup-edit-contact .contact-content label:not(:only-of-type) > input:not(:placeholder-shown):focus ~ button.rem {
+	visibility: visible;
+	opacity: 1;
+}
+
+#popup.popup-edit-contact .contact-content label > button {
+	background-color: transparent;
+	border: 0;
+	padding: 0;
+	margin: 0 5px 0 15px;
+	transition: opacity .3s;
+}
+
+#popup.popup-edit-contact .contact-content label > button::before {
+	font-size: 1.4em;
+}
+
+#popup.popup-edit-contact .contact-content label > button.add::before {
+	content: "\e148";
+	color: lightgreen;
+}
+#popup.popup-edit-contact .contact-content label > button.rem::before {
+	content: "\e888";
+	color: indianred;
+}
+
+/* avatar */
+#popup.popup-edit-contact .contact-content > div.contact-img-fullname {
+	display: grid;
+	padding-left: 0;
+	grid-template-columns: 55px 1fr 5fr;
+}
+
+#popup.popup-edit-contact .contact-content .contact-img {
+	grid-row: 1;
+	grid-column: 1;
+	box-shadow: 0 0px 3px black inset;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	display: inline-block;
+	background-size: 40px 40px;
+
+}
+
+/* title, first- and lastname */
+#popup.popup-edit-contact .contact-content label[for="contact-title"]     { grid-row: 1; grid-column: 2; }
+#popup.popup-edit-contact .contact-content label[for="contact-firstname"] { grid-row: 1; grid-column: 3; }
+#popup.popup-edit-contact .contact-content label[for="contact-lastname"]  { grid-row: 1; grid-column: 4; }
+/* surname */
+#popup.popup-edit-contact .contact-content .contact-surname > input  { flex: 1; }
+/* email(s) */
+#popup.popup-edit-contact .contact-content .contact-emails::before { content: '\e0be'; }
+#popup.popup-edit-contact .contact-content .contact-emails > input { flex: 1 1 100%; }
+/* phone(s) */
+#popup.popup-edit-contact .contact-content .contact-phones::before { content: '\e0cd'; }
+#popup.popup-edit-contact .contact-content .contact-phones > input { flex: 1 1 100%; }
+/* address */
+#popup.popup-edit-contact .contact-content .contact-address {
+	display: grid;
+	grid-template-columns: repeat(10, 10%);
+}
+#popup.popup-edit-contact .contact-content .contact-address::before { content: '\e0c8'; }
+
+#popup.popup-edit-contact .contact-content label[for="contact-nb"] { grid-row: 1; grid-column: 1 / span 1; }
+#popup.popup-edit-contact .contact-content label[for="contact-st"] { grid-row: 1; grid-column: 2 / span 9; }
+#popup.popup-edit-contact .contact-content label[for="contact-co"] { grid-row: 2; grid-column: 1 / span 10; }
+#popup.popup-edit-contact .contact-content label[for="contact-cp"] { grid-row: 3; grid-column: 1 / span 2; }
+#popup.popup-edit-contact .contact-content label[for="contact-ci"] { grid-row: 3; grid-column: 3 / span 8; }
+#popup.popup-edit-contact .contact-content label[for="contact-sa"] { grid-row: 4; grid-column: 1 / span 3; }
+#popup.popup-edit-contact .contact-content label[for="contact-cn"] { grid-row: 4; grid-column: 4 / span 7; }
+
+#popup.popup-edit-contact .contact-footer {
+	padding: 10px;
+	display: flex;
+	justify-content: space-between;
+}
+
+#popup.popup-edit-contact .contact-footer > .submit {
+	background: white;
+	box-shadow: none;
+	color: #222;
+	font-size: .9em;
+}

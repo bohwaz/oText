@@ -31,14 +31,25 @@ function get_blogpath($id, $titre) {
 
 	if (strlen($id) === 14 and preg_match('#\d{14}#', $id)) {
 		$date = decode_id($id);
+		$path = '?d='.$date['y'].'/'.$date['m'].'/'.$date['d'].'/'.$date['h'].'/'.$date['i'].'/'.$date['s'].'-'.titre_url($titre);
+	}
+	else {
+		$path = '?d='.$id.'--'.trim(diacritique($titre), '-');
+	}
+	return $path;
+}
+
+/*function get_blogpath($id, $titre) {
+
+	if (strlen($id) === 14 and preg_match('#\d{14}#', $id)) {
+		$date = decode_id($id);
 		$path = $GLOBALS['racine'].'?d='.$date['y'].'/'.$date['m'].'/'.$date['d'].'/'.$date['h'].'/'.$date['i'].'/'.$date['s'].'-'.titre_url($titre);
 	}
 	else {
 		$path = $GLOBALS['racine'].'?d='.$id.'--'.trim(diacritique($titre), '-');
 	}
 	return $path;
-}
-
+}*/
 function article_anchor($id) {
 	$anchor = 'id'.substr(md5($id), 0, 6);
 	return $anchor;
@@ -221,13 +232,13 @@ function send_emails($id_comment) {
 
 	// send emails
 	foreach ($to_send_mail as $mail) {
-		$unsublink = get_blogpath($article_id, '').'&amp;unsub=1&amp;mail='.base64_encode($mail).'&amp;article='.$article_id;
+		$unsublink = URL_ROOT.get_blogpath($article_id, '').'&amp;unsub=1&amp;mail='.base64_encode($mail).'&amp;article='.$article_id;
 		$message = '<html>';
 		$message .= '<head><title>'.$subject.'</title></head>';
 		$message .= '<body><p>A new comment by <b>'.$comm_author.'</b> has been posted on <b>'.$article_title.'</b> form '.$GLOBALS['nom_du_site'].'.<br/>';
-		$message .= 'You can see it by following <a href="'.get_blogpath($article_id, '').'#'.article_anchor($id_comment).'">this link</a>.</p>';
-		$message .= '<p>To unsubscribe from the comments on that post, you can follow this link:<br/><a href="'.$unsublink.'">'.$unsublink.'</a>.</p>';
-		$message .= '<p>To unsubscribe from the comments on all the posts, follow this link:<br/> <a href="'.$unsublink.'&amp;all=1">'.$unsublink.'&amp;all=1</a>.</p>';
+		$message .= 'You can see it by following <a href="'.URL_ROOT.get_blogpath($article_id, '').'#'.article_anchor($id_comment).'">this link</a>.</p>';
+		$message .= '<p>To unsubscribe from that post, you can follow this link:<br/><a href="'.$unsublink.'">'.$unsublink.'</a>.</p>';
+		$message .= '<p>To unsubscribe from all the posts, follow this link:<br/> <a href="'.$unsublink.'&amp;all=1">'.$unsublink.'&amp;all=1</a>.</p>';
 		$message .= '<p>Also, do not reply to this email, since it is an automatic generated email.</p><p>Regards</p></body>';
 		$message .= '</html>';
 		mail($mail, $subject, $message, $headers);

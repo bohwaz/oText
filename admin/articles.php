@@ -9,6 +9,36 @@
 require_once 'inc/boot.php';
 operate_session();
 
+
+/*
+
+$query = "SELECT bt_id, bt_link, bt_title FROM articles";
+$req = $GLOBALS['db_handle']->prepare($query);
+$req->execute(array());
+$result = $req->fetch();
+while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
+	$return[] = $row;
+}
+
+//debug($return);
+
+try {
+
+	$GLOBALS['db_handle']->beginTransaction();
+
+	foreach ($return as $i => $art) {
+		$req = $GLOBALS['db_handle']->prepare('UPDATE articles SET bt_link=? WHERE bt_id=?');
+		$req->execute(array(get_blogpath($art['bt_id'], $art['bt_title']), $art['bt_id']));
+	}
+
+	$GLOBALS['db_handle']->commit();
+
+} catch (Exception $e) {
+	return 'Erreur : '.$e->getMessage();
+}
+
+die('done');*/
+
 function afficher_liste_articles($tableau) {
 	$out = '';
 	if (!empty($tableau)) {
@@ -35,7 +65,7 @@ function afficher_liste_articles($tableau) {
 			$out .= "\t\t".'</a>'."\n";
 			$out .= "\t\t".'<a class="date" href="'.basename($_SERVER['SCRIPT_NAME']).'?filtre='.substr($article['bt_date'],0,8).'">'.date_formate($article['bt_date']).', '.heure_formate($article['bt_date']).'</a>'."\n";
 			$out .= "\t\t".'<a class="comments" href="commentaires.php?post_id='.$article['bt_id'].'">'.$article['bt_nb_comments'].'</a>'."\n";
-			$out .= "\t\t".'<a class="preview" href="'.$article['bt_link'].'" title="'.$GLOBALS['lang'][(( $article['bt_statut'] == '1')?'lien_article':'preview')].'"></a>'."\n";
+			$out .= "\t\t".'<a class="preview" href="'.URL_ROOT.$article['bt_link'].'" title="'.$GLOBALS['lang'][(( $article['bt_statut'] == '1')?'lien_article':'preview')].'"></a>'."\n";
 			$out .= "\t".'</li>'."\n";
 			$i++;
 		}
@@ -55,29 +85,28 @@ $tableau = array();
 if ( !empty($_GET['filtre']) ) {
 	if ( preg_match('#^\d{6}(\d{1,8})?$#', $_GET['filtre']) ) {
 		$query = "SELECT * FROM articles WHERE bt_date LIKE ? ORDER BY bt_date DESC";
-		$tableau = liste_elements($query, array($_GET['filtre'].'%'), 'articles');
+		$tableau = liste_elements($query, array($_GET['filtre'].'%'));
 	}
 	elseif ($_GET['filtre'] == 'draft' or $_GET['filtre'] == 'pub') {
 		$query = "SELECT * FROM articles WHERE bt_statut=? ORDER BY bt_date DESC";
-		$tableau = liste_elements($query, array((($_GET['filtre'] == 'draft') ? 0 : 1)), 'articles');
+		$tableau = liste_elements($query, array((($_GET['filtre'] == 'draft') ? 0 : 1)));
 	}
 	elseif (strpos($_GET['filtre'], 'tag.') === 0) {
 		$search = htmlspecialchars(ltrim(strstr($_GET['filtre'], '.'), '.'));
 		$query = "SELECT * FROM articles WHERE bt_tags LIKE ? OR bt_tags LIKE ? OR bt_tags LIKE ? OR bt_tags LIKE ? ORDER BY bt_date DESC";
-
-		$tableau = liste_elements($query, array($search, $search.',%', '%, '.$search, '%, '.$search.', %'), 'articles');
+		$tableau = liste_elements($query, array($search, $search.',%', '%, '.$search, '%, '.$search.', %'));
 	} else {
 		$query = "SELECT * FROM articles ORDER BY bt_date DESC LIMIT 0, ".$GLOBALS['max_bill_admin'];
-		$tableau = liste_elements($query, array(), 'articles');
+		$tableau = liste_elements($query, array());
 	}
 } elseif (!empty($_GET['q'])) {
 	$arr = parse_search($_GET['q']);
 	$sql_where = implode(array_fill(0, count($arr), '( bt_content || bt_title ) LIKE ? '), 'AND ');
 	$query = "SELECT * FROM articles WHERE ".$sql_where."ORDER BY bt_date DESC";
-	$tableau = liste_elements($query, $arr, 'articles');
+	$tableau = liste_elements($query, $arr);
 } else {
 	$query = "SELECT * FROM articles ORDER BY bt_date DESC LIMIT 0, ".$GLOBALS['max_bill_admin'];
-	$tableau = liste_elements($query, array(), 'articles');
+	$tableau = liste_elements($query, array());
 }
 
 
@@ -89,9 +118,9 @@ afficher_topnav($GLOBALS['lang']['mesarticles'], ''); #header
 echo '<div id="axe">'."\n";
 echo '<div id="subnav">'."\n";
 	afficher_form_filtre('articles', (isset($_GET['filtre'])) ? htmlspecialchars($_GET['filtre']) : '');
-	echo '<div class="nombre-elem">'."\n";
-	echo ucfirst(nombre_objets(count($tableau), 'article')).' '.$GLOBALS['lang']['sur'].' '.liste_elements_count("SELECT count(ID) AS nbr FROM articles", array());
-	echo '</div>'."\n";
+	echo "\t".'<div class="nombre-elem">'."\n";
+	echo "\t\t".ucfirst(nombre_objets(count($tableau), 'article')).' '.$GLOBALS['lang']['sur'].' '.liste_elements_count("SELECT count(ID) AS nbr FROM articles", array());
+	echo "\t".'</div>'."\n";
 echo '</div>'."\n";
 
 echo '<div id="page">'."\n";
