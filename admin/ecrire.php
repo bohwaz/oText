@@ -55,8 +55,8 @@ function afficher_form_billet($article, $erreurs) {
 	$html .= '<div class="main-form">'."\n";
 	$html .= '<input id="titre" name="titre" type="text" size="50" value="'.$titredefaut.'" required="" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_titre']).'" tabindex="30" class="text" spellcheck="true" />'."\n" ;
 	$html .= '<div id="chapo_note">'."\n";
-	$html .= '<textarea id="chapo" name="chapo" rows="5" cols="20" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_chapo']).'" tabindex="35" class="text" >'.$chapodefaut.'</textarea>'."\n" ;
-	$html .= '<textarea id="notes" name="notes" rows="5" cols="20" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_notes']).'" tabindex="40" class="text" >'.$notesdefaut.'</textarea>'."\n" ;
+	$html .= "\n".'<textarea id="chapo" name="chapo" rows="5" cols="20" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_chapo']).'" tabindex="35" class="text" >'.$chapodefaut.'</textarea>'."\n" ;
+	$html .= "\n".'<textarea id="notes" name="notes" rows="5" cols="20" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_notes']).'" tabindex="40" class="text" >'.$notesdefaut.'</textarea>'."\n" ;
 	$html .= '</div>'."\n";
 
 	$html .= '<div id="content_format">'."\n";
@@ -78,28 +78,28 @@ function afficher_form_billet($article, $erreurs) {
 	$html .= '</div>';
 
 	$html .= '<div id="date-and-opts">'."\n";
-		$html .= '<div id="datetime">'."\n";
-			$html .= '<span id="formdate"><input class="text" required="" step="1" name="ymd" id="ymd" type="date" value='.$defaut_ymd.' /></span>'."\n";
-			$html .= '<span id="formheure"><input class="text" required="" step="1" name="his" id="his" type="time" value='.$defaut_his.' /></span>'."\n";
-		$html .= '</div>'."\n";
-		$html .= '<div id="opts">'."\n";
-			$html .= '<span id="formstatut">'."\n".form_statut($statutdefaut).'</span>'."\n";
-			$html .= '<span id="formallowcomment">'."\n".form_allow_comment($allowcommentdefaut).'</span>'."\n";
-		$html .= '</div>'."\n";
+	$html .= "\t".'<div id="datetime">'."\n";
+	$html .= "\t\t".'<span id="formdate"><input class="text" required="" step="1" name="ymd" id="ymd" type="date" value='.$defaut_ymd.' /></span>'."\n";
+	$html .= "\t\t".'<span id="formheure"><input class="text" required="" step="1" name="his" id="his" type="time" value='.$defaut_his.' /></span>'."\n";
+	$html .= "\t".'</div>'."\n";
+	$html .= "\t".'<div id="opts">'."\n";
+	$html .= "\t\t".'<span id="formstatut">'."\n".form_statut($statutdefaut).'</span>'."\n";
+	$html .= "\t\t".'<span id="formallowcomment">'."\n".form_allow_comment($allowcommentdefaut).'</span>'."\n";
+	$html .= "\t".'</div>'."\n";
 
-		$html .= '<p class="submit-bttns">'."\n";
-		$html .= "\t".'<button class="submit button-cancel" type="button" onclick="goToUrl(\'articles.php\');">'.$GLOBALS['lang']['annuler'].'</button>'."\n";
-		$html .= "\t".'<button class="submit button-submit" type="submit" name="enregistrer" tabindex="70">'.$GLOBALS['lang']['envoyer'].'</button>'."\n";
-		$html .= '</p>'."\n";
+	$html .= '<p class="submit-bttns">'."\n";
+	$html .= "\t".'<button class="submit button-cancel" type="button" onclick="goToUrl(\'articles.php\');">'.$GLOBALS['lang']['annuler'].'</button>'."\n";
+	$html .= "\t".'<button class="submit button-submit" type="submit" name="enregistrer" tabindex="70">'.$GLOBALS['lang']['envoyer'].'</button>'."\n";
+	$html .= '</p>'."\n";
 
-		$html .= '<p class="submit-bttns">'."\n";
-		if (!empty($article)) {
-			$html .= hidden_input('article_id', $article['bt_id']);
-			$html .= hidden_input('article_date', $article['bt_date']);
-			$html .= hidden_input('ID', $article['ID']);
-			$html .= "\t".'<button class="submit button-delete" type="button" name="supprimer" onclick="rmArticle(this)" />'.$GLOBALS['lang']['supprimer'].'</button>'."\n";
-		}
-		$html .= '</p>'."\n";
+	$html .= "\t".'<p class="submit-bttns">'."\n";
+	if (!empty($article)) {
+		$html .= hidden_input('article_id', $article['bt_id']);
+		$html .= hidden_input('article_date', $article['bt_date']);
+		$html .= hidden_input('ID', $article['ID']);
+		$html .= "\t\t".'<button class="submit button-delete" type="button" name="supprimer" onclick="rmArticle(this)" />'.$GLOBALS['lang']['supprimer'].'</button>'."\n";
+	}
+	$html .= "\t".'</p>'."\n";
 
 
     $html .= '</div>'."\n";
@@ -124,8 +124,6 @@ function apercu($article) {
 }
 
 
-
-
 // TRAITEMENT
 $erreurs_form = array();
 if (isset($_POST['_verif_envoi'])) {
@@ -141,7 +139,7 @@ $post = array();
 if (isset($_GET['post_id'])) {
 	$article_id = htmlspecialchars($_GET['post_id']);
 	$query = "SELECT * FROM articles WHERE bt_id LIKE ?";
-	$posts = liste_elements($query, array($article_id), 'articles');
+	$posts = liste_elements($query, array($article_id));
 	if (isset($posts[0])) $post = $posts[0];
 }
 // recup titre
@@ -160,10 +158,10 @@ afficher_topnav($titre_ecrire_court, ''); #top
 echo '<div id="axe">'."\n";
 if (!empty($post)) {
 	echo '<div id="subnav">'."\n";
-		echo '<div class="nombre-elem">';
-		echo '<a href="'.URL_ROOT.$post['bt_link'].'">'.$GLOBALS['lang']['lien_article'].'</a> &nbsp; – &nbsp; ';
-		echo '<a href="commentaires.php?post_id='.$article_id.'">'.ucfirst(nombre_objets($post['bt_nb_comments'], 'commentaire')).'</a>';
-		echo '</div>'."\n";
+	echo "\t".'<div class="nombre-elem">';
+	echo "\t\t".'<a href="'.URL_ROOT.$post['bt_link'].'">'.$GLOBALS['lang']['lien_article'].'</a> &nbsp; – &nbsp; ';
+	echo "\t\t".'<a href="commentaires.php?post_id='.$article_id.'">'.ucfirst(nombre_objets($post['bt_nb_comments'], 'commentaire')).'</a>';
+	echo "\t".'</div>'."\n";
 	echo '</div>'."\n";
 }
 

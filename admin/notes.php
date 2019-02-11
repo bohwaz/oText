@@ -36,17 +36,25 @@ function send_notes_json($notes, $enclose_in_script_tag) {
 // TRAITEMENT
 $tableau = array();
 // on affiche les notes
-if ( !empty($_GET['filtre']) and preg_match('#^\d{6}(\d{1,8})?$#', $_GET['filtre']) ) { // date
-	$query = "SELECT * FROM notes WHERE bt_id LIKE ? ORDER BY bt_id DESC";
-	$tableau = liste_elements($query, array($_GET['filtre'].'%'), 'notes');
+if ( !empty($_GET['filtre'])) {
+	// par date
+	if (preg_match('#^\d{6}(\d{1,8})?$#', $_GET['filtre'])) {
+		$query = "SELECT * FROM notes WHERE bt_id LIKE ? ORDER BY bt_id DESC";
+		$tableau = liste_elements($query, array($_GET['filtre'].'%'));
+	}
+	// statut (archive / pas archive)
+	elseif ($_GET['filtre'] == 'archived' or $_GET['filtre'] == 'pub') {
+		$query = "SELECT * FROM notes WHERE bt_statut=? ORDER BY bt_id DESC";
+		$tableau = liste_elements($query, array((($_GET['filtre'] == 'archived') ? 0 : 1)));
+	}
 } elseif (!empty($_GET['q'])) { // mot clé
 	$arr = parse_search($_GET['q']);
 	$sql_where = implode(array_fill(0, count($arr), '( bt_content || bt_title ) LIKE ? '), 'AND '); // AND operator between words
 	$query = "SELECT * FROM notes WHERE ".$sql_where."ORDER BY bt_id DESC";
-	$tableau = liste_elements($query, $arr, 'notes');
-} else { // aucun filtre : affiche TOUT
-	$query = "SELECT * FROM notes ORDER BY bt_id";
-	$tableau = liste_elements($query, array(), 'notes');
+	$tableau = liste_elements($query, $arr);
+} else { // aucun filtre
+	$query = "SELECT * FROM notes WHERE bt_statut = 1 ORDER BY bt_id";
+	$tableau = liste_elements($query, array());
 }
 
 // count total nb of notes
@@ -74,14 +82,14 @@ $out_html = '';
 $out_html .= '<div id="page">'."\n";
 
 $out_html .= "\t".'<div id="popup-wrapper" hidden>'."\n";
-$out_html .= "\t\t".'<div id="popup" class="popup-note" style="" data-ispinned="">'."\n";
-$out_html .= "\t\t\t".'<div class="title">'."\n";
+$out_html .= "\t\t".'<div id="popup" class="popup-note" style="" data-ispinned="" data-isarchived="">'."\n";
+$out_html .= "\t\t\t".'<div class="popup-title">'."\n";
 $out_html .= "\t\t\t\t".'<h2 contenteditable="true">Title</h2>'."\n";
-$out_html .= "\t\t\t\t".'<button type="button" class="archiveIcon"></button>'."\n";
-$out_html .= "\t\t\t\t".'<button type="button" class="pinnedIcon"></button>'."\n";
+$out_html .= "\t\t\t\t".'<button type="button" class="archiveIcon" title="'.$GLOBALS['lang']['archiver'].'"></button>'."\n";
+$out_html .= "\t\t\t\t".'<button type="button" class="pinnedIcon" title="'.$GLOBALS['lang']['epingler'].'"></button>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
-$out_html .= "\t\t\t".'<textarea class="content" cols="30" rows="8" placeholder="Content"></textarea>'."\n";
-$out_html .= "\t\t\t".'<div class="noteCtrls">'."\n";
+$out_html .= "\t\t\t".'<textarea class="popup-content" cols="30" rows="8" placeholder="Content"></textarea>'."\n";
+$out_html .= "\t\t\t".'<div class="popup-footer">'."\n";
 $out_html .= "\t\t\t\t".'<div class="date"></div>'."\n";
 $out_html .= "\t\t\t\t".'<button type="button" class="colorIcon"></button>'."\n";
 $out_html .= "\t\t\t\t".'<ul class="colors">'."\n";

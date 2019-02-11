@@ -20,6 +20,8 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'editer' 						=> 'Edit',
 'activer'	 					=> 'Activate',
 'desactiver'	 				=> 'Desactivate',
+'epingler'						=> 'Pin/Unpin',
+'archiver'						=> 'Archive/Unarchive',
 'mesarticles' 					=> 'My articles',
 'mesliens'	 					=> 'My links',
 'mesnotes'	 					=> 'My notes',
@@ -121,6 +123,7 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'prefs_legend_configblog'		=> 'Blog &amp; comments',
 'prefs_legend_configlinx'		=> 'Links',
 'prefs_legend_configrss'		=> 'RSS Feeds',
+'prefs_legend_configagenda'		=> 'Agenda',
 'pref_auteur'					=> 'Author: ',
 'pref_email'					=> 'E-mail address: ',
 'pref_identifiant'				=> 'Login: ',
@@ -158,6 +161,9 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'pref_id_format_ymdhis'			=> 'Date-like: '.date('YmdHis'),
 'pref_id_format_rand6'			=> 'Random string: -ebd68b-',
 'maintenance_optim'				=> 'Cleanup database',
+'pref_agenda_format'			=> 'Default agenda display',
+'pref_agenda_bigmonth'			=> 'Calendar',
+'pref_agenda_tasklist'			=> 'Tasklist',
 
 // placeholders
 'placeholder_nom_fichier'		=> 'name',
@@ -299,12 +305,14 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 // Labels
 'label_date'					=> 'Date',
 'label_titre'					=> 'Title',
+'label_sans_titre'				=> 'No title',
 'label_contenu'					=> 'Content',
 'label_description'				=> 'Description',
 'label_publie'					=> 'Published',
 'label_publies'					=> 'Published',
 'label_invisible'				=> 'Invisible',
 'label_invisibles'				=> 'Invisible',
+'label_note_archived'			=> 'Archived notes',
 'label_note_ajout'				=> 'Add a note',
 'label_feed_ajout'				=> 'Add a feed',
 'label_event_ajout'				=> 'Add an event',
@@ -372,6 +380,7 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'cetteannee'					=> 'This Year',
 'label_all_events'				=> 'All events',
 'label_past_events'				=> 'Past events',
+'label_future_events'			=> 'Future events',
 
 
 ));

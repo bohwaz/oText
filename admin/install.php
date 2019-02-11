@@ -134,7 +134,7 @@ function afficher_form_1($erreurs='') {
 	echo '<div id="install">'."\n";
 	echo '<form method="post" action="install.php">'."\n";
 	echo '<p>';
-	form_langue_install('Choisissez votre langue / Choose your language: ');
+	echo form_select('langue', $GLOBALS['langs'], '', 'Choisissez votre langue / Choose your language: ');
 	echo hidden_input('verif_envoi_1', '1');
 	echo '</p>';
 	echo '<button class="submit button-submit" type="submit" name="enregistrer">Ok</button>'."\n";

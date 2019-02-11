@@ -10,17 +10,15 @@ require_once '../inc/boot.php';
 
 // Update all RSS feeds using GET (for cron jobs).
 // only test here is on install UID.
-if (isset($_GET['refresh_all'], $_GET['guid']) and ($_GET['guid'] == BLOG_UID)) {
-//	if ($_GET['guid'] == BLOG_UID) {
-//		///////////////////////////////////////////////////////////////////////////////////////: THIS NEEDED ? since we have the "require inc/boot.php" hereabove.
-//		$GLOBALS['db_handle'] = open_base();
+if (isset($_GET['refresh_all'], $_GET['guid'])) {
+	if ($_GET['guid'] == BLOG_UID) {
+		$GLOBALS['db_handle'] = open_base();
 		$GLOBALS['liste_flux'] = open_serialzd_file(FEEDS_DB);
-
 		refresh_rss($GLOBALS['liste_flux']);
 		die('Success');
-//	} else {
-//		die('Error');
-//	}
+	} else {
+		die('Error');
+	}
 }
 
 
@@ -75,19 +73,28 @@ if (isset($_POST['add-feed'])) {
 
 	$new_feed = trim($_POST['add-feed']);
 	$new_feed_folder = htmlspecialchars(trim($_POST['add-feed-folder']));
-	$feed_array = retrieve_new_feeds(array($new_feed));
 
-
-	if (!($feed_array[$new_feed]['infos']['type'] == 'ATOM' or $feed_array[$new_feed]['infos']['type'] == 'RSS')) {
-		die('Error: Invalid ressource (not an RSS/ATOM feed)');
+	// try request on new feed
+	if (!$feeds = request_external_files(array($new_feed => hash('md5', $new_feed)), 25, true)) {
+		die('Error : External request failed.');
 	}
 
+	// try parsing content
+	$items = feed2array($feeds[hash('md5', $new_feed)]['body']);
+	if ($items === FALSE or !isset($items['infos'])) {
+		die('Error : invalid ressourse (XML parsing error).');
+	}
+	if (!in_array($items['infos']['type'], array('ATOM', 'RSS'))) {
+		die('Error: not an RSS/ATOM feed.');
+	}
+
+
 	// adding to serialized-db
-	$GLOBALS['liste_flux'][$new_feed] = array(
+	$GLOBALS['liste_flux'][hash('md5', $new_feed)] = array(
 		'link' => $new_feed,
-		'title' => ucfirst($feed_array[$new_feed]['infos']['title']),
+		'title' => ucfirst($items['infos']['title']),
 		'checksum' => '42',
-		'time' => '1',
+		'time' => '1970101000000',
 		'folder' => $new_feed_folder,
 		'nbrun' => '0'
 	);
@@ -97,14 +104,18 @@ if (isset($_POST['add-feed'])) {
 
 	// recount unread elements (they are put in that array for caching ans performance purpose).
 	$feeds_nb = rss_count_feed();
-	foreach ($feeds_nb as $i => $feed) {
-		$GLOBALS['liste_flux'][$feed['bt_feed']]['nbrun'] = (isset($feed['nbrun'])) ? $feed['nbrun'] : 0;
+	foreach ($GLOBALS['liste_flux'] as $hash => $item) {
+		$GLOBALS['liste_flux'][$hash]['nbrun'] = 0;
+		if (isset($feeds_nb[$hash])) {
+			$GLOBALS['liste_flux'][$hash]['nbrun'] = $feeds_nb[$hash];
+		}
 	}
+
 	// save to file
 	file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' */');
 
 	// Update DB
-	refresh_rss(array($new_feed => $GLOBALS['liste_flux'][$new_feed]));
+	refresh_rss(array($new_feed => $GLOBALS['liste_flux'][hash('md5', $new_feed)]));
 	die('Success');
 }
 
@@ -123,15 +134,9 @@ if (isset($_POST['mark-as-read'])) {
 
 	elseif ($what == 'site' and !empty($_POST['mark-as-read-data'])) {
 		$feedhash = $_POST['mark-as-read-data'];
-		$feedurl = "";
-		foreach ($GLOBALS['liste_flux'] as $i => $flux) {
-			if ($feedhash == crc32($i)) {
-				$feedurl = $i;
-				break;
-		}	}
 
 		$query = 'UPDATE rss SET bt_statut=0 WHERE bt_feed=?';
-		$array = array($feedurl);
+		$array = array($feedhash);
 	}
 
 	elseif ($what == 'post' and !empty($_POST['mark-as-read-data'])) {
@@ -156,19 +161,23 @@ if (isset($_POST['mark-as-read'])) {
 	try {
 		$req = $GLOBALS['db_handle']->prepare($query);
 		$req->execute($array);
-		// recount unread elements (they are put in that array for caching ans performance purpose).
-		$feeds_nb = rss_count_feed();
-		foreach ($feeds_nb as $i => $feed) {
-			$GLOBALS['liste_flux'][$feed['bt_feed']]['nbrun'] = (isset($feed['nbrun'])) ? $feed['nbrun'] : 0;
-		}
-		// save to file
-		file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' */');
-
-
-		die('Success');
 	} catch (Exception $e) {
 		die('Error : Rss mark as read: '.$e->getMessage());
 	}
+
+	// recount unread elements (they are put in that array for caching ans performance purpose).
+	$feeds_nb = rss_count_feed();
+	foreach ($GLOBALS['liste_flux'] as $hash => $item) {
+		$GLOBALS['liste_flux'][$hash]['nbrun'] = 0;
+		if (isset($feeds_nb[$hash])) {
+			$GLOBALS['liste_flux'][$hash]['nbrun'] = $feeds_nb[$hash];
+		}
+	}
+
+	// save to file
+	file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' *'.'/');
+
+	die('Success');
 }
 
 // mark some elements as fav
@@ -211,19 +220,18 @@ if (isset($_POST['edit-feed-list'])) {
 					case 'delete':
 						// rm posts from that feed
 						$req = $GLOBALS['db_handle']->prepare('DELETE FROM rss WHERE bt_feed = ?');
-						$req->execute(array($feed['link']));
+						$req->execute(array($i));
 						// rm feed from feed list $GLOBALS['liste_flux']
 						unset($GLOBALS['liste_flux'][$i]);
 						break;
 
 					case 'edited':
 						// update feed in $GLOBALS['liste_flux']
-						unset($GLOBALS['liste_flux'][$i]);
-						$feed['link'] = $posted_feeds[$feed['checksum']]['link'];
-						$feed['title'] = $posted_feeds[$feed['checksum']]['title'];
-						$feed['folder'] = $posted_feeds[$feed['checksum']]['folder'];
+						//unset($GLOBALS['liste_flux'][$i]);
+						$GLOBALS['liste_flux'][$i]['link'] = $posted_feeds[$feed['checksum']]['link'];
+						$GLOBALS['liste_flux'][$i]['title'] = $posted_feeds[$feed['checksum']]['title'];
+						$GLOBALS['liste_flux'][$i]['folder'] = $posted_feeds[$feed['checksum']]['folder'];
 
-						$GLOBALS['liste_flux'][$feed['link']] = $feed;
 						break;
 				}
 			}
@@ -233,7 +241,7 @@ if (isset($_POST['edit-feed-list'])) {
 
 		// commit to feed list FILE
 		$GLOBALS['liste_flux'] = array_reverse(tri_selon_sous_cle($GLOBALS['liste_flux'], 'title'));
-		file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' */');
+		file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' *'.'/');
 
 
 		die('Success');

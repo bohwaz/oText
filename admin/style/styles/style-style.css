@@ -64,42 +64,47 @@
 }
 
 #body.articles { /* red */
-	--md-primary-color: #D32F2F;
+	--md-primary-color: #CA2825;
+	--main-md-text-color: #f5f5f5;
+}
+
+#body.ecrire { /* dark blue */
+	--md-primary-color: #20639B;
 	--main-md-text-color: #f5f5f5;
 }
 
 #body.comments { /* light orange */
-	--md-primary-color: #FFA726;
+	--md-primary-color: #ED553B;
 	--main-md-text-color: #fff;
 }
 
 #body.feeds { /* orange */
-	--md-primary-color: #EF6C00;
+	--md-primary-color: #FF8A00;
 	--main-md-text-color: #111;
 }
 
 #body.notes { /* light green */
-	--md-primary-color: #AEEA00;
+	--md-primary-color: #FFCE00;
 	--main-md-text-color: #000;
 }
 
 #body.files { /* dark blue */
-	--md-primary-color: #303F9F;
+	--md-primary-color: #7C49B2;
 	--main-md-text-color: #fff;
 }
 
 #body.links { /* light-blue */
-	--md-primary-color: #1E88E5;
-	--main-md-text-color: #fff;
+	--md-primary-color: #00C2FF;
+	--main-md-text-color: #000;
 }
 
 #body.agenda { /* teal */
-	--md-primary-color: #6DFFC4;
+	--md-primary-color: #37E8A0;
 	--main-md-text-color: #000;
 }
 
 #body.contacts { /* skyblue */
-	--md-primary-color: #77C6FF;
+	--md-primary-color: #49DDFF;
 	--main-md-text-color: #000;
 }
 
@@ -213,8 +218,9 @@ html {
 
 body {
 	position: relative;
-	min-height: calc( 100% - 100px);
-	padding-bottom: 100px;
+	/*min-height: calc( 100% - 100px);
+	padding-bottom: 100px;*/
+	min-height: 100%;
 }
 
 body.noscroll {
@@ -336,7 +342,7 @@ q, blockquote {
 	margin: auto;
 	text-align: center;
 	font-weight: bold;
-	z-index: 50;
+	z-index: 150;
 	box-shadow: 0px 2px 24px 0px rgba(0, 0, 0, 0.2);
 	animation: popup-disapear 7s;
 	animation-fill-mode: forwards;
@@ -749,6 +755,25 @@ q, blockquote {
 	vertical-align: middle;
 }
 
+
+#sub-menu #hide-side-nav {
+	padding: 6px;
+	background-color: transparent;
+	border: none;
+	border-radius: 50%;
+	color: rgba(0, 0, 0, .7);
+}
+
+#sub-menu #hide-side-nav:focus {
+	background-color: rgba(0, 0, 0, .1);
+}
+
+#sub-menu #hide-side-nav:before {
+	content: "\e5d2";
+	font-size: 1.7em;
+	cursor: pointer;
+}
+
 .sub-menu-buttons {
 	flex: 1 0 auto;
 	text-align: right;
@@ -1149,7 +1174,7 @@ fieldset {
 	animation: fade-in .2s;
 }
 
-#popup-wrapper > #popup {
+#popup {
 	display: flex;
 	flex-direction: column;
 	min-height: 350px;
@@ -1162,6 +1187,96 @@ fieldset {
 	border-radius: 2px;
 	resize: both;
 	max-height: calc(100% - 10px);
+	animation:  appearSlow .1s;
+	border-radius: 4px;
+}
+
+#popup > .popup-title {
+	background: #F6F6F6;
+	padding: 15px 80px 15px 15px;
+	position: relative;
+	display: flex;
+	align-items: center;
+	min-height: 20px;
+}
+
+#popup > .popup-title::after {
+	content: "";
+	display: block;
+	background: transparent;
+	height: 5px;
+	width: 100%;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	z-index: 1;
+	box-shadow: 0 3px 3px rgba(0, 0, 0, .3);
+}
+
+#popup > .popup-title > .item-menu-options {
+	right: 45px;
+	top: 5px;
+}
+
+#popup > .popup-title > .button-cancel {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	background: transparent;
+	border: 0;
+	min-width: 0;
+	padding: 10px;
+	color: inherit;
+	margin-right: 0;
+	border-radius: 50%;
+}
+
+#popup > .popup-title > .button-cancel:hover {
+	box-shadow: none;
+	background: rgba(0, 0, 0, .1);
+}
+
+#popup > .popup-title > .button-cancel::before {
+	content: "\e5cd";
+	display: inline-block;
+	font-size: 1.4em;
+}
+
+#popup > .popup-title > .item-menu-options::before {
+	font-size: 1.4em;
+}
+
+#popup > .popup-content {
+	padding: 15px;
+	overflow-y: scroll;
+	position: relative;
+	flex: 1;
+}
+
+#popup > .popup-content::before {
+	content: "";
+	display: block;
+	background: linear-gradient(white 50%, transparent);
+	height: 8px;
+	width: 100%;
+	position: absolute;
+	top: 0px;
+	z-index: 1;
+	left: 0;
+}
+
+#popup .popup-footer {
+	padding: 10px;
+	text-align: right;
+	display: flex;
+	justify-content: space-between;
+}
+
+#popup .popup-footer .submit {
+	background: white;
+	box-shadow: none;
+	color: #222;
+	font-size: .9em;
 }
 
 /* Page maintenance.
@@ -1185,7 +1300,8 @@ fieldset {
 #post-nv-commentaire, .comm-main-frame,
 #rss-feed, #feed-list, #post-list,
 .notebloc, #post-new-note,
-#calendar, #events-section, #popup, #daily-events,
+#calendar-table, #events-section,
+#daily-events, #side-nav,
 #table-contacts
  {
 	padding: 15px;

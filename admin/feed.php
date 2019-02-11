@@ -11,7 +11,75 @@ operate_session();
 setcookie('lastAccessRss', time(), time()+365*24*60*60, null, null, false, true);
 $GLOBALS['liste_flux'] = open_serialzd_file(FEEDS_DB);
 
+/*
+foreach ($GLOBALS['liste_flux'] as $i => $url) {
+	if (empty(trim($i))) {
+		unset($GLOBALS['liste_flux'][$i]);
+	}
+	if (empty(trim($url['link']))) {
+		unset($GLOBALS['liste_flux'][$i]);
+	}
+
+	$newfeeds[hash('md5', $url['link'])] = $url;
+
+}
+
+$GLOBALS['liste_flux'] = $newfeeds;
+
+file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' *'.'/');
+
+
+
+
+
+debug($GLOBALS['liste_flux']);
+*/
+/*
+try {
+
+
+	$query = "SELECT bt_feed FROM rss GROUP BY bt_feed";
+	$result = $GLOBALS['db_handle']->query($query)->fetchAll(PDO::FETCH_ASSOC);
+
+
+	$GLOBALS['db_handle']->beginTransaction();
+
+	foreach ($result as $i => $value) {
+		// grep the link
+		foreach ($GLOBALS['liste_flux'] as $j => $url) {
+			if (crc32($url['link']) == $value['bt_feed']) {
+
+				$query = 'UPDATE rss SET bt_feed = ? WHERE bt_feed = ?';
+				$array = array(hash('md5', $url['link']), $value['bt_feed']);
+
+				$req = $GLOBALS['db_handle']->prepare($query);
+				$req->execute($array);
+			}
+		}
+
+	}
+
+
+	// commit to DB
+	$GLOBALS['db_handle']->commit();
+
+	// commit to feed list FILE
+	$GLOBALS['liste_flux'] = array_reverse(tri_selon_sous_cle($GLOBALS['liste_flux'], 'title'));
+	file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' *'.'/');
+
+
+	die('Success');
+} catch (Exception $e) {
+	die('SQL Feeds-update Error: '.$e->getMessage());
+}
+
+
+*/
+
+
+
 //debug($GLOBALS['liste_flux']);
+
 
 /* Returns the HTML list with the feeds (the left panel with the sites, not the posts themselves) */
 function feed_list_html() {
@@ -27,17 +95,17 @@ function feed_list_html() {
 	// sort feeds by folder
 	$folders = array();
 	foreach ($GLOBALS['liste_flux'] as $i => $feed) {
-		$folders[$feed['folder']][] = $feed;
+		$folders[$feed['folder']][$i] = $feed;
 	}
 	krsort($folders);
-	
+
 	// creates html : lists RSS feeds without folder separately from feeds with a folder
 	foreach ($folders as $i => $folder) {
 		$li_html = "";
 		$folder_count = 0;
 		foreach ($folder as $j => $feed) {
 			$t = ($i != '') ? "\t\t" : "";
-			$li_html .= $t."\t\t".'<li class="feed-site'.(($feed['iserror'] != '0' ) ? ' feed-error': '' ).'" data-nbrun="'.$feed['nbrun'].'" data-feed-hash="'.crc32($feed['link']).'" style="background-image: url('.URL_ROOT.'favatar.php?w=favicon&amp;q='.parse_url($feed['link'], PHP_URL_HOST).')">'.htmlspecialchars($feed['title']).'</li>'."\n";
+			$li_html .= $t."\t\t".'<li class="feed-site'.(($feed['iserror'] != '0' ) ? ' feed-error': '' ).'" data-nbrun="'.$feed['nbrun'].'" data-feed-hash="'.$j.'" style="background-image: url('.URL_ROOT.'favatar.php?w=favicon&amp;q='.parse_url($feed['link'], PHP_URL_HOST).')">'.htmlspecialchars($feed['title']).'</li>'."\n";
 			$folder_count += $feed['nbrun'];
 		}
 
@@ -117,9 +185,9 @@ if (!empty($_GET['q'])) {
 	$sql_where = implode(array_fill(0, count($arr), '( bt_content || bt_title ) LIKE ? '), 'AND '); // AND operator between words
 	$query = "SELECT * FROM rss WHERE ".$sql_where.$sql_where_status."ORDER BY bt_date DESC";
 	//debug($query);
-	$tableau = liste_elements($query, $arr, 'rss');
+	$tableau = liste_elements($query, $arr);
 } else {
-	$tableau = liste_elements('SELECT * FROM rss WHERE bt_statut=1 OR bt_bookmarked=1 ORDER BY bt_date DESC', array(), 'rss');
+	$tableau = liste_elements('SELECT * FROM rss WHERE bt_statut=1 OR bt_bookmarked=1 ORDER BY bt_date DESC', array());
 }
 
 
@@ -127,7 +195,7 @@ $html_sub_menu = '';
 $html_sub_menu .= "\t".'<div id="sub-menu">'."\n";
 
 if (!isset($_GET['config'])) {
-	$html_sub_menu .= "\t\t".'<button id="hide-feed-list"></button>'."\n";
+	$html_sub_menu .= "\t\t".'<button id="hide-side-nav"></button>'."\n";
 }
 $html_sub_menu .= "\t\t".'<span id="counter-wraper">'."\n";
 $html_sub_menu .= "\t\t\t".'<span id="count-posts"><span id="counter"></span></span>'."\n";

@@ -98,13 +98,32 @@ function afficher_form_prefs($erreurs = '') {
 		$fld_dateheure .= '<div class="form-legend"><legend class="legend-dateheure">'.$GLOBALS['lang']['prefs_legend_langdateheure'].'</legend></div>'."\n";
 		$fld_dateheure .= '<div class="form-lines">'."\n";
 		$fld_dateheure .= '<p>'."\n";
-		$fld_dateheure .= form_langue($GLOBALS['lang']['id']);
+		$fld_dateheure .= form_select('langue', $GLOBALS['langs'], $GLOBALS['lang']['id'], $GLOBALS['lang']['pref_langue']);
 		$fld_dateheure .= '</p>'."\n";
 		$fld_dateheure .= '<p>'."\n";
-		$fld_dateheure .= form_format_date($GLOBALS['format_date']);
+		$jour_l = jour_en_lettres(date('d'), date('m'), date('Y'));
+		$mois_l = mois_en_lettres(date('m'));
+		$opts = array (
+			'0' => date('d/m/Y'),                                     // 05/07/2011
+			'1' => date('m/d/Y'),                                     // 07/05/2011
+			'2' => date('d').' '.$mois_l.' '.date('Y'),               // 05 juillet 2011
+			'3' => $jour_l.' '.date('d').' '.$mois_l.' '.date('Y'),   // mardi 05 juillet 2011
+			'4' => $jour_l.' '.date('d').' '.$mois_l,                 // mardi 05 juillet
+			'5' => $mois_l.' '.date('d').', '.date('Y'),              // juillet 05, 2011
+			'6' => $jour_l.', '.$mois_l.' '.date('d').', '.date('Y'), // mardi, juillet 05, 2011
+			'7' => date('Y-m-d'),                                     // 2011-07-05
+			'8' => substr($jour_l,0,3).'. '.date('d').' '.$mois_l,    // ven. 14 janvier
+		);
+		$fld_dateheure .= form_select('format_date', $opts, $GLOBALS['format_date'], $GLOBALS['lang']['pref_format_date']);
 		$fld_dateheure .= '</p>'."\n";
 		$fld_dateheure .= '<p>'."\n";
-		$fld_dateheure .= form_format_heure($GLOBALS['format_heure']);
+		$opts = array (
+			'0' => date('H\:i\:s'),   // 23:56:04
+			'1' => date('H\:i'),      // 23:56
+			'2' => date('h\:i\:s A'), // 11:56:04 PM
+			'3' => date('h\:i A'),    // 11:56 PM
+		);
+		$fld_dateheure .= form_select('format_heure', $opts, $GLOBALS['format_heure'], $GLOBALS['lang']['pref_format_heure']);
 		$fld_dateheure .= '</p>'."\n";
 		$fld_dateheure .= '<p>'."\n";
 		$fld_dateheure .= form_fuseau_horaire($GLOBALS['fuseau_horaire']);
@@ -186,6 +205,23 @@ function afficher_form_prefs($erreurs = '') {
 		$fld_cfg_rss .= $submit_box;
 		$fld_cfg_rss .= '</div>';
 	echo $fld_cfg_rss;
+
+		$fld_cfg_agenda = '<div role="group" class="pref">';
+		$fld_cfg_agenda .= '<div class="form-legend"><legend class="legend-agenda">'.$GLOBALS['lang']['prefs_legend_configagenda'].'</legend></div>'."\n";
+		$fld_cfg_agenda .= '<div class="form-lines">'."\n";
+		$fld_cfg_agenda .= '<p>'."\n";
+		$nbs = array('eventCalendar'=> $GLOBALS['lang']['pref_agenda_taskcalendar'], 'eventlist'=> $GLOBALS['lang']['pref_agenda_tasklist']);
+		$fld_cfg_agenda .= '<p>'."\n";
+		$fld_cfg_agenda .= form_select('default_agenda_display', $nbs, $GLOBALS['agenda_display'], $GLOBALS['lang']['pref_agenda_format']);
+		$fld_cfg_agenda .= '</p>'."\n";
+		$fld_cfg_agenda .= '</p>'."\n";
+		$fld_cfg_agenda .= '<p>'."\n";
+		$fld_cfg_agenda .= '</p>'."\n";
+		$fld_cfg_agenda .= '</div>'."\n";
+		$fld_cfg_agenda .= $submit_box;
+		$fld_cfg_agenda .= '</div>';
+	echo $fld_cfg_agenda;
+
 
 		$fld_maintenance = '<div role="group" class="pref">';
 		$fld_maintenance .= '<div class="form-legend"><legend class="legend-sweep">'.$GLOBALS['lang']['titre_maintenance'].'</legend></div>'."\n";

@@ -12,6 +12,17 @@ if (document.getElementById('jsonLang')) {
 	var BTlang = JSON.parse(document.getElementById('jsonLang').textContent);
 }
 
+// mobile test, based on computed CSS
+function isMobile() {
+	var domEl = document.getElementById('top');
+	var style = window.getComputedStyle(domEl, null).paddingLeft;
+
+	if (style === '8px') {
+		return true;
+	}
+	return false;
+}
+
 // simple FNV hash from string (8char long)
 function hashFnv32a(str) {
 	var i, l, hval = 0x811c9dc5;
@@ -1088,7 +1099,7 @@ function RssReader() {
 	this.openAllButton.addEventListener('click', function(){ _this.openAll(); });
 
 	// init the « hide feed-list » button
-	document.getElementById('hide-feed-list').addEventListener('click', function(){ _this.hideFeedList(); });
+	document.getElementById('hide-side-nav').addEventListener('click', function(){ _this.hideFeedList(); });
 
 	// init the « mark as read » button.
 	document.getElementById('markasread').addEventListener('click', function(){ _this.markAsRead(); });
@@ -1168,7 +1179,7 @@ function RssReader() {
 			li.querySelector('.post-head > .lien-fav').addEventListener('click', function(e){ _this.markAsFav(this); e.preventDefault(); } );
 			li.querySelector('.post-head > .site').textContent = item.sitename;
 			if (item.folder) { li.querySelector('.post-head > .folder').textContent = item.folder; }
-			else { li.querySelector('.post-head > .folder').parentNode.removeChild(li.querySelector('.folder')); }
+			else { li.querySelector('.post-head').removeChild(li.querySelector('.folder')); }
 			li.querySelector('.post-head > .post-title').href = item.link;
 			li.querySelector('.post-head > .post-title').title = item.title;
 			li.querySelector('.post-head > .post-title').setAttribute('data-id', li.id);
@@ -1424,7 +1435,7 @@ function RssReader() {
 			markWhat.dataset.nbrun = 0;
 
 			// mark 0 for the sites in that folder
-			var sitesInFolder = this.feedsList.querySelectorAll('li[data-feed-folder=' + folder + ']');
+			var sitesInFolder = this.feedsList.querySelectorAll('li[data-feed-folder="' + folder + '"]');
 			for (var i = 0, len = sitesInFolder.length ; i < len ; i++) {
 				sitesInFolder[i].dataset.nbrun = 0;
 			}
@@ -2097,6 +2108,7 @@ function NoteBlock() {
 			div.id = 'i_' + item.id;
 			div.dataset.updateAction = item.action;
 			div.dataset.ispinned = item.ispinned;
+			div.dataset.isarchived = item.isstatut;
 			div.style.backgroundColor = item.color;
 			div.dataset.indexId = i;
 			div.querySelector('.title > h2').textContent = item.title;
@@ -2166,24 +2178,28 @@ function NoteBlock() {
 
 		popupWrapper.querySelector('#popup').style.backgroundColor = item.color;
 		popupWrapper.querySelector('#popup').dataset.ispinned = item.ispinned;
-		popupWrapper.querySelector('#popup > .title > h2').textContent = item.title;
-		popupWrapper.querySelector('#popup > .title > .pinnedIcon').addEventListener('click', function(e) {
+		popupWrapper.querySelector('#popup').dataset.isarchived = item.isstatut;
+		popupWrapper.querySelector('#popup > .popup-title > h2').textContent = item.title;
+		popupWrapper.querySelector('#popup > .popup-title > .pinnedIcon').addEventListener('click', function(e) {
 			popupWrapper.querySelector('#popup').dataset.ispinned = Math.abs(popupWrapper.querySelector('#popup').dataset.ispinned -1);
 		});
-		popupWrapper.querySelector('#popup > .content').value = item.content;
-		popupWrapper.querySelector('#popup > .noteCtrls > .date').textContent = Date.dateFromYMDHIS(item.id).toLocaleDateString('fr', {weekday: "long", month: "long", year: "numeric", day: "numeric"});
-		popupWrapper.querySelector('#popup > .noteCtrls > .colors').addEventListener('click', function(e) {
+		popupWrapper.querySelector('#popup > .popup-title > .archiveIcon').addEventListener('click', function(e) {
+			popupWrapper.querySelector('#popup').dataset.isarchived = Math.abs(popupWrapper.querySelector('#popup').dataset.isarchived -1);
+		});
+		popupWrapper.querySelector('#popup > .popup-content').value = item.content;
+		popupWrapper.querySelector('#popup > .popup-footer > .date').textContent = Date.dateFromYMDHIS(item.id).toLocaleDateString('fr', {weekday: "long", month: "long", year: "numeric", day: "numeric"});
+		popupWrapper.querySelector('#popup > .popup-footer > .colors').addEventListener('click', function(e) {
 			if (e.target.tagName == 'LI') _this.changeColor(item, e);
 		});
-		popupWrapper.querySelector('#popup > .noteCtrls > .supprIcon').addEventListener('click', function(e) {
+		popupWrapper.querySelector('#popup > .popup-footer > .supprIcon').addEventListener('click', function(e) {
 			_this.markAsDeleted(item);
 		});
-		popupWrapper.querySelector('#popup > .noteCtrls > .submit-bttns > .button-cancel').addEventListener('click', function(e) {
+		popupWrapper.querySelector('#popup > .popup-footer > .submit-bttns > .button-cancel').addEventListener('click', function(e) {
 			popupWrapper.parentNode.removeChild(popupWrapper);
 			document.body.classList.remove('noscroll');
 			if (noteNode) noteNode.style.opacity = null;
 		});
-		popupWrapper.querySelector('#popup > .noteCtrls > .submit-bttns > .button-submit').addEventListener('click', function(e) {
+		popupWrapper.querySelector('#popup > .popup-footer > .submit-bttns > .button-submit').addEventListener('click', function(e) {
 			_this.markAsEdited(item);
 			popupWrapper.parentNode.removeChild(popupWrapper);
 			document.body.classList.remove('noscroll');
@@ -2193,7 +2209,7 @@ function NoteBlock() {
 		// add to page
 		this.domPage.appendChild(popupWrapper);
 
-		popupWrapper.querySelector('#popup > .content').focus();
+		popupWrapper.querySelector('#popup > .popup-content').focus();
 	}
 
 
@@ -2212,10 +2228,19 @@ function NoteBlock() {
 			}
 		}
 
-		item.content = popup.querySelector('.content').value;
-		item.title = popup.querySelector('h2').textContent;
+		item.content = popup.querySelector('.popup-content').value;
+		item.title = popup.querySelector('.popup-title > h2').textContent;
 		item.color = window.getComputedStyle(popup).backgroundColor;
 		item.ispinned = popup.dataset.ispinned;
+
+		// if not has been archvied
+		if (popup.dataset.isarchived == 0 && popup.dataset.isarchived != item.isstatut && document.querySelector('select[name="filtre"]').value != 'archived') {
+			var theNote = document.getElementById('i_'+item.id);
+			theNote.classList.add('deleteFadeOutH');
+			theNote.addEventListener('animationend', function(event){event.target.parentNode.removeChild(event.target);}, false);
+		}
+
+		item.isstatut = popup.dataset.isarchived;
 
 		// note is new:
 		if (!isEdit) {
@@ -2265,7 +2290,7 @@ function NoteBlock() {
 		item.action = 'deleteNote';
 		// close popup
 		document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
-		// remove item from page too, with little animation
+		// remove item from page too, with a little animation
 		var theNote = document.getElementById('i_'+item.id);
 		theNote.classList.add('deleteFadeOutH');
 		theNote.addEventListener('animationend', function(event){event.target.parentNode.removeChild(event.target);}, false);
@@ -2280,9 +2305,6 @@ function NoteBlock() {
 	*/
 	this.changeColor = function(item, e) {
 		var newColor = window.getComputedStyle(e.target).backgroundColor;
-		/*if (document.getElementById('i_' + item.id)) {
-			this.noteContainer.querySelector('#i_'+item.id + "> .notebloc").style.backgroundColor = newColor;
-		}*/
 		document.getElementById('popup').style.backgroundColor = newColor;
 		e.preventDefault();
 	}
@@ -2407,6 +2429,20 @@ function EventAgenda() {
 	this.calWrap = document.getElementById('calendar-wrapper');
 	this.domPage = document.getElementById('page');
 	this.notifNode = document.getElementById('message-return');
+	this.switchCalSize = document.getElementById('cal-size');
+	this.switchCalSize.addEventListener('change', function(e) { _this.switchCalSizeDisplay(e); });
+
+	this.sideNav = document.getElementById('side-nav');
+	this.miniCal = document.getElementById('mini-calendar-table');
+	// add events on 2 buttons
+	this.miniCal.querySelector('thead #mini-prev-month').addEventListener('click', function(e){
+		_this.initDate = new Date(_this.initDate.getFullYear(), _this.initDate.getMonth()-1, 1);
+		_this.rebuiltMiniCal();
+		});
+	this.miniCal.querySelector('thead #mini-next-month').addEventListener('click', function(e){
+		_this.initDate = new Date(_this.initDate.getFullYear(), _this.initDate.getMonth()+1, 1);
+		_this.rebuiltMiniCal();
+		});
 
 	this.eventFilter = document.getElementById('filter-events');
 	this.eventFilter.addEventListener('change', function(e) { _this.sortEventByFilter(); });
@@ -2414,28 +2450,44 @@ function EventAgenda() {
 	this.eventContainer = document.getElementById('daily-events');
 	this.eventTable = document.getElementById('calendar-table');
 
-	// add events on buttons in table
+	// add events on buttons in table > thead
+	this.eventTable.querySelector('thead.year-mode #year > #prev-year').addEventListener('click', function(e){
+		_this.initDate = new Date(_this.initDate.getFullYear()-1, _this.initDate.getMonth(), 1);
+		_this.rebuiltYearlyCal();
+	});
+	this.eventTable.querySelector('thead.year-mode #year > #next-year').addEventListener('click', function(e){
+		_this.initDate = new Date(_this.initDate.getFullYear()+1, _this.initDate.getMonth(), 1);
+		_this.rebuiltYearlyCal();
+	});
+
+	this.eventTable.querySelector('thead.month-mode #month > #prev-month').addEventListener('click', function(e){
+		_this.initDate = new Date(_this.initDate.getFullYear(), _this.initDate.getMonth()-1, 1);
+		_this.rebuiltMonthlyCal();
+	});
+	this.eventTable.querySelector('thead.month-mode #month > #next-month').addEventListener('click', function(e){
+		_this.initDate = new Date(_this.initDate.getFullYear(), _this.initDate.getMonth()+1, 1);
+		_this.rebuiltMonthlyCal();
+	});
+
+	this.eventTable.querySelector('thead.day-mode #day > #prev-day').addEventListener('click', function(e){
+		_this.initDate = new Date(_this.initDate.getFullYear(), _this.initDate.getMonth(), _this.initDate.getDate()-1);
+		_this.rebuiltDailyCal();
+	});
+	this.eventTable.querySelector('thead.day-mode #day > #next-day').addEventListener('click', function(e){
+		_this.initDate = new Date(_this.initDate.getFullYear(), _this.initDate.getMonth(), _this.initDate.getDate()+1);
+		_this.rebuiltDailyCal();
+	});
+
+
 	this.eventTable.querySelector('thead.month-mode #changeYear > button').addEventListener('click', function(e){
 		_this.eventTable.classList.remove('table-month-mode');
 		_this.eventTable.classList.add('table-year-mode');
 		_this.rebuiltYearlyCal();
 	});
-	this.eventTable.querySelector('thead.month-mode #month > #prev-month').addEventListener('click', function(e){
-			_this.initDate = new Date(_this.initDate.getFullYear(), _this.initDate.getMonth()-1, _this.initDate.getDate());
-			_this.rebuiltMonthlyCal();
-		});
-	this.eventTable.querySelector('thead.month-mode #month > #next-month').addEventListener('click', function(e){
-			_this.initDate = new Date(_this.initDate.getFullYear(), _this.initDate.getMonth()+1, _this.initDate.getDate());
-			_this.rebuiltMonthlyCal();
-		});
-
-	this.eventTable.querySelector('thead.year-mode #year > #prev-year').addEventListener('click', function(e){
-		_this.initDate = new Date(_this.initDate.getFullYear()-1, _this.initDate.getMonth(), _this.initDate.getDate());
-		_this.rebuiltYearlyCal();
-	});
-	this.eventTable.querySelector('thead.year-mode #year > #next-year').addEventListener('click', function(e){
-		_this.initDate = new Date(_this.initDate.getFullYear()+1, _this.initDate.getMonth(), _this.initDate.getDate());
-		_this.rebuiltYearlyCal();
+	this.eventTable.querySelector('thead.day-mode #changeMonth > button').addEventListener('click', function(e){
+		_this.eventTable.classList.remove('table-day-mode');
+		_this.eventTable.classList.add('table-month-mode');
+		_this.rebuiltMonthlyCal();
 	});
 
 	// get event template
@@ -2462,160 +2514,385 @@ function EventAgenda() {
 	// Save button
 	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveEventsXHR(); } );
 
+	// init the « hide sidenav » button
+	document.getElementById('hide-side-nav').addEventListener('click', function(){ _this.hideSideNav(); });
+
 	/**************************************
-	 * Draw the MONTHLY calendar
+	 * Sort Events by date (sorting)
 	*/
-	this.rebuiltMonthlyCal = function() {
-			// reference datetime
-			var date = this.initDate;
-			var dateToday = new Date();
-			// update Month name on display
-			this.eventTable.querySelector('thead.month-mode #changeYear > span').textContent = this.initDate.toLocaleDateString('fr-FR', {month: "long", year: "numeric"});
+	this.sortEventsByDate = function() {
+		this.eventsList.sort(function(a, b) {
+			if (a.date.start > b.date.start) return 1;
+			return -1;
+		});
+	}
 
-			// the <td> with the dates are rebuilt each time (much simplier to handle). So when building, first remove old <td>
-			var calBody = this.eventTable.querySelector('tbody.month-mode');
-			if (calBody.firstChild) {
-				while (calBody.firstChild) {calBody.removeChild(calBody.firstChild);}
+	this.switchCalSizeDisplay = function(e) {
+		var cs = document.getElementById('cal-sizer');
+		while (cs.classList.length > 0) {
+		   cs.classList.remove(cs.classList.item(0));
+		}
+
+		switch (e.target.value) {
+			case 'eventCalendar':
+				cs.classList.add('eventCalendar');
+				break;
+
+			case 'eventlist':
+				cs.classList.add('eventlist');
+			break;
+		}
+	}
+
+
+
+	/**************************************
+	 * Draw the mini calendar in the side nav
+	*/
+	this.rebuiltMiniCal = function() {
+		// reference datetime
+		var date = this.initDate;
+		var dateToday = new Date(); dateToday.setHours(0); dateToday.setMinutes(0); dateToday.setSeconds(0); dateToday.setMilliseconds(0);
+
+		// update Month name on display
+		this.miniCal.querySelector('thead span').textContent = this.initDate.toLocaleDateString('fr-FR', {month: "long", year: "numeric"});
+
+		// the <td> with the dates are rebuilt each time (much simplier to handle). So when building, first remove old <td>
+		var miniCalBody = this.miniCal.querySelector('tbody');
+		if (miniCalBody.firstChild) {
+			while (miniCalBody.firstChild) { miniCalBody.removeChild(miniCalBody.firstChild); }
+		}
+
+		/* the days */
+		var firstDay = (new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0));
+		var lastDay = (new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59));
+
+		// if month is not a full table, complete <table> pad() it with empty cells
+		var nbDaysPrevMonth = (firstDay.getDay() == 0) ? 7 : firstDay.getDay();
+		var nbDaysNextMonth = 7 - ((lastDay.getDay() == 0) ? 7 : lastDay.getDay());
+
+		// complete the actual <table>
+		for (var cell = 1; cell < lastDay.getDate() + nbDaysPrevMonth + nbDaysNextMonth ; cell++) {
+			var dateOfCell = new Date(date.getFullYear(), date.getMonth(), cell-(nbDaysPrevMonth-1) );
+
+			// starts new line every %7 days
+			if (cell % 7 == 1) {
+				var tr = miniCalBody.appendChild(document.createElement("tr"));
+				tr.dataset.week = dateOfCell.getWeekNumber();
 			}
 
-			/* the days */
-			var firstDay = (new Date(date.getFullYear(), date.getMonth(), 1));
-			var lastDay = (new Date(date.getFullYear(), date.getMonth() + 1, 0));
+			var td = document.createElement('td');
 
-			// if month is not a complete square, complete <table> with days from prev/next month
-			// in JS Sunday = 0th day of week. I need 7th, since sunday is last collumn in table
-			var nbDaysPrevMonth = (firstDay.getDay() == 0) ? 7 : firstDay.getDay();
-			var nbDaysNextMonth = 7 - ((lastDay.getDay() == 0) ? 7 : lastDay.getDay());
+			td.id = 'm' + ("00" + (dateOfCell.getMonth() + 1)).slice(-2) + ("00" + dateOfCell.getDate()).slice(-2);
 
-			var firstDayOfCal = new Date(firstDay); firstDayOfCal.setDate(-nbDaysPrevMonth+2);
-			var lastDayOfCal = new Date(lastDay); lastDayOfCal.setDate(lastDay.getDate()+nbDaysNextMonth);
-
-			// complete the actual <table>
-			for (var cell = 1; cell < lastDay.getDate() + nbDaysPrevMonth + nbDaysNextMonth ; cell++) {
-				var dateOfCell = new Date(date.getFullYear(), date.getMonth(), cell-(nbDaysPrevMonth-1) );
-
-				// starts new line every %7 days
-				if (cell % 7 == 1) {
-					var tr = calBody.appendChild(document.createElement("tr"));
-				}
-
-				var td = document.createElement('td');
-				if (!td.previousSibling) td.dataset.week = dateOfCell.getWeekNumber();
-
-				td.id = 'i' + ("00" + (dateOfCell.getMonth() + 1)).slice(-2) + ("00" + dateOfCell.getDate()).slice(-2);
-
-				if (dateOfCell.getDate() == (dateToday.getDate())) {
-					td.classList.add('isToday');
-				}
-				if (dateOfCell < dateToday) {
-					td.classList.add('isPast');
-				}
-				if (dateOfCell < firstDay) {
-					td.classList.add('isPrevMonth');
-				}
-				if (dateOfCell > lastDay) {
-					td.classList.add('isNextMonth');
-				}
-
-				var button = document.createElement('button');
-				button.appendChild(document.createTextNode( dateOfCell.getDate() ) );
-				button.dataset.date = dateOfCell.toLocalISOString();
-				button.addEventListener('click',
-					function(e) {
-						var oldInitDate = _this.initDate;
-						_this.initDate = new Date(this.dataset.date);
-						// on click on a cell, change the #select.value
-						_this.eventFilter.querySelector('option:first-of-type').value = _this.initDate.toLocalISOString();
-						_this.eventFilter.querySelector('option:first-of-type').textContent = _this.initDate.toLocaleDateString('fr-FR', {weekday: "long", month: "long", day: "numeric", year: "numeric"})
-						_this.eventFilter.selectedIndex = 0;
-						// sort the events for the actual selected date
-						_this.sortEventByFilter();
-					});
-
-				button.addEventListener('dblclick',
-					function(e) {
-						_this.addNewEvent();
-					});
-
-
-				td.appendChild(button);
-				tr.appendChild(td);
-
+			if (dateOfCell.getDate() === dateToday.getDate()) {
+				td.classList.add('isToday');
+			}
+			if (dateOfCell < dateToday) {
+				td.classList.add('isPast');
+			}
+			if (dateOfCell >= firstDay && dateOfCell <= lastDay) {
+				td.appendChild(document.createTextNode( dateOfCell.getDate() ) );
+				td.dataset.date = dateOfCell.toLocalISOString();
 			}
 
-			/*******************
-			** append the events to the calendar
-			*/
-			for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
-				var eventDateTime = new Date(this.eventsList[i].date);
+			td.addEventListener('click', function(e) {
+				var oldInitDate = _this.initDate;
+				_this.initDate = new Date(this.dataset.date);
+				_this.eventTable.classList.remove('table-month-mode');
+				_this.eventTable.classList.add('table-day-mode');
+				_this.rebuiltDailyCal();
+			});
 
-				// is event flaged as deleted?
-				if (this.eventsList[i].action == "deleteEvent") continue;
-				// is event in currently displayed month?
-				if (!( eventDateTime >= firstDayOfCal && eventDateTime <= lastDayOfCal ) ) continue;
+			td.addEventListener('dblclick', function(e) {
+				_this.addNewEvent();
+			});
 
-				var selectCell = document.getElementById('i' + ("00" + (eventDateTime.getMonth() + 1)).slice(-2) + ("00" + eventDateTime.getDate()).slice(-2));
-				if (selectCell.classList.contains('hasEvent')) {
-					selectCell.dataset.nbEvents++;
-				}
-				else {
-					selectCell.dataset.nbEvents = 1;
+			tr.appendChild(td);
+		}
 
-					selectCell.classList.add('hasEvent');
-				}
-			}
+		/*******************
+		** append the events to the calendar
+		*/
+		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
+			var eventDateTime = new Date(this.eventsList[i].date.start);
 
-			// saves calendar size
-			this.calWrap.dataset.calendarSizeW = this.eventTable.getBoundingClientRect().width;
-			this.calWrap.dataset.calendarSizeH = this.eventTable.getBoundingClientRect().height;
+			// is event in different month ? in different year ?
+			if ( (eventDateTime.getMonth() !== date.getMonth()) || (eventDateTime.getFullYear() !== date.getFullYear()) ) continue;
+			// is event flaged as deleted?
+			if (this.eventsList[i].action == "deleteEvent") continue;
+
+			var selectCell = document.getElementById('m' + ("00" + (eventDateTime.getMonth() + 1)).slice(-2) + ("00" + eventDateTime.getDate()).slice(-2));
+
+			selectCell.classList.add('hasEvent');
+		}
+
 	}
 	// Init events lists (default in "calendar" view)
+	this.rebuiltMiniCal();
+
+
+
+	/**************************************
+	 * Draw the MAIN calendar 
+	*/
+
+	/**************************************
+	 * In « YEAR » display
+	*/
+	this.rebuiltYearlyCal = function() {
+		this.eventTable.querySelector('thead.year-mode #year > span').textContent = this.initDate.getFullYear();
+
+		// the <td>s with the dates are rebuilt each time (much simplier to handle). So when building, first remove old <td>
+		var calBody = this.eventTable.querySelector('tbody.year-mode');
+		if (calBody.firstChild) {
+			while (calBody.firstChild) {calBody.removeChild(calBody.firstChild);}
+		}
+
+		/* the Months */
+		for (var cell = 0; cell < 12 ; cell++) {
+
+			// starts new line every %4 months
+			if (cell % 4 == 0) {
+				var tr = calBody.appendChild(document.createElement("tr"));
+			}
+
+			var td = tr.appendChild(document.createElement('td'));
+			td.dataset.datetime = (new Date(this.initDate.getFullYear(), cell, 1 ) );
+
+			td.appendChild(document.createTextNode( (new Date(this.initDate.getFullYear(), cell, 1)).toLocaleDateString('fr-FR', {month: "short"}) ));
+
+			td.addEventListener('click', function(e){
+				_this.eventTable.classList.remove('table-year-mode');
+				_this.eventTable.classList.add('table-month-mode');
+
+				_this.initDate = new Date( this.dataset.datetime );
+				_this.rebuiltMonthlyCal();
+			});
+		}
+
+	}
+
+	/**************************************
+	 * In « MONTH » display
+	*/
+	this.rebuiltMonthlyCal = function() {
+		// reference datetime
+		var date = this.initDate;
+		var dateToday = new Date(); dateToday.setHours(0); dateToday.setMinutes(0); dateToday.setSeconds(0); dateToday.setMilliseconds(0);
+
+		// update Month name on display
+		this.eventTable.querySelector('thead.month-mode #month > span').textContent = this.initDate.toLocaleDateString('fr-FR', {month: "long", year: "numeric"});
+
+		// the <td> with the dates are rebuilt each time (much simplier to handle). So when building, first remove old <td>
+		var calBody = this.eventTable.querySelector('tbody.month-mode');
+		if (calBody.firstChild) {
+			while (calBody.firstChild) {calBody.removeChild(calBody.firstChild);}
+		}
+
+		/* the days */
+		var firstDay = (new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0));
+		var lastDay = (new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59));
+
+		// if month is not a complete square, complete <table> with days from prev/next month
+		// in JS Sunday = 0th day of week. I need 7th, since sunday is last collumn in table
+		var nbDaysPrevMonth = (firstDay.getDay() == 0) ? 7 : firstDay.getDay();
+		var nbDaysNextMonth = 7 - ((lastDay.getDay() == 0) ? 7 : lastDay.getDay());
+
+		// complete the actual <table>
+		for (var cell = 1; cell < lastDay.getDate() + nbDaysPrevMonth + nbDaysNextMonth ; cell++) {
+			var dateOfCell = new Date(date.getFullYear(), date.getMonth(), cell-(nbDaysPrevMonth-1) );
+
+			// starts new line every %7 days
+			if (cell % 7 == 1) {
+				var tr = calBody.appendChild(document.createElement("tr"));
+				tr.dataset.week = dateOfCell.getWeekNumber();
+			}
+
+			var td = document.createElement('td');
+
+			td.id = 'i' + ("00" + (dateOfCell.getMonth() + 1)).slice(-2) + ("00" + dateOfCell.getDate()).slice(-2);
+
+			tr.appendChild(td);
+
+			if (dateOfCell.getDate() === dateToday.getDate()) {
+				td.classList.add('isToday');
+			}
+			if (dateOfCell < dateToday) {
+				td.classList.add('isPast');
+			}
+			if (dateOfCell < firstDay) {
+				td.classList.add('isPrevMonth');
+				continue;
+			}
+			if (dateOfCell > lastDay) {
+				td.classList.add('isNextMonth');
+				continue;
+			}
+
+			// ad day nummber to cell
+			td.appendChild(document.createTextNode( dateOfCell.getDate() ) );
+			td.dataset.date = dateOfCell.toLocalISOString();
+
+			td.addEventListener('click', function(e) {
+				if (!isMobile()) {
+					if (this !== e.target) return;
+				}
+				var oldInitDate = _this.initDate;
+				_this.initDate = new Date(this.dataset.date);
+				_this.eventTable.classList.remove('table-month-mode');
+				_this.eventTable.classList.add('table-day-mode');
+
+				_this.rebuiltDailyCal();
+			});
+
+			td.addEventListener('dblclick', function(e) {
+				_this.addNewEvent();
+			});
+		}
+
+		/*******************
+		** append the events to the calendar
+		*/
+		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
+			var item = this.eventsList[i];
+			var eventDateTime = new Date(item.date.start);
+
+			// is event flaged as deleted?
+			if (item.action == "deleteEvent") continue;
+			// is event in current month?
+			if (!( eventDateTime >= firstDay && eventDateTime <= lastDay ) ) continue;
+
+			var selectCell = document.getElementById('i' + ("00" + (eventDateTime.getMonth() + 1)).slice(-2) + ("00" + eventDateTime.getDate()).slice(-2));
+
+			if (!selectCell.dataset.nbEvents || selectCell.dataset.nbEvents < 5) {
+				var span = document.createElement('SPAN');
+				span.style.backgroundColor = item.color;
+				var time = document.createElement('TIME');
+				time.setAttribute('datetime', item.date.start);
+				time.textContent = (eventDateTime).toLocaleTimeString('fr-FR', {hour: "2-digit", minute: "2-digit"});
+				span.appendChild(time);
+				span.appendChild(document.createTextNode(item.title));
+
+				span.classList.add('eventLabel');
+				span.dataset.id = item.id;
+				if (!isMobile()) {
+					span.addEventListener('click', function() {
+							_this.showEventPopup(this.dataset.id);
+					} );
+				}
+				selectCell.appendChild(span);
+			}
+			
+			if (selectCell.classList.contains('hasEvent')) {
+				selectCell.dataset.nbEvents++;
+			}
+			else {
+				selectCell.dataset.nbEvents = 1;
+				selectCell.classList.add('hasEvent');
+			}
+		}
+
+	}
+	// Init events lists
 	this.rebuiltMonthlyCal();
 
 
 	/**************************************
-	 * Draw the YEARLY calendar
+	 * In DAY » display
 	*/
-	this.rebuiltYearlyCal = function() {
-			this.eventTable.querySelector('thead.year-mode #year > span').textContent = this.initDate.getFullYear();
+	this.rebuiltDailyCal = function() {
+		// reference datetime
+		var date = this.initDate;
+		var dateNow = new Date();
+		// update Month name on display
+		this.eventTable.querySelector('thead.day-mode #day > span').textContent = this.initDate.toLocaleDateString('fr-FR', {weekday: "long", day: "numeric", month: "long", year: "numeric"});
 
-			// the <td>s with the dates are rebuilt each time (much simplier to handle). So when building, first remove old <td>
-			var calBody = this.eventTable.querySelector('tbody.year-mode');
-			if (calBody.firstChild) {
-				while (calBody.firstChild) {calBody.removeChild(calBody.firstChild);}
+		// the <td> with the dates are rebuilt each time (much simplier to handle). So when building, first remove old <td>
+		var calBody = this.eventTable.querySelector('tbody.day-mode');
+		if (calBody.firstChild) {
+			while (calBody.firstChild) {calBody.removeChild(calBody.firstChild);}
+		}
+
+		/* the days */
+		var firstHour = (new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0 ));
+		var lastHour = (new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 0, 0));
+
+
+		// complete the actual <table>
+		for (var cell = 0; cell <= lastHour.getHours() ; cell++) {
+			var timeOfCell = new Date(date.getFullYear(), date.getMonth(), date.getDate(), cell, 0, 0 );
+
+			var tr = calBody.appendChild(document.createElement("tr"));
+			tr.id = 'h' + ("00" + (timeOfCell.getHours())).slice(-2) + "00";
+
+			var td = document.createElement('td');
+			if (timeOfCell.getHours() === dateNow.getHours()) {
+				td.classList.add('isNow');
+			}
+			if (timeOfCell < dateNow) {
+				td.classList.add('isPast');
 			}
 
-			/* the Months */
+			td.addEventListener('click', function() {
+				var oldInitDate = _this.initDate;
+				_this.initDate = new Date(this.dataset.date);
+			});
 
-			for (var cell = 0; cell < 12 ; cell++) {
+			td.addEventListener('dblclick', function(e) {
+				_this.addNewEvent();
+			});
 
-				// starts new line every %4 months
-				if (cell % 4 == 0) {
-					var tr = calBody.appendChild(document.createElement("tr"));
-				}
+			// add hour to cell
+			var spanHour = document.createElement('SPAN');
+			spanHour.appendChild(document.createTextNode( ("00" + (timeOfCell.getHours())).slice(-2) + ":" + "00" ));
+			td.appendChild(spanHour);
+			td.dataset.date = timeOfCell.toLocalISOString();
+			tr.appendChild(td);
 
-				var td = tr.appendChild(document.createElement('td'));
-				td.dataset.datetime = (new Date(this.initDate.getFullYear(), cell, this.initDate.getDate() ) );
-				if (cell == ((new Date()).getMonth())) {
-					td.classList.add('isToday');
-				}
-				var button = document.createElement('button');
-				button.appendChild(document.createTextNode( (new Date(this.initDate.getFullYear(), cell, this.initDate.getDate())).toLocaleDateString('fr-FR', {month: "short"}) ));
+			var td = document.createElement('td');
+			tr.appendChild(td);
 
-				button.addEventListener('click', function(e){
-					_this.eventTable.classList.remove('table-year-mode');
-					_this.eventTable.classList.add('table-month-mode');
+		}
+		/*******************
+		** append the events to the calendar
+		*/
+		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
+			var item = this.eventsList[i];
+			var eventDateTime = new Date(item.date.start);
 
-					_this.initDate = new Date( this.parentNode.dataset.datetime );
-					_this.rebuiltMonthlyCal();
-				});
-				td.appendChild(button);
+			// is event flaged as deleted?
+			if (item.action == "deleteEvent") continue;
+			// is event in current month?
+			if (!( eventDateTime >= firstHour && eventDateTime <= lastHour ) ) continue;
+
+			var selectCell = document.getElementById( 'h' + ("00" + (eventDateTime.getHours())).slice(-2) + "00" ).querySelector('td:nth-of-type(2)');
+
+			var span = document.createElement('SPAN');
+			span.classList.add('eventLabel');
+			span.style.backgroundColor = item.color;
+			span.textContent = item.title;
+			span.dataset.id = item.id;
+			span.addEventListener('click', function() {
+				_this.showEventPopup(this.dataset.id);
+			});
+			// spans the SPAN to give it a height proportionnal to the duration
+			var duration = (new Date(item.date.end) - eventDateTime) / 1000 / 60 / 60 ; // in hours
+			var parentHeight = selectCell.parentNode.getBoundingClientRect().bottom - selectCell.parentNode.getBoundingClientRect().top;
+			span.style.height = (parentHeight * duration  - (2*3)) + 'px';
+
+			if (duration < 23) {
+				span.style.marginLeft = duration * 2 + '%';
+			} else {
+				span.style.marginLeft = "80%";
+				span.style.marginRight = "0%";
+				span.style.width = 'auto';
 			}
 
-			this.eventTable.style.height = this.calWrap.dataset.calendarSizeH + 'px';
-			this.eventTable.style.width = this.calWrap.dataset.calendarSizeW + 'px';
+			selectCell.appendChild(span);
+		}
+
 	}
-
 
 	this.rebuiltEventsWall = function(EventsData) {
 		// empties the node
@@ -2625,19 +2902,13 @@ function EventAgenda() {
 		// TODO : add "no event" message
 		if (0 === EventsData.length) return false;
 
-		// sort chronologically
-		EventsData.sort(function(a, b) {
-			if (a.date > b.date) return 1;
-			return -1;
-		});
-
 		var date = Date.now();
 		var evList = document.createDocumentFragment();
 
 		// populates the new list
 		for (var i = 0, len = EventsData.length ; i < len ; i++) {
-			var item = EventsData[i]; // sort in reverse order
-			var itemDate = new Date(item.date);
+			var item = EventsData[i];
+			var itemDate = new Date(item.date.start);
 			var div = this.eventTemplate.cloneNode(true);
 			// ignore deleted events
 			if (item.action == 'deleteEvent') continue;
@@ -2655,6 +2926,7 @@ function EventAgenda() {
 			div.querySelector('.event-dd').textContent = itemDate.getDate();
 			div.querySelector('.event-mmdd').textContent = itemDate.toLocaleDateString('fr', {month: "short"}) + ", " + itemDate.toLocaleDateString('fr', {weekday: "short"});
 			div.querySelector('.event-hhii').textContent = itemDate.toLocaleTimeString('fr', {hour: 'numeric', minute: 'numeric'});
+			div.querySelector('.eventSummary > .color').style.backgroundColor = item.color;
 			div.querySelector('.eventSummary > .title').textContent = item.title;
 			div.querySelector('.eventSummary > .loc').textContent = item.loc;
 
@@ -2664,6 +2936,13 @@ function EventAgenda() {
 		this.eventContainer.appendChild(evList);
 
 	}
+
+
+	// the "hide side nav" button in sub-menu
+	this.hideSideNav = function() {
+		this.sideNav.classList.toggle('hidden-sidenav');
+	}
+
 
 	/**************************************
 	 * Sorting functions
@@ -2703,6 +2982,12 @@ function EventAgenda() {
 					}
 					break;
 
+				case 'futur':
+					if (date >= new Date()) {
+						return true;
+					}
+					break;
+
 				case 'all':
 					return true;
 					break;
@@ -2722,9 +3007,9 @@ function EventAgenda() {
 		var newList = new Array();
 
 		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
-			var item = this.eventsList[len-1-i];
+			var item = this.eventsList[i];
 			if (item.action == 'deleteEvent') continue;
-			var itemDate = new Date(item.date);
+			var itemDate = new Date(item.date.start);
 
 			// if the event is today, add a row to div.
 			if ( filter(itemDate) === true ) {
@@ -2759,24 +3044,35 @@ function EventAgenda() {
 		popupWrapper.querySelector('.popup-event').removeAttribute('hidden');
 		document.body.classList.add('noscroll');
 
-		popupWrapper.querySelector('#popup > .event-title > span').textContent = item.title;
-		popupWrapper.querySelector('#popup > .event-title > .item-menu-options > ul > li > a').addEventListener('click', function(e){
-			_this.markAsDeleted(item);
-		});
-		popupWrapper.querySelector('#popup > .event-title > .button-cancel').addEventListener('click', function() {
-			popupWrapper.parentNode.removeChild(popupWrapper);
-			document.body.classList.remove('noscroll');
-		});
-		popupWrapper.querySelector('#popup > .event-title > .button-edit').addEventListener('click', function() {
+		popupWrapper.querySelector('#popup > .event-title > .event-color').style.backgroundColor = item.color;
+		popupWrapper.querySelector('#popup > .event-title > .event-name').textContent = item.title;
+
+		popupWrapper.querySelector('#popup > .event-title > .item-menu-options .button-edit').addEventListener('click', function(e){
 			popupWrapper.parentNode.removeChild(popupWrapper);
 			document.body.classList.remove('noscroll');
 			_this.showEventEditPopup(item);
 		});
+		popupWrapper.querySelector('#popup > .event-title > .item-menu-options .button-suppr').addEventListener('click', function(e){
+			_this.markAsDeleted(item);
+			document.body.classList.remove('noscroll');
+		});
 
-		popupWrapper.querySelector('#popup > .event-content > ul > li.event-time > span:nth-of-type(1)').textContent = (new Date(item.date)).toLocaleDateString('fr-FR', {weekday: "long", year: "numeric", month: "long", day: "numeric"});
-		popupWrapper.querySelector('#popup > .event-content > ul > li.event-time > span:nth-of-type(2)').textContent = (new Date(item.date)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'} );
+		popupWrapper.querySelector('#popup > .event-title > .button-cancel').addEventListener('click', function() {
+			popupWrapper.parentNode.removeChild(popupWrapper);
+			document.body.classList.remove('noscroll');
+		});
+
+		popupWrapper.querySelector('#popup > .event-content > ul > li.event-time > span:nth-of-type(1)').textContent = (new Date(item.date.start)).toLocaleDateString('fr-FR', {weekday: "long", year: "numeric", month: "long", day: "numeric"});
+		popupWrapper.querySelector('#popup > .event-content > ul > li.event-time > span:nth-of-type(2)').textContent = (new Date(item.date.start)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}) + '-' + (new Date(item.date.end)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
 		popupWrapper.querySelector('#popup > .event-content > ul > li.event-loc').textContent = item.loc;
 		popupWrapper.querySelector('#popup > .event-content > ul > li.event-description').textContent = item.content;
+
+
+		// remove empty nodes
+		var nodes = popupWrapper.querySelectorAll('#popup > .event-content *');
+		for (let node of nodes) {
+			if (node.textContent.trim().length === 0) node.parentNode.removeChild(node);
+		}
 
 		this.domPage.appendChild(popupWrapper);
 	}
@@ -2799,23 +3095,31 @@ function EventAgenda() {
 		popupWrapper.querySelector('.popup-edit-event').removeAttribute('hidden');
 		document.body.classList.add('noscroll');
 
+		popupWrapper.querySelector('#popup > .event-title > .event-color').style.backgroundColor = item.color;
+
+		popupWrapper.querySelector('#popup > .event-title > .colors').addEventListener('click', function(e) {
+			if (e.target.tagName == 'LI') _this.changeColor(item, e);
+		});
+
+		popupWrapper.querySelector('#popup > .event-title > input').value = item.title;
 		popupWrapper.querySelector('#popup > .event-title > .button-cancel').addEventListener('click', function() {
 			popupWrapper.parentNode.removeChild(popupWrapper);
 			document.body.classList.remove('noscroll');
 		});
-		popupWrapper.querySelector('#popup > .event-title > input').value = item.title;
 		popupWrapper.querySelector('#popup > .event-content > .event-content-date #allDay').addEventListener('change', function() {
-			var timeInput = document.getElementById('time');
+			var dateTimeInput = popupWrapper.querySelector('#popup > .event-content .date-time-input');
 			if (this.checked) {
-				timeInput.classList.add('hidden');
+				dateTimeInput.classList.add('date-only');
 			}
 			else {
-				timeInput.classList.remove('hidden');
+				dateTimeInput.classList.remove('date-only');
 			}
 		});
 
-		popupWrapper.querySelector('#popup > .event-content > .event-content-date #time').value = item.date.substr(11, 5); // FIXME don’t do SUBSTR : use date()
-		popupWrapper.querySelector('#popup > .event-content > .event-content-date #date').value = item.date.substr(0, 10); // FIXME don’t do SUBSTR : use date()
+		popupWrapper.querySelector('#popup > .event-content > .event-content-date #time-start').value = item.date.start.substr(11, 5);
+		popupWrapper.querySelector('#popup > .event-content > .event-content-date #time-end').value = item.date.end.substr(11, 5);
+		popupWrapper.querySelector('#popup > .event-content > .event-content-date #date').value = item.date.start.substr(0, 10);
+
 		popupWrapper.querySelector('#popup > .event-content > .event-content-loc input').value = item.loc;
 		popupWrapper.querySelector('#popup > .event-content > .event-content-descr textarea').value = item.content;
 
@@ -2846,23 +3150,35 @@ function EventAgenda() {
 			}
 		}
 
-		item.title = popup.querySelector('.event-title input').value;
+		item.title = popup.querySelector('.event-title input').value || BTlang.emptyTitle;
+		item.color = window.getComputedStyle(popup.querySelector('.event-title .event-color')).backgroundColor;
+
 		item.content = popup.querySelector('.event-content-descr .text').value;
 		item.loc = popup.querySelector('.event-content-loc .text').value;
-		var newDate = new Date(document.getElementById('date').value + " " + document.getElementById('time').value);
-		item.date = newDate.toLocalISOString();
+		if (popup.querySelector('#allDay').checked ) {
+			var newDateStart = new Date(document.getElementById('date').value + " " + "00:00:00");
+			var newDateEnd = new Date(document.getElementById('date').value + " " + "23:59:59");
+		} else {
+			var newDateStart = new Date(document.getElementById('date').value + " " + document.getElementById('time-start').value);
+			var newDateEnd = new Date(document.getElementById('date').value + " " + document.getElementById('time-end').value);
+		}
+		item.date = {"start": newDateStart.toLocalISOString(), "end": newDateEnd.toLocalISOString()};
 
 		// event is new:
 		if (!isEdit) {
-			item.id = item.date.substr(0,19).replace(/[:T-]/g, ''); // give it an ID
-			this.eventsList.push(item);                             // append it to the eventsList{}
+			this.eventsList.push(item);     // append it to the eventsList{}
 		}
 
-		// event is only edited // TODO : instead of rebuilting the wall, only edit Node.
-		this.sortEventByFilter();
+		// re-sort by date
+		this.sortEventsByDate();
+
 
 		// rebuilt Calendar to take changes into account. // TODO: perhaps not rebuilt cal, but only add/move buttons (for perf) ?
-		this.rebuiltMonthlyCal();
+		this.rebuiltMiniCal();
+		if (this.eventTable.classList.contains('table-day-mode')) this.rebuiltDailyCal();
+		if (this.eventTable.classList.contains('table-month-mode')) this.rebuiltMonthlyCal();
+		if (this.eventTable.classList.contains('table-year-mode')) this.rebuiltYearlyCal();
+		this.sortEventByFilter();
 
 		item.action = item.action || 'updateEvent';
 
@@ -2877,10 +3193,11 @@ function EventAgenda() {
 	this.addNewEvent = function() {
 		var date = this.initDate;
 		var newEv = {
-			"id": '',
-			"date": date.toLocalISOString(),
+			"id": new Date().getTime().toString(),
+			"date": {'start':date.toLocalISOString(),'end':date.toLocalISOString()},
 			"title": '',
 			"content": '',
+			"color" : '#ff8a80',
 			"loc" : '',
 			"action": 'newEvent',
 		};
@@ -2897,11 +3214,11 @@ function EventAgenda() {
 		if (!window.confirm(BTlang.questionSupprEvent)) { return false; }
 		item.action = 'deleteEvent';
 
-		// rebuilt wall
+		this.rebuiltMiniCal();
+		if (this.eventTable.classList.contains('table-day-mode')) this.rebuiltDailyCal();
+		if (this.eventTable.classList.contains('table-month-mode')) this.rebuiltMonthlyCal();
+		if (this.eventTable.classList.contains('table-year-mode')) this.rebuiltYearlyCal();
 		this.sortEventByFilter();
-
-		// rebuilt Calendar to take changes into account. // TODO: perhaps not rebuilt cal, but only add/move buttons (for perf) ?
-		this.rebuiltMonthlyCal();
 
 		// close popup
 		document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
@@ -2910,6 +3227,15 @@ function EventAgenda() {
 		this.raiseUpdateFlag(true);
 	}
 
+
+	/**************************************
+	 * Change the color of a note
+	*/
+	this.changeColor = function(item, e) {
+		var newColor = window.getComputedStyle(e.target).backgroundColor;
+		document.querySelector('#popup > .event-title > .event-color').style.backgroundColor = newColor;
+		e.preventDefault();
+	}
 
 	/**************************************
 	 * Each change triggers a flag. If is(flag) : the save button displays
@@ -2936,7 +3262,7 @@ function EventAgenda() {
 		for (var i=0, len=this.eventsList.length; i<len ; i++) {
 			if (this.eventsList[i].action && 0 !== this.eventsList[i].action.length) {
 				var ev = this.eventsList[i];
-				ev.ymdhisDate = ev.date.substr(0,19).replace(/[:T-]/g, '');
+				//ev.ymdhisDate = ev.date.substr(0,19).replace(/[:T-]/g, '');
 				toSaveEvents.push(ev);
 			}
 		}
@@ -2959,9 +3285,11 @@ function EventAgenda() {
 				notifDiv.classList.add('confirmation');
 				document.getElementById('top').appendChild(notifDiv);
 
-				// resetq flags on events
+				// resetq flags on events (but not those that are deleted)
 				for (var i=0, len=toSaveEvents.length; i<len ; i++) {
-					toSaveEvents[i].action = "";
+					if (toSaveEvents[i].action == 'updateEvent' || toSaveEvents[i].action == 'newEvent') {
+						toSaveEvents[i].action = "";
+					}
 				}
 				return true;
 			} else {
@@ -3055,6 +3383,12 @@ function ContactsList() {
 	// Save button
 	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveContactsXHR(); } );
 
+	// built table on page-ready
+	window.addEventListener("load", function() {
+		_this.rebuiltContactsTable(_this.contactList);
+	});
+
+
 	this.rebuiltContactsTable = function(ContactsData) {
 		// empties the node
 		if (this.contactTBody.firstChild) {
@@ -3115,9 +3449,12 @@ function ContactsList() {
 
 		this.contactTBody.appendChild(ctList);
 
-	}
-	this.rebuiltContactsTable(this.contactList);
+		// if a search is made and only one contact is displayed, open popup right away.
+		if (1 === ContactsData.length && window.location.href.match(/(\?|&)q=/i)) {
+			this.showContactPopup(item.id);
+		}
 
+	}
 
 	/**************************************
 	 * Displays the "show contact" popup
@@ -3250,8 +3587,6 @@ function ContactsList() {
 
 		this.domPage.appendChild(popupWrapper);
 	}
-
-
 
 	this.showContactEditPopup = function(item) {
 

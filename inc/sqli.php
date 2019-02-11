@@ -88,7 +88,7 @@ function create_tables() {
 			bt_id BIGINT,
 			bt_title TEXT,
 			bt_content TEXT,
-			bt_color CHAR(7),
+			bt_color TINYTEXT,
 			bt_statut TINYINT,
 			bt_pinned TINYINT
 		); CREATE INDEX $if_not_exists dateN ON notes ( bt_id );";
@@ -115,6 +115,7 @@ function create_tables() {
 			ID INTEGER PRIMARY KEY $auto_increment,
 			bt_id BIGINT,
 			bt_date BIGINT,
+			bt_color TINYTEXT,
 			bt_event_loc TEXT,
 			bt_title TEXT,
 			bt_content TEXT
@@ -160,8 +161,6 @@ function create_tables() {
 					$db_handle = new PDO('sqlite:'.$file);
 					$db_handle->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 					$db_handle->query("PRAGMA temp_store=MEMORY; PRAGMA synchronous=OFF; PRAGMA journal_mode=WAL;");
-
-
 					$wanted_tables = array_keys($dbase_structure);
 					foreach ($wanted_tables as $table_name) {
 							$results = $db_handle->exec($dbase_structure[$table_name]);
@@ -204,7 +203,7 @@ function open_base() {
 }
 
 
-/* lists articles with search criterias given in $array. Returns an array containing the data*/
+/* lists elements with search criterias given in $array. Returns an array containing the data */
 function liste_elements($query, $array, $data_type='') {
 	try {
 		$req = $GLOBALS['db_handle']->prepare($query);
@@ -395,95 +394,32 @@ function traiter_form_billet($billet) {
 }
 
 
-
-
 function bdd_article($billet, $what) {
 	// l'article n'existe pas, on le crée
 	if ( $what == 'enregistrer-nouveau' ) {
-		try {
-			$req = $GLOBALS['db_handle']->prepare('INSERT INTO articles
-				(	bt_type,
-					bt_id,
-					bt_date,
-					bt_title,
-					bt_abstract,
-					bt_link,
-					bt_notes,
-					bt_content,
-					bt_wiki_content,
-					bt_tags,
-					bt_keywords,
-					bt_allow_comments,
-					bt_nb_comments,
-					bt_statut
-				)
-				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-			$req->execute(array(
-				'article',
-				$billet['bt_id'],
-				$billet['bt_date'],
-				$billet['bt_title'],
-				$billet['bt_abstract'],
-				$billet['bt_link'],
-				$billet['bt_notes'],
-				$billet['bt_content'],
-				$billet['bt_wiki_content'],
-				$billet['bt_tags'],
-				$billet['bt_keywords'],
-				$billet['bt_allow_comments'],
-				0,
-				$billet['bt_statut']
-			));
-			return TRUE;
-		} catch (Exception $e) {
-			return 'Erreur ajout article: '.$e->getMessage();
-		}
-	// l'article existe, et il faut le mettre à jour alors.
-	} elseif ( $what == 'modifier-existant' ) {
-		try {
-			$req = $GLOBALS['db_handle']->prepare('UPDATE articles SET
-				bt_date=?,
-				bt_title=?,
-				bt_link=?,
-				bt_abstract=?,
-				bt_notes=?,
-				bt_content=?,
-				bt_wiki_content=?,
-				bt_tags=?,
-				bt_keywords=?,
-				bt_allow_comments=?,
-				bt_statut=?
-				WHERE ID=?');
-			$req->execute(array(
-					$billet['bt_date'],
-					$billet['bt_title'],
-					$billet['bt_link'],
-					$billet['bt_abstract'],
-					$billet['bt_notes'],
-					$billet['bt_content'],
-					$billet['bt_wiki_content'],
-					$billet['bt_tags'],
-					$billet['bt_keywords'],
-					$billet['bt_allow_comments'],
-					$billet['bt_statut'],
-					$_POST['ID']
-			));
-			return TRUE;
-		} catch (Exception $e) {
-			return 'Erreur mise à jour de l’article: '.$e->getMessage();
-		}
-	// Suppression d'un article
-	} elseif ( $what == 'supprimer-existant' ) {
-		try {
-			$req = $GLOBALS['db_handle']->prepare('DELETE FROM articles WHERE ID=?');
-			$req->execute(array($_POST['ID']));
-			return TRUE;
-		} catch (Exception $e) {
-			return 'Erreur 123456 : '.$e->getMessage();
-		}
+		$query = 'INSERT INTO articles ( bt_type, bt_id, bt_date, bt_title, bt_abstract, bt_link, bt_notes, bt_content, bt_wiki_content, bt_tags, bt_keywords, bt_allow_comments, bt_nb_comments, bt_statut ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+		$array = array( 'article', $billet['bt_id'], $billet['bt_date'], $billet['bt_title'], $billet['bt_abstract'], $billet['bt_link'], $billet['bt_notes'], $billet['bt_content'], $billet['bt_wiki_content'], $billet['bt_tags'], $billet['bt_keywords'], $billet['bt_allow_comments'], 0, $billet['bt_statut'] );
 	}
-}
+	// l'article existe, et il faut le mettre à jour alors.
+	elseif ( $what == 'modifier-existant' ) {
+		$query = 'UPDATE articles SET bt_date=?, bt_title=?, bt_link=?, bt_abstract=?, bt_notes=?, bt_content=?, bt_wiki_content=?, bt_tags=?, bt_keywords=?, bt_allow_comments=?, bt_statut=? WHERE ID=?';
+		$array = array( $billet['bt_date'], $billet['bt_title'], $billet['bt_link'], $billet['bt_abstract'], $billet['bt_notes'], $billet['bt_content'], $billet['bt_wiki_content'], $billet['bt_tags'], $billet['bt_keywords'], $billet['bt_allow_comments'], $billet['bt_statut'], $_POST['ID'] );
+	}
+	// Suppression d'un article
+	elseif ( $what == 'supprimer-existant' ) {
+		$query = 'DELETE FROM articles WHERE ID=?';
+		$array = array($_POST['ID']);
+	}
 
+	try {
+		$req = $GLOBALS['db_handle']->prepare($query);
+		$req->execute($array);
+		return TRUE;
+	} catch (Exception $e) {
+		return 'Erreur 1456 : '.$e->getMessage();
+	}
+
+}
 
 
 // traiter un ajout de lien prend deux étapes :
@@ -516,67 +452,28 @@ function traiter_form_link($link) {
 
 
 function bdd_lien($link, $what) {
-	if ($what == 'enregistrer-nouveau') {
-		try {
-			$req = $GLOBALS['db_handle']->prepare('INSERT INTO links
-			(	bt_type,
-				bt_id,
-				bt_content,
-				bt_wiki_content,
-				bt_title,
-				bt_link,
-				bt_tags,
-				bt_statut
-			)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
-			$req->execute(array(
-				$link['bt_type'],
-				$link['bt_id'],
-				$link['bt_content'],
-				$link['bt_wiki_content'],
-				$link['bt_title'],
-				$link['bt_link'],
-				$link['bt_tags'],
-				$link['bt_statut']
-			));
-			return TRUE;
-		} catch (Exception $e) {
-			return 'Erreur 5867 : '.$e->getMessage();
-		}
 
-	} elseif ($what == 'modifier-existant') {
-		try {
-			$req = $GLOBALS['db_handle']->prepare('UPDATE links SET
-				bt_content=?,
-				bt_wiki_content=?,
-				bt_title=?,
-				bt_link=?,
-				bt_tags=?,
-				bt_statut=?
-				WHERE ID=?');
-			$req->execute(array(
-				$link['bt_content'],
-				$link['bt_wiki_content'],
-				$link['bt_title'],
-				$link['bt_link'],
-				$link['bt_tags'],
-				$link['bt_statut'],
-				$link['ID']
-			));
-			return TRUE;
-		} catch (Exception $e) {
-			return 'Erreur 435678 : '.$e->getMessage();
-		}
+	if ($what == 'enregistrer-nouveau') {
+		$query = 'INSERT INTO links ( bt_type, bt_id, bt_content, bt_wiki_content, bt_title, bt_link, bt_tags, bt_statut ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+		$array = array( $link['bt_type'], $link['bt_id'], $link['bt_content'], $link['bt_wiki_content'], $link['bt_title'], $link['bt_link'], $link['bt_tags'], $link['bt_statut'] );
+	}
+
+	elseif ($what == 'modifier-existant') {
+		$query = 'UPDATE links SET bt_content=?, bt_wiki_content=?, bt_title=?, bt_link=?, bt_tags=?, bt_statut=? WHERE ID=?';
+		$array = array( $link['bt_content'], $link['bt_wiki_content'], $link['bt_title'], $link['bt_link'], $link['bt_tags'], $link['bt_statut'], $link['ID'] );
 	}
 
 	elseif ($what == 'supprimer-existant') {
-		try {
-			$req = $GLOBALS['db_handle']->prepare('DELETE FROM links WHERE ID=?');
-			$req->execute(array($link['ID']));
-			return TRUE;
-		} catch (Exception $e) {
-			return 'Erreur 97652 : '.$e->getMessage();
-		}
+		$query = 'DELETE FROM links WHERE ID=?';
+		$array = array($link['ID']);
+	}
+
+	try {
+		$req = $GLOBALS['db_handle']->prepare($query);
+		$req->execute($array);
+		return TRUE;
+	} catch (Exception $e) {
+		return 'Erreur 7652 : '.$e->getMessage() .'<br/>'.$query;
 	}
 }
 
@@ -645,104 +542,55 @@ function traiter_form_commentaire($commentaire, $admin) {
 	else { die($result); }
 }
 
-function bdd_commentaire($commentaire, $what) {
+function bdd_commentaire($comm, $what) {
 
 	// ENREGISTREMENT D'UN NOUVEAU COMMENTAIRE.
 	if ($what == 'enregistrer-nouveau') {
-		$article_id = $commentaire['bt_article_id'];
-		try {
-			$req = $GLOBALS['db_handle']->prepare('INSERT INTO commentaires
-				(	bt_type,
-					bt_id,
-					bt_article_id,
-					bt_content,
-					bt_wiki_content,
-					bt_author,
-					bt_link,
-					bt_webpage,
-					bt_email,
-					bt_subscribe,
-					bt_statut
-				)
-				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-			$req->execute(array(
-				'comment',
-				$commentaire['bt_id'],
-				$commentaire['bt_article_id'],
-				$commentaire['bt_content'],
-				$commentaire['bt_wiki_content'],
-				$commentaire['bt_author'],
-				$commentaire['bt_link'],
-				$commentaire['bt_webpage'],
-				$commentaire['bt_email'],
-				$commentaire['bt_subscribe'],
-				$commentaire['bt_statut']
-			));
-		} catch (Exception $e) {
-			return 'Erreur : '.$e->getMessage();
-		}
+		$article_id = $comm['bt_article_id'];
+
+		$query = 'INSERT INTO commentaires ( bt_type, bt_id, bt_article_id, bt_content, bt_wiki_content, bt_author, bt_link, bt_webpage, bt_email, bt_subscribe, bt_statut ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+		$array = array( 'comment', $comm['bt_id'], $comm['bt_article_id'], $comm['bt_content'], $comm['bt_wiki_content'], $comm['bt_author'], $comm['bt_link'], $comm['bt_webpage'], $comm[' t_email'], $comm['bt_subscribe'], $comm['bt_statut'] );
 	}
+
 	// ÉDITION D'UN COMMENTAIRE DÉJÀ EXISTANT. (hors activation)
 	elseif ($what == 'editer-existant') {
-		$article_id = $commentaire['bt_article_id'];
+		$article_id = $comm['bt_article_id'];
 
-		try {
-			$req = $GLOBALS['db_handle']->prepare('UPDATE commentaires SET
-				bt_content=?,
-				bt_wiki_content=?,
-				bt_author=?,
-				bt_link=?,
-				bt_webpage=?,
-				bt_email=?,
-				bt_subscribe=?
-				WHERE bt_id=?');
-			$req->execute(array(
-				$commentaire['bt_content'],
-				$commentaire['bt_wiki_content'],
-				$commentaire['bt_author'],
-				$commentaire['bt_link'],
-				$commentaire['bt_webpage'],
-				$commentaire['bt_email'],
-				$commentaire['bt_subscribe'],
-				$commentaire['bt_id'],
-			));
-		} catch (Exception $e) {
-			return 'Erreur : '.$e->getMessage();
-		}
+		$query = 'UPDATE commentaires SET bt_content=?, bt_wiki_content=?, bt_author=?, bt_link=?, bt_webpage=?, bt_email=?, bt_subscribe=? WHERE bt_id=?';
+		$array = array( $comm['bt_content'], $comm['bt_wiki_content'], $comm['bt_author'], $comm['bt_link'], $comm['bt_webpage'], $comm['bt_email'], $comm['bt_subscribe'], $comm['bt_id'] );
+
 	}
 
 	// SUPPRESSION D'UN COMMENTAIRE
 	elseif ($what == 'supprimer-existant') {
-		try {
-			// get article_id
-			$req = $GLOBALS['db_handle']->prepare("SELECT bt_article_id FROM commentaires WHERE bt_id=?");
-			$req->execute(array($commentaire['bt_id']));
-			$result = $req->fetch();
-			$article_id = $result['bt_article_id'];
+		// get article_id
+		$req = $GLOBALS['db_handle']->prepare("SELECT bt_article_id FROM commentaires WHERE bt_id=?");
+		$req->execute(array($comm['bt_id']));
+		$result = $req->fetch();
+		$article_id = $result['bt_article_id'];
 
-			$req = $GLOBALS['db_handle']->prepare('DELETE FROM commentaires WHERE bt_id=?');
-			$req->execute(array($commentaire['bt_id']));
-
-		} catch (Exception $e) {
-			return 'Erreur : '.$e->getMessage();
-		}
+		$query = 'DELETE FROM commentaires WHERE bt_id=?';
+		$array = array($comm['bt_id']);
 	}
 
 	// CHANGEMENT STATUS COMMENTAIRE
 	elseif ($what == 'activer-existant') {
-		try {
-			// get article_id
-			$req = $GLOBALS['db_handle']->prepare("SELECT bt_article_id FROM commentaires WHERE bt_id=?");
-			$req->execute(array($commentaire['bt_id']));
-			$result = $req->fetch();
-			$article_id = $result['bt_article_id'];
+		// get article_id
+		$req = $GLOBALS['db_handle']->prepare("SELECT bt_article_id FROM commentaires WHERE bt_id=?");
+		$req->execute(array($comm['bt_id']));
+		$result = $req->fetch();
+		$article_id = $result['bt_article_id'];
 
-			$req = $GLOBALS['db_handle']->prepare('UPDATE commentaires SET bt_statut=ABS(bt_statut-1) WHERE bt_id=?');
-			$req->execute(array($commentaire['bt_id']));
+		$query = 'UPDATE commentaires SET bt_statut=ABS(bt_statut-1) WHERE bt_id=?';
+		$array = array($comm['bt_id']);
+	}
 
-		} catch (Exception $e) {
-			return 'Erreur : '.$e->getMessage();
-		}
+	try {
+		$req = $GLOBALS['db_handle']->prepare($query);
+		$req->execute($array);
+
+	} catch (Exception $e) {
+		return 'Erreur comms 8829 : '.$e->getMessage();
 	}
 
 
@@ -755,7 +603,7 @@ function bdd_commentaire($commentaire, $what) {
 
 		return TRUE;
 	} catch (Exception $e) {
-		return 'Erreur 248959 : mise à jour nb_comm() 248959 : '.$e->getMessage();
+		return 'Erreur 4899 : mise à jour nb_comm() : '.$e->getMessage();
 	}
 }
 
@@ -875,13 +723,17 @@ function rss_list_guid() {
 
 /* FOR RSS : RETUNS nb of articles per feed */
 function rss_count_feed() {
-	$result = array();
+	$result = $return = array();
 	//$query = "SELECT bt_feed, SUM(bt_statut) AS nbrun, SUM(bt_bookmarked) AS nbfav, SUM(CASE WHEN bt_date >= ".date('Ymd').'000000'." AND bt_statut = 1 THEN 1 ELSE 0 END) AS nbtoday FROM rss GROUP BY bt_feed";
 
 	$query = "SELECT bt_feed, SUM(bt_statut) AS nbrun FROM rss GROUP BY bt_feed";
 	try {
 		$result = $GLOBALS['db_handle']->query($query)->fetchAll(PDO::FETCH_ASSOC);
-		return $result;
+
+		foreach($result as $i => $res) {
+			$return[$res['bt_feed']] = $res['nbrun'];
+		}
+		return $return;
 	} catch (Exception $e) {
 		die('Erreur 0329-rss-count_per_feed : '.$e->getMessage());
 	}

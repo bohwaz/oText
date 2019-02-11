@@ -294,7 +294,7 @@ function afficher_index($tableau, $type, $erreurs_form) {
 		// get list comments
 		if ($billet['bt_nb_comments'] != 0) {
 			$query = "SELECT c.*, a.bt_title FROM commentaires AS c, articles AS a WHERE c.bt_article_id=? AND c.bt_article_id=a.bt_id AND c.bt_statut=1 ORDER BY c.bt_id LIMIT ? ";
-			$commentaires = liste_elements($query, array($billet['bt_id'], $billet['bt_nb_comments']), 'commentaires');
+			$commentaires = liste_elements($query, array($billet['bt_id'], $billet['bt_nb_comments']));
 			$template_comments = extract_boucles($theme_post, $GLOBALS['boucles']['commentaires'], 'excl');
 			foreach ($commentaires as $element) {
 				$HTML_comms .=  conversions_theme_commentaire($template_comments, $element);

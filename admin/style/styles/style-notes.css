@@ -51,18 +51,22 @@
 	overflow: hidden;
 }
 
+.notebloc[data-isarchived="0"] {
+	filter: sepia(1);
+}
+
 .notebloc:hover {
 	box-shadow: 0 2px 15px rgba(0,0,0,0.30);
 }
 
 .notebloc .title,
-#popup.popup-note .title {
+#popup.popup-note .popup-title {
 	display: flex;
 	position: relative;
 }
 
 .notebloc .title > h2,
-#popup.popup-note .title > h2 {
+#popup.popup-note .popup-title > h2 {
 	padding: 15px;
 	margin: 0;
 	font-size: 1.1em;
@@ -88,27 +92,36 @@
 	transition: .3s background-color ease;
 }
 
-#popup.popup-note[data-ispinned="0"] > .title > .pinnedIcon::before { content: "\e16e"; }
-#popup.popup-note[data-ispinned="1"] > .title > .pinnedIcon::before { content: "\e153"; }
+#popup.popup-note .popup-title {
+	padding: 0;
+	background-color: transparent;
+}
 
-#popup.popup-note > .title > .archiveIcon::before { content: "\e149"; }
-#popup.popup-note > .title > .archiveIcon:hover::before { content: "\e169"; }
+#popup.popup-note[data-ispinned="0"] > .popup-title > .pinnedIcon::before { content: "\e16e"; }
+#popup.popup-note[data-ispinned="1"] > .popup-title > .pinnedIcon::before { content: "\e153"; }
 
-#popup.popup-note > .content {
+#popup.popup-note[data-isarchived="1"] > .popup-title > .archiveIcon::before { content: "\e149"; }
+#popup.popup-note[data-isarchived="0"] > .popup-title > .archiveIcon::before { content: "\e169"; }
+
+#popup.popup-note .popup-title::after { content: none; }
+#popup.popup-note .popup-content::before { content: none; }
+
+#popup.popup-note > .popup-content {
 	background: transparent;
 	border: 0;
 	resize: none;
+	padding-bottom: 0;
+	padding-top: 0;
 }
 
-#popup.popup-note > .noteCtrls {
+#popup.popup-note > .popup-footer {
 	padding: 0 5px 5px;
-	display: flex;
 	flex-wrap: wrap;
 	position: relative;
 }
 
-#popup.popup-note > .noteCtrls > button,
-#popup.popup-note > .title > button {
+#popup.popup-note > .popup-footer > button,
+#popup.popup-note > .popup-title > button {
 	background-color: transparent;
 	border: 1px solid transparent;
 	border-radius: 50%;
@@ -120,41 +133,41 @@
 	transition: opacity .2s ease-in;
 }
 
-#popup.popup-note > .noteCtrls > button:hover,
-#popup.popup-note > .title > button:hover {
+#popup.popup-note > .popup-footer > button:hover,
+#popup.popup-note > .popup-title > button:hover {
 	background-color: rgba(0, 0, 0, .1);
 }
 
-#popup.popup-note > .noteCtrls > button::before,
-#popup.popup-note > .title > button::before {
+#popup.popup-note > .popup-footer > button::before,
+#popup.popup-note > .popup-title > button::before {
 	font-size: 1.6em;
 }
 
-#popup.popup-note > .noteCtrls > .colorIcon::before { content: "\e3b7"; }
-#popup.popup-note > .noteCtrls > .supprIcon::before { content: "\e92b"; }
+#popup.popup-note > .popup-footer > .colorIcon::before { content: "\e3b7"; }
+#popup.popup-note > .popup-footer > .supprIcon::before { content: "\e92b"; }
 
-#popup.popup-note > .noteCtrls > .colors {
+#popup.popup-note > .popup-footer > .colors {
 	display: none;
 	position: absolute;
 	list-style: none;
-	height: 95px;
-	width: 95px;
+	height: 87px;
+	width: 87px;
 	left: 4px;
 	bottom: 4px;
 	margin: 0;
-	padding: 0;
+	padding: 2px;
 	background-color: white;
 	border-radius: 2px;
 	box-shadow: 2px 2px 3px rgba(0, 0, 0, .2);
 	font-size: 0;
 }
 
-#popup.popup-note > .noteCtrls .colorIcon:focus + .colors,
-#popup.popup-note > .noteCtrls .colors:hover {
+#popup.popup-note > .popup-footer .colorIcon:focus + .colors,
+#popup.popup-note > .popup-footer .colors:hover {
 	display: block;
 }
 
-#popup.popup-note > .noteCtrls > .colors > li {
+#popup.popup-note > .popup-footer > .colors > li {
 	box-sizing: border-box;
 	border: 1px silver solid;
 	cursor: pointer;
@@ -162,23 +175,23 @@
 	height: 25px;
 	display: inline-block;
 	border-radius: 50%;
-	margin: 5px 0 0 5px;
+	margin: 2px;
 }
 
-#popup.popup-note > .noteCtrls > .colors > li:hover {
+#popup.popup-note > .popup-footer > .colors > li:hover {
 	opacity: .95;
 	border-color: gray;
 }
 
-#popup.popup-note > .noteCtrls li > button:focus,
-#popup.popup-note > .noteCtrls li > button::-moz-focus-inner {
+#popup.popup-note > .popup-footer li > button:focus,
+#popup.popup-note > .popup-footer li > button::-moz-focus-inner {
 	background-color: rgba(0, 0, 0, .05);
 	transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1) 0s;
 	outline: none;
 	border-color: transparent;
 }
 
-#popup.popup-note > .noteCtrls > .date {
+#popup.popup-note > .popup-footer > .date {
 	padding: 0 15px;
 	text-align: right;
 	font-style: italic;
@@ -195,14 +208,8 @@
 	max-width: none;
 }
 
-#popup.popup-note .noteCtrls .submit {
-	background: white;
-	box-shadow: none;
-	color: #222;
-	font-size: .9em;
-}
 
-#popup.popup-note .noteCtrls .button-cancel {
+#popup.popup-note .popup-footer .button-cancel {
 	background: transparent;
 }
 

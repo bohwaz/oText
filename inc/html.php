@@ -29,7 +29,7 @@ function footer($begin_time='') {
 
 	$html = '</div>'."\n";
 	$html .= '</div>'."\n";
-	$html .= '<p id="footer"><a href="'.BLOGOTEXT_SITE.'">'.BLOGOTEXT_NAME.' '.BLOGOTEXT_VERSION.'</a>'.$msg.'</p>'."\n";
+	//$html .= '<footer id="footer"><a href="'.BLOGOTEXT_SITE.'">'.BLOGOTEXT_NAME.' '.BLOGOTEXT_VERSION.'</a>'.$msg.'</footer>'."\n";
 	$html .= '</body>'."\n";
 	$html .= '</html>';
 	echo $html;
@@ -43,7 +43,6 @@ function afficher_topnav($titre, $html_sub_menu) {
 	$html = '<header id="header">'."\n";
 
 	$html .= "\t".'<div id="top">'."\n";
-
 
 	// page title
 	$html .=  "\t\t".'<h1 id="titre-page"><a href="'.$tab.'">'.$titre.'</a></h1>'."\n";
@@ -141,7 +140,7 @@ function get_notifications() {
 		$hasNotifs += $nb_new;
 		$lis .= "\t\t\t\t".'<li><a href="agenda.php">'.$nb_new .' near events</a></li>'."\n";
 	}
-//}
+	//}
 
 	$html .= "\t\t".'<div id="notif-icon" data-nb-notifs="'.$hasNotifs.'">'."\n";
 	$html .= "\t\t\t".'<ul>'."\n";
@@ -186,7 +185,7 @@ function moteur_recherche() {
 
 function encart_commentaires() {
 	$query = "SELECT a.bt_title, a.bt_link AS bt_art_link, c.bt_author, c.bt_id, c.bt_article_id, c.bt_content, c.bt_link FROM commentaires c LEFT JOIN articles a ON a.bt_id=c.bt_article_id WHERE c.bt_statut=1 AND a.bt_statut=1 ORDER BY c.bt_id DESC LIMIT 5";
-	$tableau = liste_elements($query, array(), 'commentaires');
+	$tableau = liste_elements($query, array());
 	if (isset($tableau)) {
 		$listeLastComments = '<ul class="encart_lastcom">'."\n";
 		foreach ($tableau as $i => $comment) {
@@ -244,7 +243,6 @@ function lien_pagination() {
 	}
 	$page_courante = (isset($_GET['p']) and is_numeric($_GET['p'])) ? $_GET['p'] : 0;
 	$qstring = remove_url_param('p');
-//	debug($qstring);
 	if ($page_courante <=0) {
 		$lien_precede = '';
 		$lien_suivant = '<a href="?'.$qstring.'&amp;p=1" rel="next">'.$GLOBALS['lang']['label_suivant'].'</a>';
@@ -430,7 +428,7 @@ function html_calendrier() {
 }
 
 
-// returns HTML <table> calender
+// returns HTML <ul> with article thumbnails
 function html_readmore() {
 	$nb_art = 4;
 	// lists IDs
@@ -453,7 +451,7 @@ function html_readmore() {
 	// get articles
 	try {
 		$array_qmark = str_pad('', count($art)*3-2, "?, ");
-		$query = "SELECT bt_title, bt_id, bt_content FROM articles WHERE bt_statut=1 AND bt_date <= ".date('YmdHis')." AND ID IN (".$array_qmark.")";
+		$query = "SELECT bt_title, bt_id, bt_content, bt_link FROM articles WHERE bt_statut=1 AND bt_date <= ".date('YmdHis')." AND ID IN (".$array_qmark.")";
 		$req = $GLOBALS['db_handle']->prepare($query);
 		$req->execute($art);
 		$articles = $req->fetchAll(PDO::FETCH_ASSOC);
@@ -492,7 +490,7 @@ function html_readmore() {
 */
 function html_get_image_from_article($article) {
 	// extract image from $article
-	preg_match('#<img *.* src=(["|\']?)([^\1 ]*)(\1)[^>]*>#', $article, $matches);
+	preg_match('#<img *.* src=(["|\']?)([^\1 ]*)(\1)[^>]*>#U', $article, $matches);
 	$img = array('<img src="favicon.ico" alt="default_favicon" />', '', 'favicon.ico', '');
 	if (!empty($matches)) {
 		$img = $matches;
@@ -516,16 +514,12 @@ function php_lang_to_js() {
 	$frontend_str['activer'] = $GLOBALS['lang']['activer'];
 	$frontend_str['desactiver'] = $GLOBALS['lang']['desactiver'];
 	$frontend_str['supprimer'] = $GLOBALS['lang']['supprimer'];
-	//$frontend_str['save'] = $GLOBALS['lang']['enregistrer'];
-	//$frontend_str['add_title'] = $GLOBALS['lang']['label_add_title'];
-	//$frontend_str['add_description'] = $GLOBALS['lang']['label_add_description'];
-	//$frontend_str['add_location'] = $GLOBALS['lang']['label_add_location'];
-	//$frontend_str['cancel'] = $GLOBALS['lang']['annuler'];
+	$frontend_str['epingler'] = $GLOBALS['lang']['epingler'];
+	$frontend_str['archiver'] = $GLOBALS['lang']['archiver'];
 	$frontend_str['errorPhpAjax'] = $GLOBALS['lang']['error_phpajax'];
 	$frontend_str['errorCommentSuppr'] = $GLOBALS['lang']['error_comment_suppr'];
 	$frontend_str['errorCommentValid'] = $GLOBALS['lang']['error_comment_valid'];
 	$frontend_str['questionQuitPage'] = $GLOBALS['lang']['question_quit_page'];
-	//$frontend_str['questionCleanRss'] = $GLOBALS['lang']['question_clean_rss'];
 	$frontend_str['questionSupprComment'] = $GLOBALS['lang']['question_suppr_comment'];
 	$frontend_str['questionSupprArticle'] = $GLOBALS['lang']['question_suppr_article'];
 	$frontend_str['questionSupprFichier'] = $GLOBALS['lang']['question_suppr_fichier'];
@@ -534,10 +528,7 @@ function php_lang_to_js() {
 	$frontend_str['questionSupprEvent'] = $GLOBALS['lang']['question_suppr_event'];
 	$frontend_str['questionSupprContact'] = $GLOBALS['lang']['question_suppr_contact'];
 	$frontend_str['notesLabelTitle'] = $GLOBALS['lang']['label_titre'];
-	//$frontend_str['notesLabelContent'] = $GLOBALS['lang']['label_contenu'];
-	//$frontend_str['createdOn'] = $GLOBALS['lang']['label_creee_le'];
-	//$frontend_str['questionPastEvents'] = $GLOBALS['lang']['question_show_past_events'];
-	//$frontend_str['entireDay'] = $GLOBALS['lang']['question_entire_day'];
+	$frontend_str['emptyTitle'] = $GLOBALS['lang']['label_sans_titre'];
 
 	$sc = json_encode($frontend_str, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 	$sc = '<script id="jsonLang" type="application/json">'."\n".$sc."\n".'</script>'."\n";

@@ -51,25 +51,17 @@ if ( !empty($_GET['filtre']) ) {
 	if (strpos($_GET['filtre'], 'label.') === 0) {
 		$search = htmlspecialchars(ltrim(strstr($_GET['filtre'], '.'), '.'));
 		$query = "SELECT * FROM contacts WHERE bt_label=? ORDER BY LOWER(bt_fullname) ASC";
-		$tableau = liste_elements($query, array($search), 'contacts');
+		$tableau = liste_elements($query, array($search));
 	}
 } elseif (!empty($_GET['q'])) { // mot clé
 	$arr = parse_search($_GET['q']);
 	$sql_where = implode(array_fill(0, count($arr), '( bt_fullname || bt_surname ) LIKE ? '), 'AND '); // AND operator between words
 	$query = "SELECT * FROM contacts WHERE ".$sql_where."ORDER BY LOWER(bt_fullname) ASC";
-	$tableau = liste_elements($query, $arr, 'contacts');
+	$tableau = liste_elements($query, $arr);
 } else { // aucun filtre : affiche TOUT
 	$query = "SELECT * FROM contacts ORDER BY LOWER(bt_fullname) ASC";
-	$tableau = liste_elements($query, array(), 'contacts');
+	$tableau = liste_elements($query, array());
 }
-
-
-
-
-
-
-
-
 
 
 // count total nb of notes
@@ -101,11 +93,11 @@ $out_html .= '<div id="page">'."\n";
 $out_html .= "\t".'<div id="popup-wrapper" hidden>'."\n";
 
 $out_html .= "\t\t".'<form class="popup-edit-contact" hidden>'."\n";
-$out_html .= "\t\t\t".'<div class="contact-title">'."\n";
+$out_html .= "\t\t\t".'<div class="popup-title contact-title">'."\n";
 $out_html .= "\t\t\t\t".'<button class="submit button-cancel" type="button"></button>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
 
-$out_html .= "\t\t\t".'<div class="contact-content">'."\n";
+$out_html .= "\t\t\t".'<div class="popup-content contact-content">'."\n";
 $out_html .= "\t\t\t\t".'<div class="contact-img-fullname">'."\n";
 $out_html .= "\t\t\t\t\t".'<span class="contact-img"></span>'."\n";
 $out_html .= "\t\t\t\t\t".'<label for="contact-title"><input type="text" class="text" name="contact-title" value="" placeholder=" " /><span>'.$GLOBALS['lang']['label-ctc-title'].'</span></label>'."\n";
@@ -154,18 +146,15 @@ $out_html .= "\t\t\t\t".'</div>'."\n";
 
 $out_html .= "\t\t\t".'</div>'."\n";
 
-$out_html .= "\t\t\t".'<div class="contact-footer">'."\n";
+$out_html .= "\t\t\t".'<div class="popup-footer contact-footer">'."\n";
 $out_html .= "\t\t\t\t".'<button class="submit button-showmore" type="button" name="showmore">PLUS</button>'."\n";
 $out_html .= "\t\t\t\t".'<button class="submit button-submit" type="button" name="save">'.$GLOBALS['lang']['enregistrer'].'</button>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
 
-
 $out_html .= "\t\t".'</form>'."\n";
 
-
-
 $out_html .= "\t\t".'<div class="popup-contact" hidden>'."\n";
-$out_html .= "\t\t\t".'<div class="contact-title">'."\n";
+$out_html .= "\t\t\t".'<div class="popup-title contact-title">'."\n";
 $out_html .= "\t\t\t\t".'<div class="contact-img-name">'."\n";
 $out_html .= "\t\t\t\t\t".'<span class="contact-img"></span>'."\n";
 $out_html .= "\t\t\t\t\t".'<span class="contact-name"></span>'."\n";
@@ -177,7 +166,7 @@ $out_html .= "\t\t\t\t".'</div>'."\n";
 $out_html .= "\t\t\t\t".'<button class="submit button-cancel" type="button"></button>'."\n";
 $out_html .= "\t\t\t\t".'<button class="button-edit"></button>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
-$out_html .= "\t\t\t".'<div class="contact-content">'."\n";
+$out_html .= "\t\t\t".'<div class="popup-content contact-content">'."\n";
 $out_html .= "\t\t\t\t".'<div>'.$GLOBALS['lang']['label_coordonnees'].'</div>'."\n";
 $out_html .= "\t\t\t\t".'<ul class="contact-content-coord">'."\n";
 $out_html .= "\t\t\t\t\t".'<li class="contact-names"><span></span></li>'."\n";
@@ -200,8 +189,6 @@ $out_html .= "\t\t\t".'</div>'."\n";
 $out_html .= "\t\t".'</div>'."\n";
 
 $out_html .= "\t".'</div>'."\n";
-
-
 
 $out_html .= "\t".'<div id="list-contacts">'."\n";
 $out_html .= "\t\t".'<table id="table-contacts">'."\n";
@@ -228,7 +215,6 @@ $out_html .= "\t\t".'</tbody>'."\n";
 $out_html .= "\t\t".'</table>'."\n";
 $out_html .= "\t".'</div>'."\n";
 $out_html .= "\t".'<button type="button" id="fab" class="add-contact" title="'.$GLOBALS['lang']['rss_label_config'].'">'.$GLOBALS['lang']['rss_label_addfeed'].'</button>'."\n";
-
 $out_html .= send_contacts_json($tableau, true);
 $out_html .= php_lang_to_js()."\n";
 $out_html .= "\n".'<script src="style/scripts/javascript.js"></script>'."\n";

@@ -35,7 +35,7 @@ creer_dossier(DIR_BACKUP, 0);
 function creer_fich_html() {
 	// récupère les liens
 	$query = "SELECT * FROM links ORDER BY bt_id DESC";
-	$list = liste_elements($query, array(), 'links');
+	$list = liste_elements($query, array());
 
 	// génération du code HTML.
 	$html = '<!DOCTYPE NETSCAPE-Bookmark-file-1><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">'."\n";
@@ -153,7 +153,7 @@ function creer_fichier_opml() {
 function creer_fichier_xmlnotes() {
 	// récupère les notes
 	$query = "SELECT * FROM notes ORDER BY bt_id DESC";
-	$list = liste_elements($query, array(), 'notes');
+	$list = liste_elements($query, array());
 
 	function esc($a) {
 		return htmlspecialchars($a, ENT_QUOTES, 'UTF-8');
@@ -184,7 +184,7 @@ function creer_fichier_xmlnotes() {
 function creer_fichier_vcfcontacts() {
 	// fetch contacts
 	$query = "SELECT * FROM contacts ORDER BY LOWER(bt_fullname) ASC";
-	$list = liste_elements($query, array(), 'contacts');
+	$list = liste_elements($query, array());
 
 	// parse some JSON stored elements
 	foreach ($list as $i => $contact) {
@@ -293,7 +293,7 @@ function rebuilt_file_db() {
 	*/
 
 	$query = "SELECT bt_filename, bt_path, ID FROM images";
-	$img_in_db = liste_elements($query, array(), 'images');
+	$img_in_db = liste_elements($query, array());
 
 	$img_in_db_path = array(); foreach ($img_in_db as $i => $img) { $img_in_db_path[] = '/'.$img['bt_path'].'/'.$img['bt_filename']; }
 
@@ -607,7 +607,7 @@ function importer_vcf($vcf_content) {
 
 	// get existing contacts (names and ID)
 	$query = "SELECT bt_fullname, bt_id FROM contacts";
-	$contacts_in_db = liste_elements($query, array(), 'contacts');
+	$contacts_in_db = liste_elements($query, array());
 
 	// rearange
 	foreach ($contacts_in_db as $i => $contact) {
@@ -839,7 +839,7 @@ if (!isset($_GET['do']) and !isset($_FILES['file'])) {
 	echo '<form action="maintenance.php" method="post" enctype="multipart/form-data" class="bordered-formbloc" id="form_import">'."\n";
 		echo '<fieldset class="pref valid-center">';
 		echo '<legend class="legend-backup">'.$GLOBALS['lang']['maintenance_import'].'</legend>';
-		echo "\t".'<p>'.form_select_no_label('imp-format', $importformats, 'jsonbak');
+		echo "\t".'<p>'.form_select('imp-format', $importformats, 'jsonbak', '');
 		echo '<input type="file" name="file" id="file" class="text" /></p>'."\n";
 		echo '</fieldset>'."\n";
 		echo '<p class="submit-bttns">'."\n";
@@ -896,8 +896,8 @@ if (!isset($_GET['do']) and !isset($_FILES['file'])) {
 					);
 
 					// retreive data that has been asked
-					if (isset($_GET['incl-artic'])) $data_array['articles'] = liste_elements('SELECT * FROM articles ORDER BY bt_id DESC ', array(), 'articles');
-					if (isset($_GET['incl-comms'])) $data_array['commentaires'] = liste_elements('SELECT * FROM commentaires ORDER BY bt_id DESC', array(), 'commentaires');
+					if (isset($_GET['incl-artic'])) $data_array['articles'] = liste_elements('SELECT * FROM articles ORDER BY bt_id DESC ', array());
+					if (isset($_GET['incl-comms'])) $data_array['commentaires'] = liste_elements('SELECT * FROM commentaires ORDER BY bt_id DESC', array());
 					// jsonise it
 					$file_archive = creer_fichier_json($data_array);
 

@@ -10,6 +10,147 @@ require_once 'inc/boot.php';
 operate_session();
 
 
+/// Formulaire pour ajouter un lien dans Links côté Admin
+function afficher_form_link($step, $erreurs, $editlink='') {
+	if ($erreurs) {
+		echo erreurs($erreurs);
+	}
+	$form = '';
+	if ($step == 1) { // postage de l'URL : un champ affiché en GET
+		$form .= '<form method="get" id="post-new-lien" action="'.basename($_SERVER['SCRIPT_NAME']).'">'."\n";
+		$form .= '<fieldset>'."\n";
+		$form .= "\t".'<div class="contain-input">'."\n";
+		$form .= "\t\t".'<label for="url">'.$GLOBALS['lang']['label_nouv_lien'].'</label>'."\n";
+		$form .= "\t\t".'<input type="text" name="url" id="url" value="" size="70" placeholder="'.$GLOBALS['lang']['label_nouv_lien'].'" class="text" autocomplete="off" tabindex="10" />'."\n";
+		$form .= "\t".'</div>'."\n";
+		//$form .= "\t".'<p class="submit-bttns"><button type="submit" class="submit button-submit">'.$GLOBALS['lang']['envoyer'].'</button></p>'."\n";
+		$form .= '</fieldset>'."\n";
+		$form .= '</form>'."\n\n";
+
+	} elseif ($step == 2) { // Form de l'URL, avec titre, description, en POST cette fois, et qu'il faut vérifier avant de stoquer dans la BDD.
+		$form .= '<form method="post" onsubmit="return moveTag();" id="post-lien" action="'.basename($_SERVER['SCRIPT_NAME']).'">'."\n";
+
+		$url = $_GET['url'];
+		$type = 'url';
+		$title = $url;
+		$charset = "UTF-8";
+		$new_id = date('YmdHis');
+
+		// URL is empty or no URI. It’s a note: we hide the URI field.
+		if (empty($url) or (strpos($url, 'http') !== 0) ) {
+			$type = 'note';
+			$title = 'Note'.(!empty($url) ? ' : '.html_entity_decode( $url, ENT_QUOTES | ENT_HTML5, 'UTF-8') : '');
+			$url = $GLOBALS['racine'].'?mode=links&amp;id='.$new_id;
+			$form .= hidden_input('url', $url);
+			$form .= hidden_input('type', 'note');
+		// URL is not empty
+		} else {
+			// Find out type of file
+			$response = request_external_files(array($url => '1'), 15, false);
+			$ext_file = $response[1];
+			$rep_hdr = $ext_file['headers'];
+			$cnt_type = (isset($rep_hdr['content-type'])) ? (is_array($rep_hdr['content-type']) ? $rep_hdr['content-type'][count($rep_hdr['content-type'])-1] : $rep_hdr['content-type']) : 'text/';
+			$cnt_type = (is_array($cnt_type)) ? $cnt_type[0] : $cnt_type;
+
+			// Image
+			if (strpos($cnt_type, 'image/') === 0) {
+				$filename = basename(parse_url($url, PHP_URL_PATH));
+				$title = $filename.' ('.$GLOBALS['lang']['label_image'].')';
+				if (list($width, $height) = @getimagesize($url)) {
+					$fdata = $url;
+					$type = 'image';
+					$title .= ' - '.$width.'x'.$height.'px ';
+				}
+			}
+
+			// Non-image NON-textual file (pdf…)
+			elseif (strpos($cnt_type, 'text/') !== 0 and strpos($cnt_type, 'xml') === FALSE) {
+				if ($GLOBALS['dl_link_to_files'] == 2) {
+					$type = 'file';
+				}
+			}
+
+			// a HTML document: parse it for any <title> ; fallback : $url
+			elseif (!empty($ext_file['body'])) {
+				libxml_use_internal_errors(true);
+				$dom = new DOMDocument();
+				$dom->strictErrorChecking = FALSE;
+				//$dom->loadHTML(mb_convert_encoding($ext_file['body'], 'HTML-ENTITIES',  'UTF-8'));
+				$dom->loadHTML($ext_file['body']);
+				$elements = $dom->getElementsByTagName('title');
+				if ($elements->length > 0) {
+					$title = trim($elements->item(0)->textContent);
+				}
+				libxml_use_internal_errors(false);
+			}
+
+			$form .= "\t".'<input type="text" name="url" value="'.htmlspecialchars($url).'" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_url']).'" size="50" class="text readonly-like" />'."\n";
+			$form .= hidden_input('type', 'link');
+		}
+
+		$link = array('title' => htmlspecialchars($title), 'url' => htmlspecialchars($url));
+		$form .= "\t".'<input type="text" name="title" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_titre']).'" required="" value="'.$link['title'].'" size="50" class="text" autofocus />'."\n";
+
+		$form .= "\t".'<textarea class="text description" name="description" cols="40" rows="7" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_description']).'"></textarea>'."\n";
+
+		$form .= "\t".'<div id="tag_bloc">'."\n";
+		$form .= form_categories_links('links', '');
+		$form .= "\t".'<input list="htmlListTags" type="text" class="text" id="type_tags" name="tags" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_tags']).'"/>'."\n";
+		$form .= "\t".'<input type="hidden" id="categories" name="categories" value="" />'."\n";
+		$form .= "\t".'</div>'."\n";
+
+		$form .= "\t".'<p>'."\n";
+		$form .= "\t\t".'<input type="checkbox" name="statut" id="statut" class="checkbox" />'.'<label class="forcheckbox" for="statut">'.$GLOBALS['lang']['label_lien_priv'].'</label>'."\n";
+		$form .= "\t".'</p>'."\n";
+		if ($type == 'image' or $type == 'file') {
+			// download of file is asked
+			$form .= "\t".'<p>'."\n";
+			if ($GLOBALS['dl_link_to_files'] == 2)
+			$form .= "\t\t".'<input type="checkbox" name="add_to_files" id="add_to_files" class="checkbox" />'.'<label class="forcheckbox" for="add_to_files">'.$GLOBALS['lang']['label_dl_fichier'].'</label>'."\n";
+			// download of file is systematic
+			elseif ($GLOBALS['dl_link_to_files'] == 1)
+			$form .= hidden_input('add_to_files', 'on');
+			$form .= "\t".'</p>'."\n";
+		}
+		$form .= "\t".'<p class="submit-bttns">'."\n";
+		$form .= "\t\t".'<button class="submit button-cancel" type="button" onclick="goToUrl(\'links.php\');">'.$GLOBALS['lang']['annuler'].'</button>'."\n";
+		$form .= "\t\t".'<button class="submit button-submit" type="submit" name="enregistrer" id="valid-link">'.$GLOBALS['lang']['envoyer'].'</button>'."\n";
+		$form .= "\t".'</p>'."\n";
+		$form .= hidden_input('_verif_envoi', '1');
+		$form .= hidden_input('bt_id', $new_id);
+		$form .= hidden_input('token', new_token());
+		$form .= hidden_input('dossier', '');
+		$form .= '</form>'."\n\n";
+
+	} elseif ($step == 'edit') { // Form pour l'édition d'un lien : les champs sont remplis avec le "wiki_content" et il y a les boutons suppr/activer en plus.
+		$form = '<form method="post" onsubmit="return moveTag();" id="post-lien" action="'.basename($_SERVER['SCRIPT_NAME']).'?id='.$editlink['bt_id'].'">'."\n";
+		$form .= "\t".'<input type="text" name="url" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_url']).'" required="" value="'.$editlink['bt_link'].'" size="70" class="text readonly-like" /></label>'."\n";
+		$form .= "\t".'<input type="text" name="title" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_titre']).'" required="" value="'.$editlink['bt_title'].'" size="70" class="text" autofocus /></label>'."\n";
+		$form .= "\t".'<textarea class="description text" name="description" cols="70" rows="7" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_description']).'" >'.$editlink['bt_wiki_content'].'</textarea>'."\n";
+		$form .= "\t".'<div id="tag_bloc">'."\n";
+		$form .= form_categories_links('links', $editlink['bt_tags']);
+		$form .= "\t\t".'<input list="htmlListTags" type="text" class="text" id="type_tags" name="tags" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_tags']).'"/>'."\n";
+		$form .= "\t\t".'<input type="hidden" id="categories" name="categories" value="" />'."\n";
+		$form .= "\t".'</div>'."\n";
+		$form .= "\t".'<p>'."\n";
+		$form .= "\t\t".'<input type="checkbox" name="statut" id="statut" class="checkbox" '.(($editlink['bt_statut'] == 0) ? 'checked ' : '').'/>'.'<label class="forcheckbox" for="statut">'.$GLOBALS['lang']['label_lien_priv'].'</label>'."\n";
+		$form .= "\t".'</p>'."\n";
+		$form .= "\t".'<p class="submit-bttns">'."\n";
+		$form .= "\t\t".'<button class="submit button-delete" type="button" name="supprimer" onclick="rmArticle(this)">'.$GLOBALS['lang']['supprimer'].'</button>'."\n";
+		$form .= "\t\t".'<button class="submit button-cancel" type="button" onclick="goToUrl(\'links.php\');">'.$GLOBALS['lang']['annuler'].'</button>'."\n";
+		$form .= "\t\t".'<button class="submit button-submit" type="submit" name="editer">'.$GLOBALS['lang']['envoyer'].'</button>'."\n";
+		$form .= "\t".'</p>'."\n";
+		$form .= hidden_input('ID', $editlink['ID']);
+		$form .= hidden_input('bt_id', $editlink['bt_id']);
+		$form .= hidden_input('_verif_envoi', '1');
+		$form .= hidden_input('is_it_edit', 'yes');
+		$form .= hidden_input('token', new_token());
+		$form .= hidden_input('type', $editlink['bt_type']);
+		$form .= '</form>'."\n\n";
+	}
+	return $form;
+}
+
 // modèle d'affichage d'un div pour un lien (avec un formaulaire d'édition par lien).
 function afficher_lien($link) {
 	$list = '';
@@ -87,34 +228,34 @@ if (!isset($_GET['url']) and !isset($_GET['ajout'])) {
 		// date
 		if ( preg_match('#^\d{6}(\d{1,8})?$#', $_GET['filtre']) ) {
 			$query = "SELECT * FROM links WHERE bt_id LIKE ? ORDER BY bt_id DESC";
-			$tableau = liste_elements($query, array($_GET['filtre'].'%'), 'links');
+			$tableau = liste_elements($query, array($_GET['filtre'].'%'));
 		// visibles & brouillons
 		} elseif ($_GET['filtre'] == 'draft' or $_GET['filtre'] == 'pub') {
 			$query = "SELECT * FROM links WHERE bt_statut=? ORDER BY bt_id DESC";
-			$tableau = liste_elements($query, array((($_GET['filtre'] == 'draft') ? 0 : 1)), 'links');
+			$tableau = liste_elements($query, array((($_GET['filtre'] == 'draft') ? 0 : 1)));
 		// tags
 		} elseif (strpos($_GET['filtre'], 'tag.') === 0) {
 			$search = htmlspecialchars(ltrim(strstr($_GET['filtre'], '.'), '.'));
 			$query = "SELECT * FROM links WHERE bt_tags LIKE ? OR bt_tags LIKE ? OR bt_tags LIKE ? OR bt_tags LIKE ? ORDER BY bt_id DESC";
-			$tableau = liste_elements($query, array($search, $search.',%', '%, '.$search, '%, '.$search.', %'), 'links');
+			$tableau = liste_elements($query, array($search, $search.',%', '%, '.$search, '%, '.$search.', %'));
 		} else {
 			$query = "SELECT * FROM links ORDER BY bt_id DESC LIMIT ".$GLOBALS['max_linx_admin'];
-			$tableau = liste_elements($query, array(), 'links');
+			$tableau = liste_elements($query, array());
 		}
 	// keyword
 	} elseif (!empty($_GET['q'])) {
 		$arr = parse_search($_GET['q']);
 		$sql_where = implode(array_fill(0, count($arr), '( bt_content || bt_title || bt_link ) LIKE ? '), 'AND ');
 		$query = "SELECT * FROM links WHERE ".$sql_where."ORDER BY bt_id DESC";
-		$tableau = liste_elements($query, $arr, 'links');
+		$tableau = liste_elements($query, $arr);
 	// editing a specific link
 	} elseif (!empty($_GET['id']) and is_numeric($_GET['id'])) {
 		$query = "SELECT * FROM links WHERE bt_id=?";
-		$tableau = liste_elements($query, array($_GET['id']), 'links');
+		$tableau = liste_elements($query, array($_GET['id']));
 	// no filter, show em all
 	} else {
 		$query = "SELECT * FROM links ORDER BY bt_id DESC LIMIT 0, ".$GLOBALS['max_linx_admin'];
-		$tableau = liste_elements($query, array(), 'links');
+		$tableau = liste_elements($query, array());
 	}
 }
 

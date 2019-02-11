@@ -11,7 +11,7 @@
 	transition: transform .2s cubic-bezier(.2,-.5,.5,.2), left .3s ease;
 }
 
-#sub-menu #hide-feed-list {
+#sub-menu #hide-side-nav {
 	padding: 6px;
 	background-color: transparent;
 	border: none;
@@ -19,11 +19,11 @@
 	color: rgba(0, 0, 0, .7);
 }
 
-#sub-menu #hide-feed-list:focus {
+#sub-menu #hide-side-nav:focus {
 	background-color: rgba(0, 0, 0, .1);
 }
 
-#sub-menu #hide-feed-list:before {
+#sub-menu #hide-side-nav:before {
 	content: "\e5d2";
 	font-size: 1.7em;
 	cursor: pointer;

@@ -117,7 +117,7 @@ if ( isset($_GET['post_id']))  {
 	$article_id = $_GET['post_id'];
 
 	$query = "SELECT c.*, a.bt_title FROM commentaires AS c, articles AS a WHERE c.bt_article_id=? AND c.bt_article_id=a.bt_id ORDER BY c.bt_id";
-	$commentaires = liste_elements($query, array($article_id), 'commentaires');
+	$commentaires = liste_elements($query, array($article_id));
 
 	if (!empty($commentaires)) {
 		$article_title = $commentaires[0]['bt_title'];
@@ -133,38 +133,38 @@ else {
 		// filter for date
 		if (preg_match('#^\d{6}(\d{1,8})?$#', ($_GET['filtre'])) ) {
 			$query = "SELECT c.*, a.bt_title FROM commentaires c LEFT JOIN articles a ON a.bt_id = c.bt_article_id WHERE c.bt_id LIKE ? ORDER BY c.bt_id DESC";
-			$commentaires = liste_elements($query, array($_GET['filtre'].'%'), 'commentaires');
+			$commentaires = liste_elements($query, array($_GET['filtre'].'%'));
 		}
 		// filter for statut
 		elseif ($_GET['filtre'] == 'draft') {
 			$query = "SELECT c.*, a.bt_title FROM commentaires c LEFT JOIN articles a ON a.bt_id=c.bt_article_id WHERE c.bt_statut=0 ORDER BY c.bt_id DESC";
-			$commentaires = liste_elements($query, array(), 'commentaires');
+			$commentaires = liste_elements($query, array());
 		}
 		elseif ($_GET['filtre'] == 'pub') {
 			$query = "SELECT c.*, a.bt_title FROM commentaires c LEFT JOIN articles a ON a.bt_id=c.bt_article_id WHERE c.bt_statut=1 ORDER BY c.bt_id DESC";
-			$commentaires = liste_elements($query, array(), 'commentaires');
+			$commentaires = liste_elements($query, array());
 		}
 		// filter for author
 		elseif (substr($_GET['filtre'], 0, -strlen(strstr($_GET['filtre'], '.'))) == 'auteur') { //and $search != '') { // for "authors" the requests is "auteur.$search"
 			$search = htmlspecialchars(ltrim(strstr($_GET['filtre'], '.'), '.'));
 			$query = "SELECT c.*, a.bt_title FROM commentaires c LEFT JOIN articles a ON a.bt_id=c.bt_article_id WHERE c.bt_author=? ORDER BY c.bt_id DESC";
-			$commentaires = liste_elements($query, array($search), 'commentaires');
+			$commentaires = liste_elements($query, array($search));
 		}
 		// no filter
 		else {
 			$query = "SELECT c.*, a.bt_title FROM commentaires c LEFT JOIN articles a ON a.bt_id=c.bt_article_id ORDER BY c.bt_id DESC LIMIT ".$GLOBALS['max_comm_admin'];
-			$commentaires = liste_elements($query, array(), 'commentaires');
+			$commentaires = liste_elements($query, array());
 		}
 	}
 	elseif (!empty($_GET['q'])) {
 		$arr = parse_search($_GET['q']);
 		$sql_where = implode(array_fill(0, count($arr), 'c.bt_content LIKE ? '), 'AND ');
 		$query = "SELECT c.*, a.bt_title FROM commentaires c LEFT JOIN articles a ON a.bt_id=c.bt_article_id WHERE ".$sql_where."ORDER BY c.bt_id DESC";
-		$commentaires = liste_elements($query, $arr, 'commentaires');
+		$commentaires = liste_elements($query, $arr);
 	}
 	else { // no filter, so list'em all
 		$query = "SELECT c.*, a.bt_title FROM commentaires c LEFT JOIN articles a ON a.bt_id=c.bt_article_id ORDER BY c.bt_id DESC LIMIT ".$GLOBALS['max_comm_admin'];
-		$commentaires = liste_elements($query, array(), 'commentaires');
+		$commentaires = liste_elements($query, array());
 	}
 	$nb_total_comms = liste_elements_count("SELECT count(*) AS nbr FROM commentaires", array());
 }

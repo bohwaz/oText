@@ -236,42 +236,49 @@
 		display: none;
 	}
 
-	/* Page agenda */
+	/* page agenda */
 	#calendar-table {
-		border-collapse: collapse;
+		padding: 5px 0;
+		border-spacing: 0px;
+	}
+	#calendar-table > tbody span.eventLabel {
+		padding: 2px 0;
+		margin: 2px 0;
+		border-width: 1px 0;
 	}
 
-	.eventDate {
-		display: grid;
-		grid-template-columns: auto 1fr;
-		grid-template-rows: auto 1fr;
-		align-items: center;
-		justify-items: center;
-		grid-gap: 2px 20px;
-	}
-	#daily-events > div .eventDate > .event-dd {
-		grid-column: 1;
-		grid-row: 1 / span 2;
-	}
-	#daily-events > div .eventDate > .event-mmdd {
-		grid-column: 2;
-		grid-row: 1;
-		width: auto;
-		margin: 0;
-	}
-	#daily-events > div .eventDate > .event-hhii {
-		grid-column: 2;
-		grid-row: 2;
-		width: auto;
-		margin: 0;
-	}
-	#daily-events > div.pastEvent .eventSummary {
-		display: flex;
+	#calendar-table.table-month-mode > tbody span.eventLabel {
+		box-shadow: none;
 	}
 
-	#daily-events > div.pastEvent .eventSummary .loc,
-	#daily-events > div.pastEvent .eventSummary .content {
+	#calendar-table > tbody time {
 		display: none;
 	}
+
+
+	#side-nav {
+		margin-right: 5px;
+		transform: translateX(-280px);	
+	}
+	#cal-sizer {
+		margin-left: 0px;
+	}
+
+	#calendar-table {
+		height: calc(100vh - 108px);
+	}
+	#side-nav.hidden-sidenav {
+		transform: translateX(0px);
+	}
+
+	#side-nav.hidden-sidenav + #cal-sizer {
+		margin-left: 5px;
+		display: none;
+	}
+
+	#calendar-table.table-year-mode > tbody > tr > td {
+		padding: 18px;
+	}
+
 }
 

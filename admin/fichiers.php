@@ -181,40 +181,40 @@ function afficher_form_fichier($erreurs, $fichiers, $what) { // ajout d’un fic
 if ( !empty($_GET['filtre']) ) {
 	if ( preg_match('#^\d{6}(\d{1,8})?$#', $_GET['filtre']) ) {
 		$query = "SELECT * FROM images WHERE bt_id LIKE ? ORDER BY bt_id DESC";
-		$tableau = liste_elements($query, array($_GET['filtre'].'%'), 'images');
+		$tableau = liste_elements($query, array($_GET['filtre'].'%'));
 	}
 	elseif ($_GET['filtre'] == 'draft' or $_GET['filtre'] == 'pub') {
 		$query = "SELECT * FROM images WHERE bt_statut=? ORDER BY bt_id DESC";
-		$tableau = liste_elements($query, array((($_GET['filtre'] == 'draft') ? 0 : 1)), 'images');
+		$tableau = liste_elements($query, array((($_GET['filtre'] == 'draft') ? 0 : 1)));
 	}
 	elseif (strpos($_GET['filtre'], 'type.') === 0) {
 		$search = htmlspecialchars(ltrim(strstr($_GET['filtre'], '.'), '.'));
 		$query = "SELECT * FROM images WHERE bt_type LIKE=? ORDER BY bt_id DESC";
-		$tableau = liste_elements($query, array($search), 'images');
+		$tableau = liste_elements($query, array($search));
 	}
 	else {
 		$query = "SELECT * FROM images ORDER BY bt_id DESC";
-		$tableau = liste_elements($query, array(), 'images');
+		$tableau = liste_elements($query, array());
 	}
 // recheche par mot clé
 } elseif (!empty($_GET['q'])) {
 	$arr = parse_search($_GET['q']);
 	$sql_where = implode(array_fill(0, count($arr), '( bt_content || bt_filename ) LIKE ? '), 'AND ');
 	$query = "SELECT * FROM images WHERE ".$sql_where."ORDER BY bt_id DESC";
-	$tableau = liste_elements($query, $arr, 'images');
+	$tableau = liste_elements($query, $arr);
 
 // par extension
 } elseif (!empty($_GET['extension'])) {
 	$query = "SELECT * FROM images WHERE bt_fileext=? ORDER BY bt_id DESC";
-	$tableau = liste_elements($query, array($_GET['extension']), 'images');
+	$tableau = liste_elements($query, array($_GET['extension']));
 // par fichier unique (id)
 } elseif (isset($_GET['file_id']) and preg_match('/\d{14}/',($_GET['file_id']))) {
 	$query = "SELECT * FROM images WHERE bt_id=? LIMIT 1";
-	$tableau = liste_elements($query, array($_GET['file_id']), 'images');
+	$tableau = liste_elements($query, array($_GET['file_id']));
 }
 else {
 	$query = "SELECT * FROM images ORDER BY bt_id DESC";
-	$tableau = liste_elements($query, array(), 'images');
+	$tableau = liste_elements($query, array());
 }
 
 
@@ -307,6 +307,7 @@ else {
 	echo $out_html;
 }
 
+echo php_lang_to_js();
 echo "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
 echo "\n".'<script>'."\n";
 echo 'var counter = 0;'."\n";
@@ -324,7 +325,6 @@ echo '}'."\n";
 echo 'var imageWall = new imgListWall();'."\n";
 echo 'var filesWall = new docListWall();'."\n";
 echo "\n".'</script>'."\n";
-echo php_lang_to_js();
 
 
 footer($begin);

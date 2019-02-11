@@ -20,6 +20,8 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'editer' 						=> 'Éditer',
 'activer'	 					=> 'Activer',
 'desactiver'	 				=> 'Désactiver',
+'epingler'						=> 'Épingler/Désépingler',
+'archiver'						=> 'Archiver/Désarchiver',
 'mesarticles' 					=> 'Mes articles',
 'mesliens'	 					=> 'Mes liens',
 'mesnotes'	 					=> 'Mes notes',
@@ -121,6 +123,7 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'prefs_legend_configblog'		=> 'Blog et commentaires',
 'prefs_legend_configlinx'		=> 'Liens',
 'prefs_legend_configrss'		=> 'Flux RSS',
+'prefs_legend_configagenda'		=> 'Agenda',
 'pref_auteur'					=> 'Auteur : ',
 'pref_email'					=> 'Adresse e-mail : ',
 'pref_identifiant'				=> 'Identifiant : ',
@@ -158,6 +161,9 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'pref_id_format_ymdhis'			=> 'Format date : '.date('YmdHis'),
 'pref_id_format_rand6'			=> 'Chaine aléatoire: -ebd68b-',
 'maintenance_optim'				=> 'Nettoyer la base de données',
+'pref_agenda_format'			=> 'Affichage par défaut de l’agenda',
+'pref_agenda_taskcalendar'		=> 'Calendrier',
+'pref_agenda_tasklist'			=> 'Planning',
 
 // placeholders
 'placeholder_nom_fichier'		=> 'nom',
@@ -299,12 +305,14 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 // Labels
 'label_date'					=> 'Date',
 'label_titre'					=> 'Titre',
+'label_sans_titre'				=> 'Sans titre',
 'label_contenu'					=> 'Contenu',
 'label_description'				=> 'Description',
 'label_publie'					=> 'Publié',
 'label_publies'					=> 'Publiés',
 'label_invisible'				=> 'Invisible',
 'label_invisibles'				=> 'Invisibles',
+'label_note_archived'			=> 'Notes archivées',
 'label_note_ajout'				=> 'Créer une note…',
 'label_feed_ajout'				=> 'Ajouter un flux',
 'label_event_ajout'				=> 'Ajouter un événement',
@@ -351,7 +359,7 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'label-ctc-title'				=> 'Titre',
 'label-ctc-fullname'			=> 'Nom complet',
 'label-ctc-surname'				=> 'Surnom',
-'label-ctc-label'				=> 'Libelé',
+'label-ctc-label'				=> 'Libellé',
 'label-ctc-email'				=> 'E-mail',
 'label-ctc-phone'				=> 'Téléphone',
 'label-ctc-nr'					=> 'N°',
@@ -367,12 +375,11 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'label-ctc-notes'				=> 'Notes',
 'label-ctc-other'				=> 'Autre',
 
-
-
 // Agenda
 'cemois'						=> 'Ce mois-ci',
 'cetteannee'					=> 'Cette année',
 'label_all_events'				=> 'Tous les événnements',
 'label_past_events'				=> 'Événements passés',
+'label_future_events'			=> 'Événements à venir',
 
 ));
