@@ -38,6 +38,18 @@
 	border-top: 1px solid silver;
 	border-right: 1px solid silver;
 	box-shadow: none;
+	display: flex;
+	flex-flow: column nowrap;
+}
+
+#side-nav .ical-link {
+	margin-top: auto;
+	text-align: center;
+}
+
+#side-nav .ical-link > button {
+	background: white;
+	border: none;
 }
 
 #side-nav.hidden-sidenav {
@@ -563,6 +575,7 @@
 #popup.popup-event > .event-title > span.event-name {
 	font-size: 1.3em;
 	letter-spacing: 1px;
+	flex: 1;
 }
 
 #popup.popup-event > .event-content ul {
@@ -588,8 +601,19 @@
 	color: rgba(0, 0, 0, .4);
 }
 
+#popup.popup-event > .event-content ul > li.event-persons > span {
+	border: 1px solid silver;
+	display: inline-block;
+	padding: 3px 8px;
+	margin: -3px 5px 8px 0;
+	border-radius: 20px;
+	background: #fafafa;
+}
+
+
 #popup.popup-event .event-time::before        { content: "\e192"; }
 #popup.popup-event .event-loc::before         { content: "\e567"; }
+#popup.popup-event .event-persons::before     { content: "\e7fb"; }
 #popup.popup-event .event-description::before { content: "\e0d8"; }
 
 #popup.popup-event .event-time span {
@@ -679,28 +703,95 @@
 
 #popup.popup-edit-event .event-content > div {
 	position: relative;
-	padding: 15px 15px 15px 60px;
+	padding-left: 55px;
+	margin: 5px 0;
+}
+
+#popup.popup-edit-event .event-content-date p { /* for date & toogle button */
+	display: flex;
+	align-items: center;
+	padding: 20px 5px 0;
 }
 
 #popup.popup-edit-event .event-content > div > p:first-of-type {
+	margin: 0;
 	margin-right: 55px;
+}
+
+#popup.popup-edit-event .event-content > div > p > .checkbox-toggle {
+	margin: 0;
+}
+
+
+
+#popup.popup-edit-event .event-content > div:not(.event-content-date) {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
 }
 
 #popup.popup-edit-event .event-content > div::before {
 	font-size: 1.4em;
 	position: absolute;
 	left: 20px;
-	color: rgba(0, 0, 0, .5);
-	padding: 15px 0;
+	top: 19px;
+	color: rgba(0, 0, 0, .4);
 }
 
-#popup.popup-edit-event .event-content-date::before  { content: "\e192"; }
-#popup.popup-edit-event .event-content-loc::before   { content: "\e567"; }
-#popup.popup-edit-event .event-content-descr::before { content: "\e0d8"; }
-
-#popup.popup-edit-event .event-content-date p {
+#popup.popup-edit-event .event-content > div:not(.event-content-date) label {
+	margin: 0 0 0px;
+	padding: 5px;
+	position: relative;
 	display: flex;
+	/*align-items: center;*/
+	overflow: hidden;
+	flex: 1;
+	flex-basis: 40%;
 }
+
+#popup.popup-edit-event .event-content > div:not(.event-content-date) .text {
+	min-width: 0;
+	padding: 15px 5px 5px 5px;
+	width: 100%;
+	position: relative;
+	z-index: 1;
+	background-color: transparent;
+}
+
+#popup.popup-edit-event .event-content > div:not(.event-content-date) label > span {
+	position: absolute;
+	left: 5px;
+	padding: 15px 5px 5px 5px;
+	transition: all 200ms;
+	opacity: 0.5;
+	z-index: 0;
+	font-weight: 300;
+}
+
+#popup.popup-edit-event .event-content label > .text:not(:placeholder-shown) + span,
+#popup.popup-edit-event .event-content label > .text:focus + span {
+	/*transform: scale(.75) translateY(-14px);*/
+	transform: scale(.75) translateY(0px);
+	transform-origin: top left;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+#popup.popup-edit-event .event-content label > .text:focus + span,
+#popup.popup-edit-event .event-content label > .text:invalid + span {
+	opacity: 1;
+	color: #000;
+}
+#popup.popup-edit-event .event-content label > .text:invalid + span {
+	color: red;
+}
+
+
+
+#popup.popup-edit-event .event-content-date::before    { content: "\e192"; }
+#popup.popup-edit-event .event-content-loc::before     { content: "\e567"; }
+#popup.popup-edit-event .event-content-persons::before { content: "\e7fb"; }
+#popup.popup-edit-event .event-content-descr::before   { content: "\e0d8"; }
+
 
 #popup.popup-edit-event .event-content-date label[for="date"] {
 	flex: 1;
@@ -724,9 +815,45 @@
 }
 
 #popup.popup-edit-event .event-content-loc .text,
+#popup.popup-edit-event .event-content-persons .text,
 #popup.popup-edit-event .event-content-descr .text {
 	width: 100%;
 }
+
+#popup.popup-edit-event #event-content-persons-selected {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	list-style: none;
+}
+
+#popup.popup-edit-event #event-content-persons-selected > li {
+	border: 1px solid silver;
+	border-radius: 20px;
+	padding: 5px 10px;
+	display: inline-block;
+	background: #fafafa;
+	margin: 5px;
+}
+
+#popup.popup-edit-event #event-content-persons-selected > li > a {
+	color: inherit;
+	margin-left: 6px;
+	text-decoration: none;
+	padding: 3px;
+}
+
+#popup.popup-edit-event #event-content-persons-selected > li:hover > a {
+	color: crimson;
+}
+
+
+#popup.popup-edit-event #event-content-persons-selected:not(:empty) {
+	margin-top: 9px;
+}
+
+
+
 
 #popup.popup-edit-event .event-content-descr .text {
 	height: 100%;

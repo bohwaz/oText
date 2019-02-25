@@ -27,6 +27,11 @@ oText is provided by Timo van Neerden (a.k.a. _le hollandais volant_), based upo
  * Note saving tools (Google Keep style)
  * Agenda tool (Google Calendar style)
     * With ICS feed-link
+ * Contacts manager
+ * Import/Export (ICS (agenda), JSON (blog data), OPML (RSS), ZIP (all), HTML (links), VCard (contacts), XML (notes))
+
+
+* PWA capable _(soon, for RSS, Notes, Agenda, Contacts)_
 
 ---
 
@@ -42,7 +47,7 @@ oText is provided by Timo van Neerden (a.k.a. _le hollandais volant_), based upo
 ### Server-side
 Software & disk:
  * PHP 5.7+
- * min 1 Mb disk space (more userdata = more space needed)
+ * min 1.5 Mb disk space (more userdata = more space needed)
 
  PHP-libraries:
  * PHP-PDO (with `php-sqlite` or/and `php-mysql`);
@@ -68,4 +73,4 @@ This is a **personnal** project I made for myself.
 
 You are free to use it if you want to, but I won’t maintain features I do not use. As such, some features might be removed, added or altered (including the database) after an update.
 
-Also, I am open to ideas, bugreports or requests, but keep in mind that I’ll probably say no. Your idea might be good, but if I don’t need some feature for myself, I’ll not implement it.
+Also, I am open to ideas, bugreports or requests, but keep in mind that I’ll probably say no to suggestions. Your idea might be good, but if I don’t need some feature for myself, I won’t implement it.

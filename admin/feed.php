@@ -19,7 +19,6 @@ foreach ($GLOBALS['liste_flux'] as $i => $url) {
 	if (empty(trim($url['link']))) {
 		unset($GLOBALS['liste_flux'][$i]);
 	}
-
 	$newfeeds[hash('md5', $url['link'])] = $url;
 
 }
@@ -28,104 +27,9 @@ $GLOBALS['liste_flux'] = $newfeeds;
 
 file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' *'.'/');
 
-
-
-
-
 debug($GLOBALS['liste_flux']);
-*/
-/*
-try {
-
-
-	$query = "SELECT bt_feed FROM rss GROUP BY bt_feed";
-	$result = $GLOBALS['db_handle']->query($query)->fetchAll(PDO::FETCH_ASSOC);
-
-
-	$GLOBALS['db_handle']->beginTransaction();
-
-	foreach ($result as $i => $value) {
-		// grep the link
-		foreach ($GLOBALS['liste_flux'] as $j => $url) {
-			if (crc32($url['link']) == $value['bt_feed']) {
-
-				$query = 'UPDATE rss SET bt_feed = ? WHERE bt_feed = ?';
-				$array = array(hash('md5', $url['link']), $value['bt_feed']);
-
-				$req = $GLOBALS['db_handle']->prepare($query);
-				$req->execute($array);
-			}
-		}
-
-	}
-
-
-	// commit to DB
-	$GLOBALS['db_handle']->commit();
-
-	// commit to feed list FILE
-	$GLOBALS['liste_flux'] = array_reverse(tri_selon_sous_cle($GLOBALS['liste_flux'], 'title'));
-	file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' *'.'/');
-
-
-	die('Success');
-} catch (Exception $e) {
-	die('SQL Feeds-update Error: '.$e->getMessage());
-}
-
 
 */
-
-
-
-//debug($GLOBALS['liste_flux']);
-
-
-/* Returns the HTML list with the feeds (the left panel with the sites, not the posts themselves) */
-function feed_list_html() {
-	$html = "";
-	$html  = "\t\t".'<li class="special">'."\n";
-	$html .= "\t\t\t".'<ul>'."\n";
-	$html .= "\t\t\t\t".'<li class="all-feeds active-site" id="global-post-counter">'.$GLOBALS['lang']['rss_label_all_feeds'].'</li>'."\n";
-	$html .= "\t\t\t\t".'<li class="today-feeds" id="today-post-counter">'.$GLOBALS['lang']['rss_label_today_feeds'].'</li>'."\n";
-	$html .= "\t\t\t\t".'<li class="fav-feeds" id="favs-post-counter">'.$GLOBALS['lang']['rss_label_favs_feeds'].'</li>'."\n";
-	$html .= "\t\t\t".'</ul>'."\n";
-	$html .= "\t\t".'</li>'."\n";
-
-	// sort feeds by folder
-	$folders = array();
-	foreach ($GLOBALS['liste_flux'] as $i => $feed) {
-		$folders[$feed['folder']][$i] = $feed;
-	}
-	krsort($folders);
-
-	// creates html : lists RSS feeds without folder separately from feeds with a folder
-	foreach ($folders as $i => $folder) {
-		$li_html = "";
-		$folder_count = 0;
-		foreach ($folder as $j => $feed) {
-			$t = ($i != '') ? "\t\t" : "";
-			$li_html .= $t."\t\t".'<li class="feed-site'.(($feed['iserror'] != '0' ) ? ' feed-error': '' ).'" data-nbrun="'.$feed['nbrun'].'" data-feed-hash="'.$j.'" style="background-image: url('.URL_ROOT.'favatar.php?w=favicon&amp;q='.parse_url($feed['link'], PHP_URL_HOST).')">'.htmlspecialchars($feed['title']).'</li>'."\n";
-			$folder_count += $feed['nbrun'];
-		}
-
-		if ($i != '') {
-			$t = "\t";
-			$html .= "\t\t".'<li class="feed-folder" data-nbrun="'.$folder_count.'" data-folder="'.$i.'">'.$i."\n";
-			$html .= "\t\t\t".'<a class="unfold"></a>'."\n";
-			$html .= "\t\t\t".'<ul>'."\n";
-		}
-		$html .= $li_html;
-		if ($i != '') {
-			$html .= "\t\t\t".'</ul>'."\n";
-			$html .= "\t\t".'</li>'."\n";
-		}
-
-	}
-
-	return $html;
-}
-
 
 /* form config RSS feeds: allow changing feeds (title, url) or remove a feed */
 function afficher_form_rssconf() {
@@ -204,6 +108,7 @@ $html_sub_menu .= "\t\t".'</span>'."\n";
 
 if (!isset($_GET['config'])) {
 	$html_sub_menu .= "\t\t".'<div class="rss-menu-buttons sub-menu-buttons">'."\n";
+	$html_sub_menu .= "\t\t\t".'<button type="button" id="reloadFeeds">'.$GLOBALS['lang']['rss_label_refresh'].'</button>'."\n";
 	$html_sub_menu .= "\t\t\t".'<div class="item-menu-options">'."\n";
 	$html_sub_menu .= "\t\t\t\t".'<ul>'."\n";
 	$html_sub_menu .= "\t\t\t\t\t".'<li><button type="button" id="refreshAll">'.$GLOBALS['lang']['rss_label_refresh'].'</button></li>'."\n";
@@ -212,7 +117,6 @@ if (!isset($_GET['config'])) {
 	$html_sub_menu .= "\t\t\t\t\t".'<li><button type="button" id="deleteOld">'.$GLOBALS['lang']['rss_label_clean'].'</button></li>'."\n";
 	$html_sub_menu .= "\t\t\t\t".'</ul>'."\n";
 	$html_sub_menu .= "\t\t\t".'</div>'."\n";
-	$html_sub_menu .= "\t\t".'</div>'."\n";
 } else {
 	$html_sub_menu .= "\t".'<ul class="sub-menu-buttons">'."\n";
 	$html_sub_menu .= "\t\t".'<li><button class="submit button-submit" type="submit" name="enregistrer" id="enregistrer" disabled>'.$GLOBALS['lang']['enregistrer'].'</button></li>'."\n";
@@ -243,7 +147,20 @@ if (isset($_GET['config'])) {
 else {
 	// list of websites
 	$out_html .= "\t".'<ul id="feed-list">'."\n";
-	$out_html .= feed_list_html();
+	$out_html .= "\t\t".'<li class="special">'."\n";
+	$out_html .= "\t\t\t".'<ul>'."\n";
+	$out_html .= "\t\t\t\t".'<li class="all-feeds active-site" id="global-post-counter">'.$GLOBALS['lang']['rss_label_all_feeds'].'</li>'."\n";
+	$out_html .= "\t\t\t\t".'<li class="today-feeds" id="today-post-counter">'.$GLOBALS['lang']['rss_label_today_feeds'].'</li>'."\n";
+	$out_html .= "\t\t\t\t".'<li class="fav-feeds" id="favs-post-counter">'.$GLOBALS['lang']['rss_label_favs_feeds'].'</li>'."\n";
+	$out_html .= "\t\t\t".'</ul>'."\n";
+	$out_html .= "\t\t".'</li>'."\n";
+
+	$out_html .= "\t\t".'<li class="feed-folder" data-nbrun="" data-folder="" hidden>'."\n";
+	$out_html .= "\t\t\t".'<a class="unfold"></a>'."\n";
+	$out_html .= "\t\t\t".'<ul></ul>'."\n";
+	$out_html .= "\t\t".'</li>'."\n";
+
+	$out_html .= "\t\t".'<li class="feed-site" data-nbrun="" data-feed-hash="" style="" hidden></li>'."\n";
 	$out_html .= "\t".'</ul>'."\n";
 
 	$out_html .= '<div id="rss-list">'."\n";
@@ -256,9 +173,9 @@ else {
 	$out_html .= "\t\t\t".'<p><span id="post-counter"></span> '.$GLOBALS['lang']['label_elements'].'</p>'."\n";
 	$out_html .= "\t\t".'</div>'."\n";
 	$out_html .= "\t\t".'<ul id="post-list">'."\n";
-	$out_html .= "\t\t\t".'<li id="i_" data-sitehash="" hidden>'."\n";
+	$out_html .= "\t\t\t".'<li id="" data-datetime="" data-id="" data-sitehash="" data-is-fav="" data-folder="" hidden>'."\n";
 	$out_html .= "\t\t\t\t".'<div class="post-head">'."\n";
-	$out_html .= "\t\t\t\t\t".'<a href="#" class="lien-fav" data-is-fav="" data-fav-id=""></a>'."\n";
+	$out_html .= "\t\t\t\t\t".'<a href="#" class="lien-fav"></a>'."\n";
 	$out_html .= "\t\t\t\t\t".'<div class="site"></div>'."\n";
 	$out_html .= "\t\t\t\t\t".'<div class="folder"></div>'."\n";
 	$out_html .= "\t\t\t\t\t".'<a href="#" title="" class="post-title" target="_blank" data-id=""></a>'."\n";

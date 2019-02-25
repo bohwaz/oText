@@ -170,7 +170,10 @@
 
 .linkbloc .link-header {
 	display: flex;
-	padding-right: 50px;
+	align-items: center;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	padding-right: 5px;
 	border-bottom: 1px solid #eee;
 }
 

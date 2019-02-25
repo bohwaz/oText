@@ -70,7 +70,10 @@
 
 .commentbloc .comm-header {
 	display: flex;
-	padding-right: 50px;
+	padding-top: 5px;
+	padding-right: 5px;
+	padding-bottom: 5px;
+	align-items: center;
 	border-bottom: 1px solid #eee;
 }
 
@@ -118,6 +121,7 @@
 	flex: 1 1 auto;
 	text-align: right;
 	color: gray;
+	margin-right: 10px;
 	font-style: italic;
 }
 
@@ -139,10 +143,10 @@
 /* com options button */
 .item-menu-options {
 	z-index: 4;
-	position: absolute;
-	right: 0;
-	top: 0;
 	padding: 10px;
+	margin-left: 10px;
+	position: relative;
+	z-index: 20;
 }
 
 .item-menu-options::before {
@@ -174,6 +178,7 @@
 
 .item-menu-options > ul > li {
 	cursor: pointer;
+	overflow: hidden;
 	white-space: nowrap;
 }
 
@@ -190,7 +195,7 @@
 	border: 0;
 	background-color: transparent;
 	font-weight: inherit;
-	//width: 100%;
+	width: 100%;
 	text-align: left;
 }
 

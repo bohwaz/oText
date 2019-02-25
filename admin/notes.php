@@ -118,7 +118,7 @@ $out_html .= "\t".'</div>'."\n\n";
 
 $out_html .= "\t".'<div id="list-notes">'."\n";
 // note template
-$out_html .= "\t\t".'<div id="n_" data-update-action="" class="notebloc" style="background-color: rgb(255, 255, 255);" data-index-id="" hidden>'."\n";
+$out_html .= "\t\t".'<div data-update-action="" class="notebloc" style="background-color: rgb(255, 255, 255);" hidden>'."\n";
 $out_html .= "\t\t\t".'<div class="title">'."\n";
 $out_html .= "\t\t\t\t".'<h2>Title</h2>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";

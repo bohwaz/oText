@@ -161,9 +161,11 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'pref_id_format_ymdhis'			=> 'Format date : '.date('YmdHis'),
 'pref_id_format_rand6'			=> 'Chaine aléatoire: -ebd68b-',
 'maintenance_optim'				=> 'Nettoyer la base de données',
-'pref_agenda_format'			=> 'Affichage par défaut de l’agenda',
+'pref_agenda_format'			=> 'Affichage par défaut de l’agenda :',
 'pref_agenda_taskcalendar'		=> 'Calendrier',
 'pref_agenda_tasklist'			=> 'Planning',
+'pref_agenda_ical_link'			=> 'Lien iCal/.ics de l’agenda :',
+'pref_agenda_show_ical_link'	=> 'Afficher le lien iCal.',
 
 // placeholders
 'placeholder_nom_fichier'		=> 'nom',
@@ -186,6 +188,8 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'note_no_feed'					=> 'Aucun flux RSS',
 'note_no_feed_entry'			=> 'Aucune entrée RSS',
 'note_no_notifs'				=> 'Aucune notification',
+'note_notifs_near_event'		=> 'événnement(s) proche(s).',
+'note_notifs_new_comment'		=> 'nouveau(x) commentaire(s).',
 
 // Formulaire Images
 'label_jusqua'					=> 'Jusqu’à ',
@@ -251,7 +255,7 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'rss_jsalert_new_link'			=> 'Url complète du flux RSS/Atom :',
 'rss_jsalert_new_link_folder'	=> 'Dossier du flux (ou laisser vide) :',
 'rss_raccourcis_clavier'		=> 'Ctrl+Haut = lire l’élément précédent, Ctrl+Bas = lire l’élément suivant.',
-'rss_nouveau_flux'				=> 'nouveaux élements.',
+'rss_nouveau_flux'				=> 'nouveaux élements RSS.',
 
 // vérifier les mises à jours
 'maint_chk_update'				=> 'Mises à jour',
@@ -318,6 +322,7 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'label_event_ajout'				=> 'Ajouter un événement',
 'label_add_title'				=> 'Ajouter un titre',
 'label_add_location'			=> 'Ajouter un lieu',
+'label_add_persons'				=> 'Ajouter des participants',
 'label_add_description'			=> 'Ajouter une description',
 'label_feed_new'				=> 'Nouveau flux ',
 'label_article_derniers'		=> 'Articles récents',

@@ -66,7 +66,6 @@ Date.prototype.getWeekNumber = function () {
 /* date from YYYYMMDDHHIISS format */
 Date.dateFromYMDHIS = function(d) {
 	var d = new Date(d.substr(0, 4), d.substr(4, 2) - 1, d.substr(6, 2), d.substr(8, 2), d.substr(10, 2), d.substr(12, 2));
-	//var d = d.substr(0, 4) + '' + d.substr(4, 2) - 1 + d.substr(6, 2) + d.substr(8, 2) + d.substr(10, 2) + d.substr(12, 2);
 	return d;
 }
 
@@ -286,7 +285,7 @@ function commAction(action, button) {
 
 	div_bloc.classList.add('ajaxloading');
 	var xhr = new XMLHttpRequest();
-	xhr.open('POST', 'commentaires.php', true);
+	xhr.open('POST', 'commentaires.php');
 
 	xhr.onprogress = function() {
 		div_bloc.classList.add('ajaxloading');
@@ -461,46 +460,34 @@ function writeForm() {
 
 /* Adds a tag to the list when we hit "enter" */
 /* validates the tag and move it to the list */
-function moveTag() {
-	console.log("SUBMIT");
-	var iField = document.getElementById('type_tags');
-	var oField = document.getElementById('selected');
-	var fField = document.getElementById('categories');
 
-	// if something in the input field : enter == add word to list of tags.
-	if (iField.value.length != 0) {
-		oField.innerHTML += '<li class="tag"><span>'+iField.value+'</span><a href="javascript:void(0)" onclick="removeTag(this.parentNode)">×</a></li>';
-		iField.value = '';
-		iField.blur(); // blur+focus needed in Firefox 48 for some reason…
-		iField.focus();
-		return false;
-	}
-	// else : real submit : seek in the list of tags, extract the tags and submit these.
-	else {
-		var liste = oField.getElementsByTagName('li');
-		var len = liste.length;
-		var iTag = '';
-		for (var i = 0 ; i<len ; i++) { iTag += liste[i].getElementsByTagName('span')[0].textContent+", "; }
-		fField.value = iTag.substr(0, iTag.length-2);
-		return true;
-	}
+function handleTags(form, inField, outField, tagList) {
+	document.getElementById(form).addEventListener('submit', function(e){
+		var liste = document.getElementById(tagList).getElementsByTagName('li');
+		for (var i = 0, len=liste.length, iTag='' ; i<len ; i++) {
+			iTag += liste[i].getElementsByTagName('span')[0].textContent+", ";
+		}
+		document.getElementById(outField).value = iTag.substr(0, iTag.length-2);
+	});
+
+	document.getElementById(inField).addEventListener('keydown', function(e){
+		if (e.keyCode == 13 && this.value !== '') {
+			e.preventDefault();
+			document.getElementById(tagList).innerHTML += '<li class="tag"><span>'+document.getElementById(inField).value+'</span><a href="javascript:void(0)" onclick="this.parentNode.parentNode.removeChild(this.parentNode); return false;">×</a></li>';
+			this.value = '';
+			return false;
+		}
+	});
+
+	document.getElementById(inField).addEventListener('blur', function(e){
+		if (this.value !== '') {
+			e.preventDefault();
+			document.getElementById(tagList).innerHTML += '<li class="tag"><span>'+document.getElementById(inField).value+'</span><a href="javascript:void(0)" onclick="this.parentNode.parentNode.removeChild(this.parentNode); return false;">×</a></li>';
+			this.value = '';
+			return false;
+		}
+	});
 }
-
-/* remove a tag from the list */
-function removeTag(tag) {
-	tag.parentNode.removeChild(tag);
-	return false;
-}
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1084,7 +1071,9 @@ function RssReader() {
 	** Some properties & misc actions
 	*/
 	// init JSON List
-	this.feedList = JSON.parse(document.getElementById('json_rss').textContent);
+	var theJSON = JSON.parse(document.getElementById('json_rss').textContent);
+	this.feedList = theJSON.posts;
+	this.siteList = theJSON.sites;
 
 	// init local "mark as read" buffer
 	this.readQueue = {"count": "0", "urlList": []};
@@ -1098,8 +1087,13 @@ function RssReader() {
 	this.openAllButton = document.getElementById('openallitemsbutton');
 	this.openAllButton.addEventListener('click', function(){ _this.openAll(); });
 
+	// init the « list-all / list-favs / filst-today » events
+	this.feedsList.querySelectorAll('.special > ul > li').forEach(function(li) {
+		li.addEventListener('click', function(e) { _this.sortElements(e); });
+	});
+
 	// init the « hide feed-list » button
-	document.getElementById('hide-side-nav').addEventListener('click', function(){ _this.hideFeedList(); });
+	document.getElementById('hide-side-nav').addEventListener('click', function(){ _this.feedsList.classList.toggle('hidden-list'); });
 
 	// init the « mark as read » button.
 	document.getElementById('markasread').addEventListener('click', function(){ _this.markAsRead(); });
@@ -1107,14 +1101,8 @@ function RssReader() {
 	// init the « refresh all » button event
 	document.getElementById('refreshAll').addEventListener('click', function(e){ _this.refreshAllFeeds(e); });
 
-	// init the « list all feeds » button
-	document.getElementById('global-post-counter').addEventListener('click', function(){ _this.sortAll(); });
-
-	// init the « list today posts » button
-	document.getElementById('today-post-counter').addEventListener('click', function() { _this.sortToday(); });
-
-	// init the « list favorits posts » button
-	document.getElementById('favs-post-counter').addEventListener('click', function() { _this.sortFavs(); });
+	// init the « reload JSON » button event
+	document.getElementById('reloadFeeds').addEventListener('click', function(e){ _this.refreshJsonData(e); });
 
 	// init the « delete old » button
 	document.getElementById('deleteOld').addEventListener('click', function(){ _this.deleteOldFeeds(); });
@@ -1122,69 +1110,79 @@ function RssReader() {
 	// init the « add new feed » button
 	document.getElementById('fab').addEventListener('click', function(){ _this.addNewFeed(); });
 
-	// add click events on Sites
-	this.allSites = this.feedsList.querySelectorAll('.feed-site');
-	for (var liSite of this.allSites) { liSite.addEventListener('click', function(e){ _this.sortItemsBySite(e); } )};
-
-	// add click events on Folders
-	this.allFolders = this.feedsList.querySelectorAll('.feed-folder');
-	for (var liFolder of this.allFolders) { liFolder.addEventListener('click', function(e){ _this.sortItemsByFolder(e); } )};
-
-	// add click events on "open-folder" button
-	this.allUnfoldButton = this.feedsList.querySelectorAll('.feed-folder > .unfold');
-	for (var button of this.allUnfoldButton) { button.addEventListener('click', function(e){ _this.openFolder(e);} )};
-
-
 	// Global Page listeners
 	// onkeydown : detect "open next/previous" action with keyboard
-	window.addEventListener('keydown', function(e) { _this.kbActionHandle(e); } );
+	window.addEventListener('keydown', function(e) {
+		_this.kbActionHandle(e);
+	});
 
-	// beforeunload : to send a "mark as read" request when closing the tab or reloading whole page
-	window.addEventListener("beforeunload", function(e) { _this.markAsReadOnUnloadXHR(); } );
+	// beforeunload : to send a "mark as read" request before unloading the page
+	window.addEventListener("beforeunload", function() {
+		if (_this.readQueue.urlList.length == 0) return true;
+		var formData = new FormData();
+		formData.append('token', token);
+		formData.append('mark-as-read', 'postlist');
+		formData.append('mark-as-read-data', JSON.stringify(_this.readQueue.urlList));
+		navigator.sendBeacon('ajax/rss.ajax.php', formData);
+	});
 
-	var DateTimeFormat = new Intl.DateTimeFormat('fr', {weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "numeric"});
+	// if the tab is hidden (or (on mobile) if the browser is hidden : send a "mark as read" request)
+	document.addEventListener("visibilitychange", function() {
+		if (document.visibilityState == 'hidden' && _this.readQueue.urlList.length !== 0) {
+			_this.markAsReadXHR('postlist', JSON.stringify(_this.readQueue.urlList));
+		}
 
-	var d = new Date();
-	this.ymd000 = '' + d.getFullYear() + ('0' + (d.getMonth()+1)).slice(-2) + ('0' + d.getDate()).slice(-2) + '000000';
+	});
 
+	// built page
+	window.addEventListener("load", function() {
+		_this.rebuiltPostsTree();
+		_this.rebuiltSitesTree();
+	});
 
-	this.postTemplate = this.postsList.firstElementChild.parentNode.removeChild(this.postsList.firstElementChild);
-	this.postTemplate.removeAttribute('hidden');
+	// get templates
+	this.postTemplate = this.postsList.firstElementChild.parentNode.removeChild(this.postsList.firstElementChild); this.postTemplate.removeAttribute('hidden');
+	this.siteTemplate = this.feedsList.removeChild(this.feedsList.querySelector('.feed-site')); this.siteTemplate.removeAttribute('hidden');
+	this.folderTemplate = this.feedsList.removeChild(this.feedsList.querySelector('.feed-folder')); this.folderTemplate.removeAttribute('hidden');
+
 
 	/***********************************
-	** The HTML tree builder :
-	** Rebuilts the whole list of posts.
+	** The HTML builder methods
 	*/
 
-	this.rebuiltTree = function(RssPosts) {
+	// builts the whole list of posts.
+	this.rebuiltPostsTree = function() {
 		// empties the actual list
 		while (this.postsList.firstChild) {
 			 this.postsList.removeChild(this.postsList.firstChild);
 		}
-
-		if (0 === RssPosts.length) return false;
+		var countPosts = this.feedList.length;
+		if (0 === countPosts) return false;
 
 		var liList = document.createDocumentFragment();
-		var begin = Date.now();
+
+		var DateTimeFormat = new Intl.DateTimeFormat('fr', {year: "numeric", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "numeric"});
 
 		// populates the new list
-		for (var i = 0, len = RssPosts.length ; i < len ; i++) {
-			var item = RssPosts[i];
-			var li = this.postTemplate.cloneNode(true);
+		this.feedList.forEach(function(item) {
+
+			var li = _this.postTemplate.cloneNode(true);
+
 			li.id = 'i_'+item.id;
+			li.setAttribute('data-id', item.id);
+			li.setAttribute('data-folder', item.folder);
+			li.setAttribute('data-datetime', item.datetime);
 			li.setAttribute('data-sitehash', item.feedhash);
+			li.setAttribute('data-is-fav', item.fav);
 			if (0 === item.statut) { li.classList.add('read'); }
-			li.querySelector('.post-head > .lien-fav').setAttribute('data-is-fav', item.fav);
-			li.querySelector('.post-head > .lien-fav').setAttribute('data-fav-id', item.id);
 			li.querySelector('.post-head > .lien-fav').addEventListener('click', function(e){ _this.markAsFav(this); e.preventDefault(); } );
 			li.querySelector('.post-head > .site').textContent = item.sitename;
 			if (item.folder) { li.querySelector('.post-head > .folder').textContent = item.folder; }
 			else { li.querySelector('.post-head').removeChild(li.querySelector('.folder')); }
 			li.querySelector('.post-head > .post-title').href = item.link;
 			li.querySelector('.post-head > .post-title').title = item.title;
-			li.querySelector('.post-head > .post-title').setAttribute('data-id', li.id);
 			li.querySelector('.post-head > .post-title').textContent = item.title;
-			li.querySelector('.post-head > .post-title').addEventListener('click', function(e){ if(!_this.openThisItem(document.getElementById(this.dataset.id))) e.preventDefault(); } );
+			li.querySelector('.post-head > .post-title').addEventListener('click', function(e){ if(!_this.openThisItem(this.parentNode.parentNode)) e.preventDefault(); } );
 			li.querySelector('.post-head > .share > .lien-share').href = 'links.php?url='+encodeURIComponent(item.link);
 			li.querySelector('.post-head > .share > .lien-open').href = item.link;
 			li.querySelector('.post-head > .share > .lien-mail').href = 'mailto:?&subject='+ encodeURIComponent(item.title) + '&body=' + encodeURIComponent(item.link);
@@ -1192,45 +1190,103 @@ function RssReader() {
 			li.querySelector('.rss-item-content').appendChild(document.createComment(item.content));
 
 			liList.appendChild(li);
-
-		}
+		});
 
 		this.postsList.appendChild(liList);
 
 		// displays the number of items (local counter)
 		var count = document.querySelector('#post-counter');
-		if (count.firstChild) {
-			count.firstChild.nodeValue = RssPosts.length;
-		} else {
-			count.appendChild(document.createTextNode(RssPosts.length));
-		}
+		count.textContent = countPosts;
 
 		return false;
 	}
-	// init the whole DOM list
-	this.rebuiltTree(this.feedList);
 
+	// builts the whole list of sites
+	this.rebuiltSitesTree = function() {
+		// remove existing entries (if any)
+		this.feedsList.querySelectorAll(':scope > li:not(.special)').forEach(function (li) {
+			 li.parentNode.removeChild(li);
+		});
 
+		var ulList = document.createDocumentFragment();
+
+		// populates the new list
+		for (var i in this.siteList) {
+			var item = this.siteList[i];
+
+			var li = _this.siteTemplate.cloneNode(true);
+			li.style.backgroundImage = "url(../favatar.php?w=favicon&q="+((new URL(item.link)).hostname)+')';
+			li.setAttribute('data-nbrun', item.nbrun);
+			li.setAttribute('data-feed-hash', i);
+			if (0 !== item.iserror) { li.classList.add('feed-error'); }
+			li.textContent = item.title;
+
+			li.addEventListener('click', function(e) { _this.sortElements(e); });
+
+			if ("" !== item.folder) {
+				// check if folder UL already exists
+				var folderUl = ulList.querySelector('li[data-folder="'+item.folder+'"]');
+				if (!folderUl) {
+					// if not create it
+					var folderUl = _this.folderTemplate.cloneNode(true);
+					folderUl.addEventListener('click', function(e) { _this.sortElements(e); });
+					folderUl.querySelector('.unfold').addEventListener('click', function(e) { 
+						e.stopPropagation();
+						e.target.parentNode.classList.toggle('open');
+					 } ) ;
+
+					folderUl.setAttribute('data-folder', item.folder);
+					folderUl.setAttribute('data-nbrun', 0);
+					folderUl.insertBefore(document.createTextNode(item.folder), folderUl.firstElementChild);
+
+					var beforeNode = ulList.firstChild;
+
+					// place new folder such as forders get sorted.
+					while (beforeNode && beforeNode.classList.contains('feed-folder')) {
+						if (beforeNode.getAttribute('data-folder') < item.folder) {
+							beforeNode = beforeNode.nextElementSibling;
+						} else break;
+					}
+
+					ulList.insertBefore(folderUl, beforeNode);
+
+				}
+				// if exists, append site to folder
+				folderUl.querySelector('ul').appendChild(li);
+
+				folderUl.setAttribute('data-nbrun', parseInt(folderUl.getAttribute('data-nbrun'), 10)+parseInt(item.nbrun, 10));
+
+			}
+			// else, append to normal list
+			else {
+				ulList.appendChild(li);
+			}
+		};
+		this.feedsList.appendChild(ulList);
+	
+		return false;
+	}
 
 	/***********************************
 	** Methods to "open" elements (all, one, next…)
 	*/
 	// open ALL the items
 	this.openAll = function() {
-		var posts = this.postsList.querySelectorAll('li');
+		var posts = this.postsList.querySelectorAll('li:not([hidden])');
+
 		if (!this.openAllButton.classList.contains('unfold')) {
-			for (var i=0, len=posts.length ; i<len ; i++) {
-				posts[i].classList.add('open-post');
-				var content = posts[i].querySelector('.rss-item-content');
+			posts.forEach(function(post) {
+				post.classList.add('open-post');
+				var content = post.querySelector('.rss-item-content');
 				if (content.childNodes[0] && content.childNodes[0].nodeType == 8) {
 					content.innerHTML = content.childNodes[0].data;
 				}
-			}
+			});
 			this.openAllButton.classList.add('unfold');
 		} else {
-			for (var i=0, len=posts.length ; i<len ; i++) {
-				posts[i].classList.remove('open-post');
-			}
+			posts.forEach(function(post) {
+				post.classList.remove('open-post');
+			});
 			this.openAllButton.classList.remove('unfold');
 		}
 		return false;
@@ -1239,16 +1295,17 @@ function RssReader() {
 	// open clicked item
 	this.openThisItem = function(theItem) {
 		if (theItem.classList.contains('open-post')) { return true; }
-		// close open posts
-		var posts = this.postsList.querySelectorAll('.open-post');
-		for (var i=0, len=posts.length ; i<len ; i++) {
-			posts[i].classList.remove('open-post');
-		}
+
+		// close previously opened posts
+		this.postsList.querySelectorAll('.open-post').forEach(function(post) {
+			post.classList.remove('open-post');
+		});		
 		this.openAllButton.classList.remove('unfold');
-		// open this post
+
+		// opens this post
 		theItem.classList.add('open-post');
 
-		// unhide the content
+		// unveil the content
 		var content = theItem.querySelector('.rss-item-content');
 		if (content.childNodes[0].nodeType == 8) {
 			content.innerHTML = content.childNodes[0].data;
@@ -1270,135 +1327,118 @@ function RssReader() {
 		return false;
 	}
 
-
 	// handle keyboard actions
 	this.kbActionHandle = function(e) {
-		// first actual open item
-		var openPost = this.postsList.querySelector('li.open-post');
-		// ... or first post if list is empty
-		if (!openPost) { openPost = this.postsList.querySelector('li'); var isFirst = true; }
-		// ... or return if no post in list
-		if (!openPost) return false;
-
 		// down
-		if (e.keyCode == '40' && e.ctrlKey && openPost.nextSibling) {
-			if (isFirst)
-				this.openThisItem(openPost);
-			else
-				this.openThisItem(openPost.nextSibling);
+		if (e.keyCode == '40' && e.ctrlKey) {
 			e.preventDefault();
+
+			// first post to open
+			var toOpenPost = this.postsList.querySelector('li.open-post ~ li:not([hidden])');
+			// ... or first post if none are open
+			if (!toOpenPost) { var toOpenPost = this.postsList.querySelector('li:not([hidden])'); }
+			// ... or return if no post in list
+			if (!toOpenPost) return false;
+			this.openThisItem(toOpenPost);
 		}
 		// up
-		if (e.keyCode == '38' && e.ctrlKey && openPost.previousSibling) {
-			this.openThisItem(openPost.previousSibling);
+		if (e.keyCode == '38' && e.ctrlKey) {
 			e.preventDefault();
+			// actually open post
+			var theOpenPost = this.postsList.querySelector('li.open-post');
+			// ... or return if no open post yet
+			if (!theOpenPost) return false;
+			// finds the previous non-hidden post
+			while (theOpenPost.previousSibling && theOpenPost.previousSibling.hasAttribute('hidden')) {
+				theOpenPost = theOpenPost.previousSibling;
+			}
+
+			if (theOpenPost.previousSibling) {
+				this.openThisItem(theOpenPost.previousSibling);
+			}
 		}
-	}
-
-	// open Folder
-	this.openFolder = function(e) {
-		e.stopPropagation();
-		e.target.parentNode.classList.toggle('open');
-	}
-
-
-	this.hideFeedList = function() {
-		this.feedsList.classList.toggle('hidden-list');
 	}
 
 	/***********************************
-	** Methods to "sort" elements (by site, folder, favs…)
+	** Method to "sort" elements (by site, folder, favs…)
 	*/
-	// create list of items matching the selected site
-	this.sortItemsBySite = function(e) {
+
+	this.sortElements = function (e) {
+		// prevent a clic on a "site" to go to a parent "folder"
 		e.stopPropagation();
-		var theSite = e.target.getAttribute('data-feed-hash');
-		var newList = new Array();
-		for (var i = 0, len = this.feedList.length ; i < len ; i++) {
-			if (this.feedList[i].feedhash == theSite) { // if match
-				newList.push(this.feedList[i]);
-			}
+
+		// sort all feeds
+		if (e.target.classList.contains('all-feeds')) {
+			this.postsList.querySelectorAll('#post-list > li').forEach(function(post) {
+				post.classList.remove('open-post');
+				post.removeAttribute('hidden');
+			});
 		}
-		// unhighlight previously highlighted site
-		if (document.querySelector('.active-site')) { document.querySelector('.active-site').classList.remove('active-site'); }
-		// and highlight new site
-		document.querySelector('#feed-list li[data-feed-hash="'+theSite+'"]').classList.add('active-site');
-		window.location.hash = '';
-		this.rebuiltTree(newList);
-		this.openAllButton.classList.remove('unfold');
-	}
 
-	// create list of items matching the selected folder
-	this.sortItemsByFolder = function(e) {
-		e.stopPropagation();
-		var theFolder = e.target.getAttribute('data-folder');
-		var newList = new Array();
-		for (var i = 0, len = this.feedList.length ; i < len ; i++) {
-			if (this.feedList[i].folder == theFolder) {
-				newList.push(this.feedList[i]);
-			}
+		// sort by site
+		else if (e.target.classList.contains('feed-site')) {
+			var theSite = e.target.getAttribute('data-feed-hash');
+			this.postsList.querySelectorAll('#post-list > li').forEach(function(post) {
+				post.classList.remove('open-post');
+				if (post.getAttribute('data-sitehash') === theSite) {
+					post.removeAttribute('hidden');
+				} else {
+					post.setAttribute('hidden', '');
+				}
+			});
 		}
-		// unhighlight previously highlighted site
-		if (document.querySelector('.active-site')) { document.querySelector('.active-site').classList.remove('active-site'); }
-		// highlight selected folder
-		this.feedsList.querySelector('li[data-folder="'+theFolder+'"]').classList.add('active-site');
-		window.location.hash = '';
-		this.rebuiltTree(newList);
-		this.openAllButton.classList.remove('unfold');
-	}
 
-	// rebuilt the list with all the items
-	this.sortAll = function() {
-		// unhighlight previously selected site
-		document.querySelector('.active-site').classList.remove('active-site');
-		// highlight "all" button.
-		document.querySelector('.all-feeds').classList.add('active-site');
-
-		window.location.hash = '';
-		this.rebuiltTree(this.feedList);
-		this.openAllButton.classList.remove('unfold');
-		return false;
-	}
-
-	// Create list with the favs
-	this.sortFavs = function() {
-		var newList = new Array();
-		// create list of items that are favs
-		for (var i = 0, len = this.feedList.length ; i < len ; i++) {
-			if (this.feedList[i].fav == 1) {
-				newList.push(this.feedList[i]);
-			}
+		// sort by folder
+		else if (e.target.classList.contains('feed-folder')) {
+			var theFolder = e.target.getAttribute('data-folder');
+			this.postsList.querySelectorAll('#post-list > li').forEach(function(post) {
+				post.classList.remove('open-post');
+				if (post.getAttribute('data-folder') === theFolder) {
+					post.removeAttribute('hidden');
+				} else {
+					post.setAttribute('hidden', '');
+				}
+			});
 		}
-		// unhighlight previously selected site
-		if (document.querySelector('.active-site')) { document.querySelector('.active-site').classList.remove('active-site'); }
-		// highlight favs
-		document.querySelector('.fav-feeds').classList.add('active-site');
-		window.location.hash = '';
-		this.rebuiltTree(newList);
-		this.openAllButton.classList.remove('unfold');
-		return false;
-	}
 
-	// Create list with today's posts
-	this.sortToday = function() {
-		var newList = new Array();
-		// create list of items that have been posted today
-
-		for (var i = 0, len = this.feedList.length ; i < len ; i++) {
-			if (this.feedList[i].datetime >= this.ymd000) {
-				newList.push(this.feedList[i]);
-			}
+		// sort favs
+		else if (e.target.classList.contains('fav-feeds')) {
+			this.postsList.querySelectorAll('#post-list > li').forEach(function(post) {
+				post.classList.remove('open-post');
+				if (post.getAttribute('data-is-fav') == 1) {
+					post.removeAttribute('hidden');
+				} else {
+					post.setAttribute('hidden', '');
+				}
+			});
 		}
-		// unhighlight previously selected site
-		if (document.querySelector('.active-site')) { document.querySelector('.active-site').classList.remove('active-site'); }
-		// highlight favs
-		document.querySelector('.today-feeds').classList.add('active-site');
-		window.location.hash = '';
-		this.rebuiltTree(newList);
-		this.openAllButton.classList.remove('unfold');
-		return false;
-	}
 
+		// sort today
+		else if (e.target.classList.contains('today-feeds')) {
+
+			this.postsList.querySelectorAll('#post-list > li').forEach(function(post) {
+				post.classList.remove('open-post');
+				var d = new Date();
+				var ymd000 = '' + d.getFullYear() + ('0' + (d.getMonth()+1)).slice(-2) + ('0' + d.getDate()).slice(-2) + '000000';
+
+				if (post.getAttribute('data-datetime') >= ymd000) {
+					post.removeAttribute('hidden');
+				} else {
+					post.setAttribute('hidden', '');
+				}
+			});
+		}
+
+		if (this.feedsList.querySelector('.active-site')) {
+			this.feedsList.querySelector('.active-site').classList.remove('active-site');
+		}
+
+		e.target.classList.add('active-site');
+		window.location.hash = '';
+		this.openAllButton.classList.remove('unfold');
+		this.feedsList.classList.remove('hidden-list'); // on mobile: hide the sites 
+
+	}
 
 	/***********************************
 	** Methods to "mark as read" item in the local list and on screen
@@ -1408,8 +1448,8 @@ function RssReader() {
 
 		// Mark ALL as read.
 		if (markWhat.classList.contains('all-feeds')) {
-			// ask confirmation
-			if (!confirm("Tous les éléments seront marqués comme lus ?")) {
+			// for "all" feeds, ask confirmation
+			if (!confirm("Tous les éléments seront marqués comme lus ?")) { // TODO : $lang
 				loading_animation('off');
 				return false;
 			}
@@ -1417,9 +1457,14 @@ function RssReader() {
 			if (!this.markAsReadXHR('all', 'all')) return false;
 
 			// mark items as read in list
-			for (var i = 0, len = this.feedList.length ; i < len ; i++) { this.feedList[i].statut = 0; }
+			for (var i = 0, len = this.feedList.length ; i < len ; i++) {
+				this.feedList[i].statut = 0;
+			}
 
-			this.sortAll();
+			// mark as read in dom
+			this.postsList.querySelectorAll('#post-list > li').forEach(function(post) {
+				post.classList.add('read');
+			});
 		}
 
 		// Mark one FOLDER as read
@@ -1429,16 +1474,15 @@ function RssReader() {
 			// send XHR
 			if (!this.markAsReadXHR('folder', folder)) return false;
 
-			// update GLOBAL counter by substracting unread items from the folder
-
 			// mark 0 for that folder
 			markWhat.dataset.nbrun = 0;
 
 			// mark 0 for the sites in that folder
 			var sitesInFolder = this.feedsList.querySelectorAll('li[data-feed-folder="' + folder + '"]');
-			for (var i = 0, len = sitesInFolder.length ; i < len ; i++) {
-				sitesInFolder[i].dataset.nbrun = 0;
-			}
+
+			this.feedsList.querySelectorAll('li[data-feed-folder="' + folder + '"]').forEach(function(site) {
+				site.dataset.nbrun = 0;
+			});
 
 			// mark items as "read" in list
 			for (var i = 0, len = this.feedList.length ; i < len ; i++) {
@@ -1447,10 +1491,9 @@ function RssReader() {
 				}
 			}
 
-			// mark items as "read" on screen
-			for (var node of this.postsList.querySelectorAll('#post-list > li')) {
-				node.classList.add('read');
-			}
+			this.postsList.querySelectorAll('#post-list > li[data-folder="'+folder+'"]').forEach(function(post) {
+				post.classList.add('read');
+			});
 
 		}
 
@@ -1473,22 +1516,22 @@ function RssReader() {
 					this.feedList[i].statut = 0;
 				}
 			}
-			// mark items as "read" on screen
-			for (var node of this.postsList.querySelectorAll('#post-list > li')) {
-				node.classList.add('read');
-			}
 
-			// mark 0 for that folder folder’s unread counters
+			// mark items as "read" on screen
+			this.postsList.querySelectorAll('#post-list > li[data-sitehash="'+siteHash+'"]').forEach(function(post) {
+				post.classList.add('read');
+			});
+
+			// mark 0 for that folder sites’s unread counters
 			markWhat.dataset.nbrun = markWhat.dataset.nbtoday = 0;
 
 		}
 	}
 
 	// This is called when a post is opened (for the first time)
-	// counters are updated here
 	this.markAsReadPost = function(thePost) {
-		// add thePost to local read posts buffer, to be send as XHR when full
-		this.readQueue.urlList.push(thePost.id.substr(2));
+		// add thePost to local read posts buffer
+		this.readQueue.urlList.push(thePost.dataset.id);
 		// if 10 items in queue, send XHR request and reset list to zero.
 		if (this.readQueue.urlList.length >= 10) {
 			var list = this.readQueue.urlList;
@@ -1496,17 +1539,15 @@ function RssReader() {
 			this.readQueue.urlList = [];
 		}
 
-		// mark a read in list
+		// mark as read in list
 		for (var i = 0, len = this.feedList.length ; i < len ; i++) {
-			if (this.feedList[i].id == thePost.id.substr(2)) {
+			if (this.feedList[i].id == thePost.dataset.id) {
 				this.feedList[i].statut = 0;
 				break;
 			}
 		}
-		// decrement global counter
-		// var gcount = document.getElementById('global-post-counter');
-		// gcount.dataset.nbrun -= 1;
-		// decrement site & site.today counter
+
+		// decrement site "unread"
 		var site = this.feedsList.querySelector('li[data-feed-hash="'+thePost.dataset.sitehash+'"]');
 		site.dataset.nbrun -= 1;
 
@@ -1517,15 +1558,14 @@ function RssReader() {
 		}
 	}
 
+
 	/***********************************
 	** Methods to init and send the XHR request
 	*/
 	// Mark as read by user input.
 	this.markAsReadXHR = function(marType, marWhat) {
 		loading_animation('on');
-
 		var notifDiv = document.createElement('div');
-
 		var xhr = new XMLHttpRequest();
 		xhr.open('POST', 'ajax/rss.ajax.php', true);
 
@@ -1555,42 +1595,18 @@ function RssReader() {
 		return true;
 	}
 
-	// mark as read on page-unload (transparent for user)
-	this.markAsReadOnUnloadXHR = function() {
-		if (this.readQueue.urlList.length == 0) return true;
-
-		var xhr = new XMLHttpRequest();
-		xhr.open('POST', 'ajax/rss.ajax.php', false);
-
-		// onload
-		xhr.onload = function() {
-			var resp = this.responseText;
-			return (resp.indexOf("Success") == 0);
-		};
-
-		// prepare and send FormData
-		var formData = new FormData();
-		formData.append('token', token);
-		formData.append('mark-as-read', 'postlist');
-		formData.append('mark-as-read-data', JSON.stringify(this.readQueue.urlList));
-		xhr.send(formData);
-		return true;
-	}
-
 	/***********************************
 	** Methods to mark a post a favorite
 	*/
-	this.markAsFav = function(thePost) {
+	this.markAsFav = function(favButton) {
+		var thePost = favButton.parentNode.parentNode;
 
 		// mark as fav on screen and in favCounter
 		thePost.dataset.isFav = 1 - parseInt(thePost.dataset.isFav);
-		//var favCounter = document.getElementById('favs-post-counter')
-		//favCounter.dataset.nbrun = parseInt(favCounter.dataset.nbrun) + ((thePost.dataset.isFav == 1) ? 1 : -1 );
-		//favCounter.firstChild.nodeValue = '('+favCounter.dataset.nbrun+')';
 
 		// mark as fav in local list
 		for (var i = 0, len = this.feedList.length ; i < len ; i++) {
-			if (this.feedList[i].id == thePost.dataset.favId) {
+			if (this.feedList[i].id == thePost.dataset.id) {
 				this.feedList[i].fav = thePost.dataset.isFav;
 				break;
 			}
@@ -1602,7 +1618,7 @@ function RssReader() {
 		var notifDiv = document.createElement('div');
 
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', 'ajax/rss.ajax.php', true);
+		xhr.open('POST', 'ajax/rss.ajax.php');
 
 		// onload
 		xhr.onload = function() {
@@ -1626,18 +1642,17 @@ function RssReader() {
 		var formData = new FormData();
 		formData.append('token', token);
 		formData.append('mark-as-fav', 1);
-		formData.append('url', thePost.dataset.favId);
+		formData.append('url', thePost.dataset.id);
 		xhr.send(formData);
 		return false;
 	}
 
-
-
 	/***********************************
-	** Methods to refresh the feeds
-	** This call is long, also it updates gradually on screen.
-	**
+	** Methods to refresh the feeds.
 	*/
+
+	// This requests the server to download the feeds and send the new ones to browser
+	// This call is long, also it updates gradually on screen.
 	this.refreshAllFeeds = function(e) {
 		var _refreshButton = e.target;
 		// if refresh ongoing : abbord !
@@ -1651,35 +1666,53 @@ function RssReader() {
 
 		// prepare XMLHttpRequest
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', 'ajax/rss.ajax.php', true);
+		xhr.open('POST', 'ajax/rss.ajax.php');
 
 		// Counts the feeds that have been updated already and displays it like « 10/42 feeds »
 		var glLength = 0;
-		_this.notifNode.appendChild(document.createTextNode(''));
+		_this.notifNode.textContent = "";
 		xhr.onprogress = function() {
 			if (glLength != this.responseText.length) {
 				var posSpace = (this.responseText.substr(0, this.responseText.length-1)).lastIndexOf(" ");
-				_this.notifNode.firstChild.nodeValue = this.responseText.substr(posSpace);
+				_this.notifNode.textContent = this.responseText.substr(posSpace);
 				glLength = this.responseText.length;
 			}
 		}
+
 		// when finished : displays amount of items gotten.
 		xhr.onload = function() {
 			var resp = this.responseText;
 
 			// grep new feeds
-			var newFeeds = JSON.parse(resp.substr(resp.indexOf("Success")+7));
+			var newJson = JSON.parse(resp.substr(resp.indexOf("Success")+7))
+			var newFeeds = newJson.posts;
+			this.siteList = newJson.sites
 
 			// update status
 			_this.notifNode.firstChild.nodeValue = newFeeds.length+' new feeds'; // TODO $[lang]
 
-			// in not empty, add them to list & display them
+			// if not empty, add items to list
 			if (0 != newFeeds.length) {
-				_this.rebuiltTree(newFeeds);
 				for (var i = 0, len = newFeeds.length ; i < len ; i++) {
-					_this.feedList.unshift(newFeeds[i]); // TODO : recount elements (site, folder, total)
+					_this.feedList.unshift(newFeeds[len-1-i]); // "len-1-i" for reverse order
 				}
 
+				// rebuilt Ul-Li to display the new elements.
+				_this.rebuiltPostsTree();
+				_this.rebuiltSitesTree();
+
+				// hide all items but the recently added ones
+				_this.postsList.querySelectorAll('#post-list > li').forEach(function(post) {
+					post.classList.remove('open-post');
+					post.setAttribute('hidden', '');
+
+					for (var i = 0, len = newFeeds.length ; i < len ; i++) {
+						if (post.getAttribute('data-id') === newFeeds[i].id) {
+							post.removeAttribute('hidden');
+							break;
+						}
+					}
+				});
 			}
 
 			_refreshButton.dataset.refreshOngoing = 0;
@@ -1701,6 +1734,41 @@ function RssReader() {
 		return false;
 	}
 
+	// This requests the server to send it the latest feeds it has in DB
+	this.refreshJsonData = function(e) {
+		loading_animation('on');
+
+		if (this.readQueue.urlList.length !== 0) {
+			this.markAsReadXHR('postlist', JSON.stringify(this.readQueue.urlList));
+		}
+
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', 'ajax/rss.ajax.php');
+		var formData = new FormData();
+		formData.append('token', token);
+		formData.append('get_initial_data', 1);
+
+		// when finished : builts wall of objects
+		xhr.onload = function() {
+			var resp = this.responseText;
+			resp = (JSON.parse(this.responseText.substr(this.responseText.indexOf("Success")+7)))
+			_this.feedList = resp.posts;
+			_this.siteList = resp.sites;
+
+			_this.rebuiltPostsTree();
+			_this.rebuiltSitesTree();
+			loading_animation('off');
+			return false;
+		};
+
+		xhr.onerror = function() {
+			_this.notifNode.appendChild(document.createTextNode('Error status ' + xhr.status));
+			loading_animation('off');
+		};
+
+		xhr.send(formData);
+		return false;
+	}
 
 	/***********************************
 	** Method to delete old feeds from DB
@@ -1716,7 +1784,7 @@ function RssReader() {
 		var notifDiv = document.createElement('div');
 
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', 'ajax/rss.ajax.php', true);
+		xhr.open('POST', 'ajax/rss.ajax.php');
 
 		xhr.onload = function() {
 			var resp = this.responseText;
@@ -1746,8 +1814,6 @@ function RssReader() {
 		xhr.send(formData);
 		return false;
 	}
-
-
 
 	/***********************************
 	** Method to add a new feed (promt for URL and send to server)
@@ -1797,6 +1863,11 @@ function RssReader() {
 	}
 
 };
+
+
+
+
+
 
 function RssConfig() {
 	var _this = this;
@@ -1884,7 +1955,7 @@ function RssConfig() {
 		var notifDiv = document.createElement('div');
 		// create XHR
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', 'ajax/rss.ajax.php', true);
+		xhr.open('POST', 'ajax/rss.ajax.php');
 
 		// onload
 		xhr.onload = function() {
@@ -2050,10 +2121,10 @@ function draw(container) {
 **************************************************************************************************************************************/
 function NoteBlock() {
 	var _this = this;
-
 	/***********************************
 	** Some properties & misc actions
 	*/
+
 	// init JSON List
 	this.notesList = JSON.parse(document.getElementById('json_notes').textContent);
 	// init to "false" a flag aimed to determine if changed have yet to be saved to server
@@ -2068,28 +2139,35 @@ function NoteBlock() {
 	this.noteTemplate = this.noteContainer.firstElementChild.parentNode.removeChild(this.noteContainer.firstElementChild);
 	this.noteTemplate.removeAttribute('hidden');
 
+	// get popup wrapper template
 	this.notePopupTemplate = document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
 	this.notePopupTemplate.removeAttribute('hidden');
 
+	// buttons
 	document.getElementById('post-new-note').addEventListener('click', function(e) { _this.addNewNote(); });
+	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveNotesXHR(); } );
 
 	// Global Page listeners
 	// beforeunload : warns the user if some data is not saved
 	window.addEventListener("beforeunload", function(e) {
-			if (_this.hasUpdated) {
-				var confirmationMessage = BTlang.questionQuitPage;
-				(e || window.event).returnValue = confirmationMessage;	//Gecko + IE
-				return confirmationMessage;										// Webkit : ignore this.
-			}
-			else { return true; }
-		});
+		if (_this.hasUpdated) {
+			e.returnValue = BTlang.questionQuitPage;
+		}
+		else { return true; }
+	});
 
-	// Save button
-	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveNotesXHR(); } );
+	window.addEventListener("popstate", function(e) {
+		_this.closePopup();
+	});
+
+	// built page
+	window.addEventListener("load", function() {
+		_this.rebuiltNotesWall(_this.notesList);
+	});
 
 	/***********************************
 	** The HTML tree builder :
-	** Builts the whole list of noteq.
+	** Builts the whole list of notes.
 	*/
 	this.rebuiltNotesWall = function(NotesData) {
 		if (0 === NotesData.length) return false;
@@ -2105,16 +2183,16 @@ function NoteBlock() {
 			var item = NotesData[i];
 
 			var div = this.noteTemplate.cloneNode(true);
-			div.id = 'i_' + item.id;
+			//div.id = 'i_' + item.id;
 			div.dataset.updateAction = item.action;
 			div.dataset.ispinned = item.ispinned;
 			div.dataset.isarchived = item.isstatut;
 			div.style.backgroundColor = item.color;
-			div.dataset.indexId = i;
+			div.dataset.id = item.id;
 			div.querySelector('.title > h2').textContent = item.title;
 			div.querySelector('.content').textContent = item.content;
 			div.addEventListener('click', function(e) {
-				_this.showNotePopup(NotesData[this.dataset.indexId]);
+				_this.showNotePopup(this.dataset.id);
 			});
 
 			if (item.ispinned == 1) {
@@ -2122,7 +2200,6 @@ function NoteBlock() {
 			} else {
 				notesUnPinned.appendChild(div);
 			}
-
 		}
 
 		// add to page
@@ -2134,10 +2211,7 @@ function NoteBlock() {
 			this.noteContainer.insertBefore(notesPinned, pinnedTitle.nextSibling);
 		}
 
-		return false;
 	}
-	// init the whole DOM list
-	this.rebuiltNotesWall(this.notesList);
 
 	/**************************************
 	 * Init a new note, and add it to page
@@ -2157,73 +2231,93 @@ function NoteBlock() {
 		this.showNotePopup(newNote);
 	}
 
-
-	this.showNotePopup = function(item) {
-		if (document.getElementById('i_' + item.id) ) {
-			var noteNode = document.getElementById('i_' + item.id);
-			noteNode.style.opacity = 0;
+	/**************************************
+	 * Popup handling
+	*/
+	this.showNotePopup = function(id) {
+		// grep item
+		if (id.action === 'newNote') {
+			item = id;
+		} else {
+			for (var i = 0, len = this.notesList.length ; i < len ; i++) {
+				if (id == this.notesList[i].id) {
+					var item = this.notesList[i];
+					break;
+				}
+			}
 		}
 
+		// new popup
 		var popupWrapper = this.notePopupTemplate.cloneNode(true);
+
+		// avoid background scrolling when popup is "full screen"
 		document.body.classList.add('noscroll');
+
+		// this allows closing the popup with the "back" button (espacially on Android)
+		if (history.state === null) history.pushState({'popupOpen': true}, null, window.location.pathname + '#popup');
 
 		popupWrapper.addEventListener('click', function(e) {
 			// clic is outside popup: closes popup
 			if (e.target == this) {
-				popupWrapper.parentNode.removeChild(popupWrapper);
-				document.body.classList.remove('noscroll');
-				if (noteNode) noteNode.style.opacity = null;
+				_this.closePopup();
 			}
 		} );
 
+		// note info
 		popupWrapper.querySelector('#popup').style.backgroundColor = item.color;
 		popupWrapper.querySelector('#popup').dataset.ispinned = item.ispinned;
 		popupWrapper.querySelector('#popup').dataset.isarchived = item.isstatut;
 		popupWrapper.querySelector('#popup > .popup-title > h2').textContent = item.title;
+		popupWrapper.querySelector('#popup > .popup-content').value = item.content;
+		popupWrapper.querySelector('#popup > .popup-footer > .date').textContent = Date.dateFromYMDHIS(item.id).toLocaleDateString('fr', {weekday: "long", month: "long", year: "numeric", day: "numeric"});
+
+		// add events
 		popupWrapper.querySelector('#popup > .popup-title > .pinnedIcon').addEventListener('click', function(e) {
 			popupWrapper.querySelector('#popup').dataset.ispinned = Math.abs(popupWrapper.querySelector('#popup').dataset.ispinned -1);
 		});
 		popupWrapper.querySelector('#popup > .popup-title > .archiveIcon').addEventListener('click', function(e) {
 			popupWrapper.querySelector('#popup').dataset.isarchived = Math.abs(popupWrapper.querySelector('#popup').dataset.isarchived -1);
 		});
-		popupWrapper.querySelector('#popup > .popup-content').value = item.content;
-		popupWrapper.querySelector('#popup > .popup-footer > .date').textContent = Date.dateFromYMDHIS(item.id).toLocaleDateString('fr', {weekday: "long", month: "long", year: "numeric", day: "numeric"});
 		popupWrapper.querySelector('#popup > .popup-footer > .colors').addEventListener('click', function(e) {
-			if (e.target.tagName == 'LI') _this.changeColor(item, e);
+			_this.changeColor(e);
 		});
 		popupWrapper.querySelector('#popup > .popup-footer > .supprIcon').addEventListener('click', function(e) {
 			_this.markAsDeleted(item);
+			_this.closePopup();
 		});
 		popupWrapper.querySelector('#popup > .popup-footer > .submit-bttns > .button-cancel').addEventListener('click', function(e) {
-			popupWrapper.parentNode.removeChild(popupWrapper);
-			document.body.classList.remove('noscroll');
-			if (noteNode) noteNode.style.opacity = null;
+			_this.closePopup();
 		});
 		popupWrapper.querySelector('#popup > .popup-footer > .submit-bttns > .button-submit').addEventListener('click', function(e) {
 			_this.markAsEdited(item);
-			popupWrapper.parentNode.removeChild(popupWrapper);
-			document.body.classList.remove('noscroll');
-			if (noteNode) noteNode.style.opacity = null;
+			_this.closePopup();
 		});
 
-		// add to page
+		// add popup-wrapper to page
 		this.domPage.appendChild(popupWrapper);
-
 		popupWrapper.querySelector('#popup > .popup-content').focus();
 	}
 
+
+	this.closePopup = function() {
+		var popupWrapper = document.getElementById('popup-wrapper');
+		if (popupWrapper) popupWrapper.parentNode.removeChild(popupWrapper);
+		document.body.classList.remove('noscroll');
+	}
 
 	/**************************************
 	 * Mark a note as having been edited
 	*/
 	this.markAsEdited = function(item) {
 		var popup = document.getElementById('popup');
-		// is Edit ?
-		// search item in notesList.
+
+		// if item is in list : it’s an edit
 		var isEdit = false;
+
 		for (var i = 0, len = this.notesList.length ; i < len ; i++) {
 			if (item.id == this.notesList[i].id) {
 				var isEdit = true;
+				var theNote = this.noteContainer.querySelector('.notebloc[data-id="'+item.id+'"')
 				break;
 			}
 		}
@@ -2232,25 +2326,17 @@ function NoteBlock() {
 		item.title = popup.querySelector('.popup-title > h2').textContent;
 		item.color = window.getComputedStyle(popup).backgroundColor;
 		item.ispinned = popup.dataset.ispinned;
-
-		// if not has been archvied
-		if (popup.dataset.isarchived == 0 && popup.dataset.isarchived != item.isstatut && document.querySelector('select[name="filtre"]').value != 'archived') {
-			var theNote = document.getElementById('i_'+item.id);
-			theNote.classList.add('deleteFadeOutH');
-			theNote.addEventListener('animationend', function(event){event.target.parentNode.removeChild(event.target);}, false);
-		}
-
 		item.isstatut = popup.dataset.isarchived;
+		item.action = item.action || 'updateNote';
 
-		// note is new:
-		if (!isEdit) {
-			this.rebuiltNotesWall([item]); // append it to #notes-list
-			this.notesList.push(item);     // append it to the main List
+		// if note has been archived : hide it from this list
+		if (popup.dataset.isarchived == 0 && popup.dataset.isarchived != item.isstatut && document.querySelector('select[name="filtre"]').value != 'archived') {
+			theNote.classList.add('deleteFadeOutH');
+			theNote.addEventListener('animationend', function(e){e.target.parentNode.removeChild(event.target);}, false);
 		}
 
-		// note is only edited
-		else {
-			var theNote = document.getElementById('i_'+item.id);
+		// it’s an edit of actual note
+		if (isEdit) {
 			theNote.style.backgroundColor = item.color;
 			theNote.querySelector('.content').textContent = item.content;
 			theNote.querySelector('h2').textContent = item.title;
@@ -2274,7 +2360,12 @@ function NoteBlock() {
 				}
 			}
 		}
-		item.action = item.action || 'updateNote';
+
+		// note is new: append it to list
+		else {
+			this.rebuiltNotesWall([item]); // append it to #notes-list
+			this.notesList.push(item);     // append it to the main List
+		}
 
 		// raises global "updated" flag.
 		this.raiseUpdateFlag(true);
@@ -2286,12 +2377,12 @@ function NoteBlock() {
 	*/
 	this.markAsDeleted = function(item) {
 		if (!window.confirm(BTlang.questionSupprNote)) { return false; }
+
 		// mark as removed
 		item.action = 'deleteNote';
-		// close popup
-		document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
-		// remove item from page too, with a little animation
-		var theNote = document.getElementById('i_'+item.id);
+		// remove item from page, with a little animation
+		var theNote = this.noteContainer.querySelector('.notebloc[data-id="'+item.id+'"')
+
 		theNote.classList.add('deleteFadeOutH');
 		theNote.addEventListener('animationend', function(event){event.target.parentNode.removeChild(event.target);}, false);
 		
@@ -2303,10 +2394,9 @@ function NoteBlock() {
 	/**************************************
 	 * Change the color of a note
 	*/
-	this.changeColor = function(item, e) {
-		var newColor = window.getComputedStyle(e.target).backgroundColor;
-		document.getElementById('popup').style.backgroundColor = newColor;
-		e.preventDefault();
+	this.changeColor = function(e) {
+		if (e.target.tagName !== 'LI') return;
+		document.getElementById('popup').style.backgroundColor = window.getComputedStyle(e.target).backgroundColor;;
 	}
 
 
@@ -2343,7 +2433,7 @@ function NoteBlock() {
 		var notifDiv = document.createElement('div');
 		// create XHR
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', 'ajax/notes.ajax.php', true);
+		xhr.open('POST', 'ajax/notes.ajax.php');
 
 		// onload
 		xhr.onload = function() {
@@ -2478,7 +2568,6 @@ function EventAgenda() {
 		_this.rebuiltDailyCal();
 	});
 
-
 	this.eventTable.querySelector('thead.month-mode #changeYear > button').addEventListener('click', function(e){
 		_this.eventTable.classList.remove('table-month-mode');
 		_this.eventTable.classList.add('table-year-mode');
@@ -2498,24 +2587,34 @@ function EventAgenda() {
 	this.editEventPopupTemplate = document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
 	this.editEventPopupTemplate.removeAttribute('hidden');
 
+	// buttons events
 	document.getElementById('fab').addEventListener('click', function(e) { _this.addNewEvent(); });
+	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveEventsXHR(); });
+	document.getElementById('hide-side-nav').addEventListener('click', function(){ _this.hideSideNav(); });
 
 	// Global Page listeners
 	// beforeunload : warns the user if some data is not saved when page closes
 	window.addEventListener("beforeunload", function(e) {
-			if (_this.hasUpdated) {
-				var confirmationMessage = BTlang.questionQuitPage;
-				(e || window.event).returnValue = confirmationMessage;	//Gecko + IE
-				return confirmationMessage;								// Webkit: ignore this shit.
-			}
-			else { return true; }
-		});
+		if (_this.hasUpdated) {
+			var confirmationMessage = BTlang.questionQuitPage;
+			(e || window.event).returnValue = confirmationMessage;	//Gecko + IE
+			return confirmationMessage;								// Webkit: ignore this shit.
+		}
+		else { return true; }
+	});
 
-	// Save button
-	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveEventsXHR(); } );
+	// allows a "popup close" when the user goes back 1 time in history (esp. on Android)
+	window.addEventListener("popstate", function(e) {
+		_this.closePopup();
+	});
 
-	// init the « hide sidenav » button
-	document.getElementById('hide-side-nav').addEventListener('click', function(){ _this.hideSideNav(); });
+	// built page
+	window.addEventListener("load", function() {
+		_this.rebuiltMiniCal();
+		_this.rebuiltMonthlyCal();
+		_this.rebuiltEventsWall();
+		_this.sortEventByFilter();
+	});
 
 	/**************************************
 	 * Sort Events by date (sorting)
@@ -2543,7 +2642,6 @@ function EventAgenda() {
 			break;
 		}
 	}
-
 
 
 	/**************************************
@@ -2628,18 +2726,12 @@ function EventAgenda() {
 		}
 
 	}
-	// Init events lists (default in "calendar" view)
-	this.rebuiltMiniCal();
-
-
 
 	/**************************************
 	 * Draw the MAIN calendar 
 	*/
 
-	/**************************************
-	 * In « YEAR » display
-	*/
+	 // In « YEAR » display
 	this.rebuiltYearlyCal = function() {
 		this.eventTable.querySelector('thead.year-mode #year > span').textContent = this.initDate.getFullYear();
 
@@ -2673,9 +2765,7 @@ function EventAgenda() {
 
 	}
 
-	/**************************************
-	 * In « MONTH » display
-	*/
+	// In « MONTH » display
 	this.rebuiltMonthlyCal = function() {
 		// reference datetime
 		var date = this.initDate;
@@ -2794,13 +2884,8 @@ function EventAgenda() {
 		}
 
 	}
-	// Init events lists
-	this.rebuiltMonthlyCal();
 
-
-	/**************************************
-	 * In DAY » display
-	*/
+	// In DAY » display
 	this.rebuiltDailyCal = function() {
 		// reference datetime
 		var date = this.initDate;
@@ -2894,34 +2979,32 @@ function EventAgenda() {
 
 	}
 
-	this.rebuiltEventsWall = function(EventsData) {
+	this.rebuiltEventsWall = function() {
 		// empties the node
 		if (this.eventContainer.firstChild) {
 			while (this.eventContainer.firstChild) {this.eventContainer.removeChild(this.eventContainer.firstChild);}
 		}
 		// TODO : add "no event" message
-		if (0 === EventsData.length) return false;
+		if (0 === this.eventsList.length) return false;
 
 		var date = Date.now();
 		var evList = document.createDocumentFragment();
 
 		// populates the new list
-		for (var i = 0, len = EventsData.length ; i < len ; i++) {
-			var item = EventsData[i];
-			var itemDate = new Date(item.date.start);
-			var div = this.eventTemplate.cloneNode(true);
+		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
+			var item = this.eventsList[i];
+
 			// ignore deleted events
 			if (item.action == 'deleteEvent') continue;
-			div.dataset.id = item.id;
-			div.addEventListener('click', function() {
-					_this.showEventPopup(this.dataset.id);
-				} );
 
-			if (itemDate >= new Date()) {
-				div.classList.add('futureEvent');
-			} else {
-				div.classList.add('pastEvent');
-			}
+			var itemDate = new Date(item.date.start);
+			var div = _this.eventTemplate.cloneNode(true);
+
+			div.setAttribute('data-id', item.id);
+			div.setAttribute('data-date', item.date.start);
+			if (itemDate >= new Date()) { div.classList.add('futureEvent'); }
+			else { div.classList.add('pastEvent'); }
+
 			div.querySelector('.eventDate').title = itemDate.toLocaleDateString('fr', {weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "numeric"});
 			div.querySelector('.event-dd').textContent = itemDate.getDate();
 			div.querySelector('.event-mmdd').textContent = itemDate.toLocaleDateString('fr', {month: "short"}) + ", " + itemDate.toLocaleDateString('fr', {weekday: "short"});
@@ -2930,11 +3013,14 @@ function EventAgenda() {
 			div.querySelector('.eventSummary > .title').textContent = item.title;
 			div.querySelector('.eventSummary > .loc').textContent = item.loc;
 
+			div.addEventListener('click', function() {
+				_this.showEventPopup(this.dataset.id);
+			} );
+
 			evList.appendChild(div);
 		}
 
 		this.eventContainer.appendChild(evList);
-
 	}
 
 
@@ -2947,84 +3033,53 @@ function EventAgenda() {
 	/**************************************
 	 * Sorting functions
 	*/
-
 	// sort Event according to the "select" element status.
 	this.sortEventByFilter = function() {
 		// init sorting mode from the <select> form value
 		var selectDate = this.eventFilter.value;
 
-	
 		var filter = function(date) {
+			var todayDate = new Date();
 			switch(selectDate) {
-
 				case 'today':
-					if (date.toDateString() == (new Date()).toDateString()) {
-						return true;
-					}
+					return (date.toDateString() == todayDate.toDateString());
 					break;
-
 				case 'tomonth':
-					var newD = new Date();
-					if ("" + date.getFullYear() + date.getMonth() == "" + newD.getFullYear() + newD.getMonth()) {
-						return true;
-					}
+					return ("" + date.getFullYear() + date.getMonth() == "" + todayDate.getFullYear() + todayDate.getMonth());
 					break;
-
 				case 'toyear':
-					if (date.getFullYear() == (new Date()).getFullYear()) {
-						return true;
-					}
+					return (date.getFullYear() == todayDate.getFullYear());
 					break;
-
 				case 'past':
-					if (date <= new Date()) {
-						return true;
-					}
+					return (date <= todayDate);
 					break;
-
 				case 'futur':
-					if (date >= new Date()) {
-						return true;
-					}
+					return (date >= todayDate);
 					break;
-
 				case 'all':
 					return true;
 					break;
-
 				default:
-					selectDate = new Date(selectDate);
-					if (date.toDateString() == selectDate.toDateString()) {
-						return true;
-					}
+					return (date.toDateString() == (new Date(selectDate)).toDateString());
 					break;
-
 			}
-			return false;
-
 		}
 
-		var newList = new Array();
-
-		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
-			var item = this.eventsList[i];
-			if (item.action == 'deleteEvent') continue;
-			var itemDate = new Date(item.date.start);
-
-			// if the event is today, add a row to div.
+		// only show element that pass the filter.
+		this.eventContainer.querySelectorAll(':scope > div').forEach(function(div) {
+			var itemDate = new Date(div.getAttribute('data-date'));
 			if ( filter(itemDate) === true ) {
-				newList.push(item);
+				div.removeAttribute('hidden');
+			} else {
+				div.setAttribute('hidden', '');
 			}
-		}
-		this.rebuiltEventsWall(newList);
+		});
 	}
-	// init the whole DOM list
-	this.sortEventByFilter();
-
 
 	/**************************************
-	 * Displays the "show event" popup
+	 * Popup handling
 	*/
+	// Displays the "show event" popup
 	this.showEventPopup = function(id) {
 		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
 			if (this.eventsList[i].id === id) {
@@ -3032,81 +3087,129 @@ function EventAgenda() {
 				break;
 			}
 		}
+
+		// new popup
 		var popupWrapper = this.editEventPopupTemplate.cloneNode(true);
-		popupWrapper.addEventListener('click', function(e) {
-			// clic is outside popup: closes popup
-			if (e.target == this) {
-				popupWrapper.parentNode.removeChild(popupWrapper);
-				document.body.classList.remove('noscroll');
-			}
-		});
 		popupWrapper.querySelector('.popup-event').id = 'popup';
-		popupWrapper.querySelector('.popup-event').removeAttribute('hidden');
+		var popup = popupWrapper.querySelector('#popup');
+		popup.removeAttribute('hidden');
+
+		// avoid background scrolling when popup is "full screen"
 		document.body.classList.add('noscroll');
 
-		popupWrapper.querySelector('#popup > .event-title > .event-color').style.backgroundColor = item.color;
-		popupWrapper.querySelector('#popup > .event-title > .event-name').textContent = item.title;
+		// this allows closing the popup with the "back" button (espacially on Android)
+		if (history.state === null) history.pushState({'popupOpen': true}, null, window.location.pathname + '#popup');
 
-		popupWrapper.querySelector('#popup > .event-title > .item-menu-options .button-edit').addEventListener('click', function(e){
-			popupWrapper.parentNode.removeChild(popupWrapper);
-			document.body.classList.remove('noscroll');
+		popupWrapper.addEventListener('click', function(e) {
+			// clic is on wrapper (back drop) but not the popup
+			if (e.target == this) {
+				_this.closePopup();
+			}
+		} );
+
+		// fils data in popup
+		popup.querySelector('.event-title > .event-color').style.backgroundColor = item.color;
+		popup.querySelector('.event-title > .event-name').textContent = item.title;
+		popup.querySelector('.event-content > ul > li.event-time > span:nth-of-type(1)').textContent = (new Date(item.date.start)).toLocaleDateString('fr-FR', {weekday: "long", year: "numeric", month: "long", day: "numeric"});
+		popup.querySelector('.event-content > ul > li.event-time > span:nth-of-type(2)').textContent = (new Date(item.date.start)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}) + '-' + (new Date(item.date.end)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+		popup.querySelector('.event-content > ul > li.event-loc').textContent = item.loc;
+
+		// fill persons
+		var persSpan = popup.querySelector('.event-content > ul > li.event-persons').removeChild(popup.querySelector('.event-content > ul > li.event-persons').firstChild);
+		item.persons.forEach(function(p) {
+			var span = persSpan.cloneNode(true);
+			span.textContent = p;
+			popup.querySelector('.event-content > ul > li.event-persons').appendChild(span);
+		});
+
+		popup.querySelector('.event-content > ul > li.event-description').textContent = item.content;
+
+		// bind events
+		popup.querySelector('.event-title > .item-menu-options .button-edit').addEventListener('click', function(e){
+			_this.closePopup();
 			_this.showEventEditPopup(item);
 		});
-		popupWrapper.querySelector('#popup > .event-title > .item-menu-options .button-suppr').addEventListener('click', function(e){
+		popup.querySelector('.event-title > .item-menu-options .button-suppr').addEventListener('click', function(e){
 			_this.markAsDeleted(item);
-			document.body.classList.remove('noscroll');
+			_this.closePopup();
 		});
-
-		popupWrapper.querySelector('#popup > .event-title > .button-cancel').addEventListener('click', function() {
-			popupWrapper.parentNode.removeChild(popupWrapper);
-			document.body.classList.remove('noscroll');
+		popup.querySelector('.event-title > .button-cancel').addEventListener('click', function() {
+			_this.closePopup();
 		});
-
-		popupWrapper.querySelector('#popup > .event-content > ul > li.event-time > span:nth-of-type(1)').textContent = (new Date(item.date.start)).toLocaleDateString('fr-FR', {weekday: "long", year: "numeric", month: "long", day: "numeric"});
-		popupWrapper.querySelector('#popup > .event-content > ul > li.event-time > span:nth-of-type(2)').textContent = (new Date(item.date.start)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}) + '-' + (new Date(item.date.end)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
-		popupWrapper.querySelector('#popup > .event-content > ul > li.event-loc').textContent = item.loc;
-		popupWrapper.querySelector('#popup > .event-content > ul > li.event-description').textContent = item.content;
-
 
 		// remove empty nodes
-		var nodes = popupWrapper.querySelectorAll('#popup > .event-content *');
-		for (let node of nodes) {
+		var nodes = popup.querySelectorAll('.event-content *');
+		nodes.forEach(function(node) {
 			if (node.textContent.trim().length === 0) node.parentNode.removeChild(node);
-		}
+		})
 
 		this.domPage.appendChild(popupWrapper);
 	}
 
 
-	/**************************************
-	 * Displays the "Edit event" popup (also for "new" events)
-	*/
+	// Displays the "Edit event" popup (also for "new" events)
 	this.showEventEditPopup = function(item) {
+		// new popup
 		var popupWrapper = this.editEventPopupTemplate.cloneNode(true);
+		popupWrapper.querySelector('.popup-edit-event').id = 'popup';
+		var popup = popupWrapper.querySelector('#popup');
+		popup.removeAttribute('hidden');
+
 		popupWrapper.addEventListener('click', function(e) {
-			// clic is outside popup: closes popup
+			// clic is on wrapper (back drop) but not the popup
 			if (e.target == this) {
-				popupWrapper.parentNode.removeChild(popupWrapper);
-				document.body.classList.remove('noscroll');
+				_this.closePopup();
 			}
 		});
 
-		popupWrapper.querySelector('.popup-edit-event').id = 'popup';
-		popupWrapper.querySelector('.popup-edit-event').removeAttribute('hidden');
 		document.body.classList.add('noscroll');
 
-		popupWrapper.querySelector('#popup > .event-title > .event-color').style.backgroundColor = item.color;
+		// fill popup data
+		popup.querySelector('.event-title > .event-color').style.backgroundColor = item.color;
+		popup.querySelector('.event-title > input').value = item.title;
+		popup.querySelector('.event-content > .event-content-date #time-start').value = item.date.start.substr(11, 5);
+		popup.querySelector('.event-content > .event-content-date #time-end').value = item.date.end.substr(11, 5);
+		popup.querySelector('.event-content > .event-content-date #date').value = item.date.start.substr(0, 10);
+		popup.querySelector('.event-content input[name="event-loc"]').value = item.loc;
+		popup.querySelector('.event-content textarea[name="event-descr"]').value = item.loc;
 
-		popupWrapper.querySelector('#popup > .event-title > .colors').addEventListener('click', function(e) {
+		var liTempl = popup.querySelector('#event-content-persons-selected').removeChild(popup.querySelector('#event-content-persons-selected').firstChild);
+		item.persons.forEach(function(pers) {
+			var curLiTempl = liTempl.cloneNode(true);
+			curLiTempl.querySelector('span').textContent = pers;
+			curLiTempl.querySelector('a').addEventListener('click', function(e) {
+				this.parentNode.parentNode.removeChild(this.parentNode);
+				e.preventDefault();
+			});
+			popup.querySelector('#event-content-persons-selected').appendChild(curLiTempl);
+		});
+
+		popup.querySelector('.event-content input[name="event-persons"]').addEventListener('keydown', function(e){
+			if (e.keyCode == 13 && this.value !== '') {
+				e.preventDefault();
+				var curLiTempl = liTempl.cloneNode(true);
+				curLiTempl.querySelector('span').textContent = this.value;
+				curLiTempl.querySelector('a').addEventListener('click', function(clic) {
+					this.parentNode.parentNode.removeChild(this.parentNode);
+					clic.preventDefault();
+				});
+				popup.querySelector('#event-content-persons-selected').appendChild(curLiTempl);
+
+				this.value = '';
+				return false;
+			}
+		});
+
+		// bind events
+		popup.querySelector('.event-title > .colors').addEventListener('click', function(e) {
 			if (e.target.tagName == 'LI') _this.changeColor(item, e);
 		});
 
-		popupWrapper.querySelector('#popup > .event-title > input').value = item.title;
-		popupWrapper.querySelector('#popup > .event-title > .button-cancel').addEventListener('click', function() {
+		popup.querySelector('.event-title > .button-cancel').addEventListener('click', function() {
 			popupWrapper.parentNode.removeChild(popupWrapper);
 			document.body.classList.remove('noscroll');
 		});
-		popupWrapper.querySelector('#popup > .event-content > .event-content-date #allDay').addEventListener('change', function() {
+		popup.querySelector('.event-content > .event-content-date #allDay').addEventListener('change', function() {
 			var dateTimeInput = popupWrapper.querySelector('#popup > .event-content .date-time-input');
 			if (this.checked) {
 				dateTimeInput.classList.add('date-only');
@@ -3116,14 +3219,7 @@ function EventAgenda() {
 			}
 		});
 
-		popupWrapper.querySelector('#popup > .event-content > .event-content-date #time-start').value = item.date.start.substr(11, 5);
-		popupWrapper.querySelector('#popup > .event-content > .event-content-date #time-end').value = item.date.end.substr(11, 5);
-		popupWrapper.querySelector('#popup > .event-content > .event-content-date #date').value = item.date.start.substr(0, 10);
-
-		popupWrapper.querySelector('#popup > .event-content > .event-content-loc input').value = item.loc;
-		popupWrapper.querySelector('#popup > .event-content > .event-content-descr textarea').value = item.content;
-
-		popupWrapper.querySelector('#popup > .event-footer > .button-submit').addEventListener('click', function() {
+		popup.querySelector('.event-footer > .button-submit').addEventListener('click', function() {
 			_this.markAsEdited(item);
 			document.body.classList.remove('noscroll');
 			popupWrapper.parentNode.removeChild(popupWrapper);
@@ -3131,6 +3227,14 @@ function EventAgenda() {
 
 		this.domPage.appendChild(popupWrapper);
 	}
+
+	// close actual popup
+	this.closePopup = function() {
+		var popupWrapper = document.getElementById('popup-wrapper');
+		if (popupWrapper) popupWrapper.parentNode.removeChild(popupWrapper);
+		document.body.classList.remove('noscroll');
+	}
+
 
 
 	/**************************************
@@ -3150,11 +3254,9 @@ function EventAgenda() {
 			}
 		}
 
-		item.title = popup.querySelector('.event-title input').value || BTlang.emptyTitle;
 		item.color = window.getComputedStyle(popup.querySelector('.event-title .event-color')).backgroundColor;
+		item.title = popup.querySelector('.event-title input').value || BTlang.emptyTitle;
 
-		item.content = popup.querySelector('.event-content-descr .text').value;
-		item.loc = popup.querySelector('.event-content-loc .text').value;
 		if (popup.querySelector('#allDay').checked ) {
 			var newDateStart = new Date(document.getElementById('date').value + " " + "00:00:00");
 			var newDateEnd = new Date(document.getElementById('date').value + " " + "23:59:59");
@@ -3164,6 +3266,16 @@ function EventAgenda() {
 		}
 		item.date = {"start": newDateStart.toLocalISOString(), "end": newDateEnd.toLocalISOString()};
 
+		var listPersons = popup.querySelectorAll('#event-content-persons-selected > li > span');
+		item.persons = new Array();
+		for (var i = 0, len=listPersons.length ; i<len ; i++) {
+			item.persons.push(listPersons[i].textContent);
+		}
+
+		item.loc = popup.querySelector('.event-content-loc .text').value;
+
+		item.content = popup.querySelector('.event-content-descr .text').value;
+
 		// event is new:
 		if (!isEdit) {
 			this.eventsList.push(item);     // append it to the eventsList{}
@@ -3172,12 +3284,12 @@ function EventAgenda() {
 		// re-sort by date
 		this.sortEventsByDate();
 
-
 		// rebuilt Calendar to take changes into account. // TODO: perhaps not rebuilt cal, but only add/move buttons (for perf) ?
 		this.rebuiltMiniCal();
 		if (this.eventTable.classList.contains('table-day-mode')) this.rebuiltDailyCal();
 		if (this.eventTable.classList.contains('table-month-mode')) this.rebuiltMonthlyCal();
 		if (this.eventTable.classList.contains('table-year-mode')) this.rebuiltYearlyCal();
+		this.rebuiltEventsWall();
 		this.sortEventByFilter();
 
 		item.action = item.action || 'updateEvent';
@@ -3199,6 +3311,7 @@ function EventAgenda() {
 			"content": '',
 			"color" : '#ff8a80',
 			"loc" : '',
+			"persons" : [],
 			"action": 'newEvent',
 		};
 
@@ -3218,6 +3331,7 @@ function EventAgenda() {
 		if (this.eventTable.classList.contains('table-day-mode')) this.rebuiltDailyCal();
 		if (this.eventTable.classList.contains('table-month-mode')) this.rebuiltMonthlyCal();
 		if (this.eventTable.classList.contains('table-year-mode')) this.rebuiltYearlyCal();
+		this.rebuiltEventsWall();
 		this.sortEventByFilter();
 
 		// close popup
@@ -3250,8 +3364,6 @@ function EventAgenda() {
 		}
 	}
 
-
-
 	/**************************************
 	 * AJAX call to save events to DB
 	*/
@@ -3273,7 +3385,7 @@ function EventAgenda() {
 		var notifDiv = document.createElement('div');
 		// create XHR
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', 'ajax/agenda.ajax.php', true);
+		xhr.open('POST', 'ajax/agenda.ajax.php');
 
 		// onload
 		xhr.onload = function() {
@@ -3367,25 +3479,29 @@ function ContactsList() {
 	this.contactPopupTemplate = this.domPage.firstElementChild.parentNode.removeChild(this.domPage.firstElementChild);
 	this.contactPopupTemplate.removeAttribute('hidden');
 
+	// buttons events
 	document.getElementById('fab').addEventListener('click', function(e) { _this.addNewContact(); });
+	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveContactsXHR(); } );
 
 	// Global Page listeners
+
 	// beforeunload : warns the user if some data is not saved when page closes
 	window.addEventListener("beforeunload", function(e) {
-			if (_this.hasUpdated) {
-				var confirmationMessage = BTlang.questionQuitPage;
-				(e || window.event).returnValue = confirmationMessage;	//Gecko + IE
-				return confirmationMessage;								// Webkit: ignore this shit.
-			}
-			else { return true; }
-		});
-
-	// Save button
-	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveContactsXHR(); } );
+		if (_this.hasUpdated) {
+			var confirmationMessage = BTlang.questionQuitPage;
+			(e || window.event).returnValue = confirmationMessage;	//Gecko + IE
+			return confirmationMessage;								// Webkit: ignore this shit.
+		}
+		else { return true; }
+	});
 
 	// built table on page-ready
 	window.addEventListener("load", function() {
 		_this.rebuiltContactsTable(_this.contactList);
+	});
+
+	window.addEventListener("popstate", function(e) {
+		_this.closePopup();
 	});
 
 
@@ -3453,7 +3569,6 @@ function ContactsList() {
 		if (1 === ContactsData.length && window.location.href.match(/(\?|&)q=/i)) {
 			this.showContactPopup(item.id);
 		}
-
 	}
 
 	/**************************************
@@ -3471,8 +3586,7 @@ function ContactsList() {
 		popupWrapper.addEventListener('click', function(e) {
 			// clic is outside popup: closes popup
 			if (e.target == this) {
-				popupWrapper.parentNode.removeChild(popupWrapper);
-				document.body.classList.remove('noscroll');
+				_this.closePopup();
 			}
 		});
 		popupWrapper.querySelector('.popup-contact').id = 'popup';
@@ -3484,16 +3598,14 @@ function ContactsList() {
 
 		// misc events
 		popupTitle.querySelector('.item-menu-options > ul > li > a').addEventListener('click', function(e){
-			document.body.classList.remove('noscroll');
 			_this.markAsDeleted(item);
+			_this.closePopup();
 		});
 		popupTitle.querySelector('.button-cancel').addEventListener('click', function() {
-			popupWrapper.parentNode.removeChild(popupWrapper);
-			document.body.classList.remove('noscroll');
+			_this.closePopup();
 		});
 		popupTitle.querySelector('.button-edit').addEventListener('click', function() {
-			popupWrapper.parentNode.removeChild(popupWrapper);
-			document.body.classList.remove('noscroll');
+			_this.closePopup();
 			_this.showContactEditPopup(item);
 		});
 
@@ -3572,18 +3684,16 @@ function ContactsList() {
 		popupContent.querySelector('.contact-other').textContent = item.other;
 
 		// remove empty nodes
-		var nodes = popupContent.querySelectorAll('*');
-		for (let node of nodes) {
+		popupContent.querySelectorAll('*').forEach(function(node) {
 			if (node.textContent.trim().length === 0) node.parentNode.removeChild(node);
-		}
+		});
 		// remove not used section titles
 		while (popupContent.lastElementChild.tagName === 'DIV') {
 			popupContent.removeChild(popupContent.lastElementChild);
 		}
-		var divs = popupContent.querySelectorAll('div');
-		for (let div of divs) {
+		popupContent.querySelectorAll('div').forEach(function(div){
 			if (div.nextElementSibling.tagName === 'DIV') div.parentNode.removeChild(div);
-		}
+		});
 
 		this.domPage.appendChild(popupWrapper);
 	}
@@ -3594,8 +3704,7 @@ function ContactsList() {
 		popupWrapper.addEventListener('click', function(e) {
 			// clic is outside popup: closes popup
 			if (e.target == this) {
-				popupWrapper.parentNode.removeChild(popupWrapper);
-				document.body.classList.remove('noscroll');
+				_this.closePopup();
 			}
 		});
 		popupWrapper.querySelector('.popup-edit-contact').id = 'popup';
@@ -3603,8 +3712,7 @@ function ContactsList() {
 		document.body.classList.add('noscroll');
 
 		popupWrapper.querySelector('.popup-edit-contact .contact-title > .button-cancel').addEventListener('click', function() {
-			popupWrapper.parentNode.removeChild(popupWrapper);
-			document.body.classList.remove('noscroll');
+			_this.closePopup();
 		});
 
 		popupWrapper.querySelector('#popup input[name="contact-title"]').value = item.title;
@@ -3618,31 +3726,31 @@ function ContactsList() {
 			popupWrapper.querySelector('#popup .contact-img').style.backgroundImage = 'linear-gradient('+color+', '+color+')';
 		}
 
-
 		popupWrapper.querySelector('#popup .contact-img').addEventListener('click', function(e) {
 			_this.loadContactImage(e);
 			item.imgIsNew = true;
 		});
 
-
 		// email(s)
-		var labelField = popupWrapper.querySelector('#popup label[for="contact-email"]');
-		item.email.forEach(function(m) {
-			labelField.querySelector('input').value = m;
-			var fieldParent = labelField.parentNode;
-			labelField = labelField.cloneNode(true);
-			labelField.querySelector('input').value = "";
-			fieldParent.appendChild(labelField);
-		});
+		if (item.email.length) {
+			var labelField = popupWrapper.querySelector('#popup .contact-emails').removeChild(popupWrapper.querySelector('#popup .contact-emails').firstElementChild);
+			item.email.forEach(function(m) {
+				var curField = labelField.cloneNode(true);
+				curField.querySelector('input').value = m;
+				popupWrapper.querySelector('#popup .contact-emails').appendChild(curField);
+			});
+		}
+
 		// phone(s)
-		var labelField = popupWrapper.querySelector('#popup label[for="contact-phone"]');
-		item.tel.forEach(function(t) {
-			labelField.querySelector('input').value = t;
-			var fieldParent = labelField.parentNode;
-			labelField = labelField.cloneNode(true);
-			labelField.querySelector('input').value = "";
-			fieldParent.appendChild(labelField);
-		});
+		if (item.tel.length) {
+			var labelField = popupWrapper.querySelector('#popup .contact-phones').removeChild(popupWrapper.querySelector('#popup .contact-phones').firstElementChild);
+			item.tel.forEach(function(t) {
+				var curField = labelField.cloneNode(true);
+				curField.querySelector('input').value = t;
+				popupWrapper.querySelector('#popup .contact-phones').appendChild(curField);
+			});
+		}
+
 
 		popupWrapper.querySelector('#popup input[name="contact-nb"]').value = item.address.nb;
 		popupWrapper.querySelector('#popup input[name="contact-st"]').value = item.address.st;
@@ -3656,24 +3764,24 @@ function ContactsList() {
 
 
 		// website(s)
-		var labelField = popupWrapper.querySelector('#popup label[for="contact-links"]');
-		item.websites.forEach(function(s) {
-			labelField.querySelector('input').value = s;
-			var fieldParent = labelField.parentNode;
-			labelField = labelField.cloneNode(true);
-			labelField.querySelector('input').value = "";
-			fieldParent.appendChild(labelField);
-		});
+		if (item.websites.length) {
+			var labelField = popupWrapper.querySelector('#popup .contact-links').removeChild(popupWrapper.querySelector('#popup .contact-links').firstElementChild);
+			item.websites.forEach(function(ws) {
+				var curField = labelField.cloneNode(true);
+				curField.querySelector('input').value = ws;
+				popupWrapper.querySelector('#popup .contact-links').appendChild(curField);
+			});
+		}
 
 		// Social media links(s)
-		var labelField = popupWrapper.querySelector('#popup label[for="contact-social"]');
-		item.social.forEach(function(s) {
-			labelField.querySelector('input').value = s;
-			var fieldParent = labelField.parentNode;
-			labelField = labelField.cloneNode(true);
-			labelField.querySelector('input').value = "";
-			fieldParent.appendChild(labelField);
-		});
+		if (item.social.length) {
+			var labelField = popupWrapper.querySelector('#popup .contact-social').removeChild(popupWrapper.querySelector('#popup .contact-social').firstElementChild);
+			item.social.forEach(function(s) {
+				var curField = labelField.cloneNode(true);
+				curField.querySelector('input').value = s;
+				popupWrapper.querySelector('#popup .contact-social').appendChild(curField);
+			});
+		}
 
 		this.showContactEditPopup.duplicateLabelGroup = function(e) {
 			var newLabel = e.parentNode.cloneNode(true);
@@ -3716,13 +3824,18 @@ function ContactsList() {
 
 		popupWrapper.querySelector('#popup .contact-footer > .button-submit').addEventListener('click', function() {
 			_this.markAsEdited(item);
-			popupWrapper.parentNode.removeChild(popupWrapper);
-			document.body.classList.remove('noscroll');
+			_this.closePopup();
 		});
 
 		this.domPage.appendChild(popupWrapper);
 	}
 
+	// close actual popup
+	this.closePopup = function() {
+		var popupWrapper = document.getElementById('popup-wrapper');
+		if (popupWrapper) popupWrapper.parentNode.removeChild(popupWrapper);
+		document.body.classList.remove('noscroll');
+	}
 
 	/**************************************
 	 * Creates a new Contact, init it, display it and add it to list.
@@ -3755,8 +3868,6 @@ function ContactsList() {
 		this.showContactEditPopup(newCt);
 	}
 
-
-
 	/**************************************
 	 * Deletes a Contact
 	*/
@@ -3773,7 +3884,6 @@ function ContactsList() {
 		// raises global "updated" flag.
 		this.raiseUpdateFlag(true);
 	}
-
 
 	/**************************************
 	 * Mark a Contact object as having been edited
@@ -3854,8 +3964,6 @@ function ContactsList() {
 		// raises global "updated" flag.
 		this.raiseUpdateFlag(true);
 	}
-
-
 
 	/**************************************
 	 * Each change triggers a flag. If is(flag) : the save button displays
@@ -3943,7 +4051,7 @@ function ContactsList() {
 		var notifDiv = document.createElement('div');
 		// create XHR
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', 'ajax/contacts.ajax.php', true);
+		xhr.open('POST', 'ajax/contacts.ajax.php');
 
 		// onload
 		xhr.onload = function() {

@@ -291,7 +291,7 @@ function form_categories_links($where, $tags_post) {
 
 	foreach ($list_tags as $i => $tag) {
 		if (!empty($tag['t'])) {
-			$html .= "\t".'<li><span>'.trim($tag['t']).'</span><a href="javascript:void(0)" onclick="removeTag(this.parentNode)">×</a></li>'."\n";
+			$html .= "\t".'<li><span>'.trim($tag['t']).'</span><a href="javascript:void(0)" onclick="this.parentNode.parentNode.removeChild(this.parentNode); return false;">×</a></li>'."\n";
 		}
 	}
 	$html .= '</ul>'."\n";

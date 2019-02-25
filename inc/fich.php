@@ -63,7 +63,6 @@ function fichier_adv_conf() {
 	}
 }
 
-
 function fichier_prefs() {
 	$fichier_prefs = DIR_CONFIG.'prefs.php';
 	if(!empty($_POST['_verif_envoi'])) {
@@ -203,7 +202,6 @@ function fichier_htaccess($dossier) {
 	}
 }
 
-
 function liste_themes() {
 	if ( $ouverture = opendir(DIR_THEMES) ) {
 		while ($dossiers = readdir($ouverture) ) {
@@ -217,8 +215,6 @@ function liste_themes() {
 		return $themes;
 	}
 }
-
-
 
 // à partir de l’extension du fichier, trouve le "type" correspondant.
 // les "type" et le tableau des extensions est le $GLOBALS['files_ext'] dans conf.php
@@ -258,62 +254,71 @@ function open_serialzd_file($fichier) {
 // $feeds is an array of URLs: Array( [http://…] => md5(), [http://…] => md5(), …)
 // Returns the same array: Array([http://…] [[headers]=> 'string', [body]=> 'string'], …)
 function request_external_files($feeds, $timeout, $echo_progress=false) {
+
+	// uses chunks (smaller arrays) of 30 feeds because Curl has problems with too big "multi" requests (or server might has a limit).
+	$chunks = array_chunk($feeds, 30, true);
+
 	$results = array();
 	$total_feed = count($feeds);
 	if ($echo_progress === true) {
 		echo '0/'.$total_feed.' '; ob_flush(); flush(); // for Ajax
 	}
 
-	set_time_limit(30);
-	$curl_arr = array();
-	$master = curl_multi_init();
+	foreach ($chunks as $chunk) {
 
-	// init each url
-	foreach ($feeds as $url => $feed_url_hash) {
+			set_time_limit(30);
+			$curl_arr = array();
+			$master = curl_multi_init();
+			$total_feed_chunk = count($chunk)+count($results);
 
-		$curl_arr[$url] = curl_init(trim($url));
-		curl_setopt_array($curl_arr[$url], array(
-				CURLOPT_RETURNTRANSFER => TRUE, // force Curl to return data instead of displaying it
-				CURLOPT_FOLLOWLOCATION => TRUE, // follow 302 ans 301 redirects
-				CURLOPT_CONNECTTIMEOUT => 100, // 0 = indefinately ; no connection-timeout (ruled out by "set_time_limit" hereabove)
-				CURLOPT_TIMEOUT => $timeout, // downloading timeout
-				CURLOPT_USERAGENT => BLOGOTEXT_UA, // User-agent (uses the UA of browser)
-				CURLOPT_SSL_VERIFYPEER => FALSE, // ignore SSL errors
-				CURLOPT_SSL_VERIFYHOST => FALSE, // ignore SSL errors
-				CURLOPT_ENCODING => "gzip", // take into account gziped pages
-				CURLOPT_VERBOSE => 0,
-				CURLOPT_HEADER => 1, // also return header
-			));
-		curl_multi_add_handle($master, $curl_arr[$url]);
-	}
+			// init each url
+			foreach ($chunk as $url => $feed_url_hash) {
 
-	// exec connexions
-	$running = $oldrunning = 0;
-	$utime = microtime(true);
-	do {
-		curl_multi_exec($master, $running);
-
-		// echoes the nb of feeds remaining
-		if ($echo_progress === true) {
-			if ($utime + 0.5 < microtime(true)) { // only echos every 0.5 secondes max
-				echo ($total_feed-$running).'/'.$total_feed.' '; ob_flush(); flush();
-				$utime = microtime(true);
+				$curl_arr[$url] = curl_init(trim($url));
+				curl_setopt_array($curl_arr[$url], array(
+						CURLOPT_RETURNTRANSFER => TRUE, // force Curl to return data instead of displaying it
+						CURLOPT_FOLLOWLOCATION => TRUE, // follow 302 ans 301 redirects
+						CURLOPT_CONNECTTIMEOUT => 0, // 0 = indefinately ; no connection-timeout (ruled out by "set_time_limit" hereabove)
+						CURLOPT_TIMEOUT => $timeout, // downloading timeout
+						CURLOPT_USERAGENT => BLOGOTEXT_UA, // User-agent (uses the UA of browser)
+						CURLOPT_SSL_VERIFYPEER => FALSE, // ignore SSL errors
+						CURLOPT_SSL_VERIFYHOST => FALSE, // ignore SSL errors
+						CURLOPT_ENCODING => "gzip", // take into account gziped pages
+						CURLOPT_VERBOSE => 0,
+						CURLOPT_HEADER => 1, // also return header
+					));
+				curl_multi_add_handle($master, $curl_arr[$url]);
 			}
-		}
-		usleep(1001);
-	} while ($running > 0);
 
-	// multi select contents
-	foreach ($feeds as $url => $feed_url_hash) {
-		$response = curl_multi_getcontent($curl_arr[$url]);
-		$header_size = curl_getinfo($curl_arr[$url], CURLINFO_HEADER_SIZE);
-		$results[$feed_url_hash]['url'] = curl_getinfo($curl_arr[$url], CURLINFO_EFFECTIVE_URL);
-		$results[$feed_url_hash]['headers'] = http_parse_headers(mb_strtolower(substr($response, 0, $header_size)));
-		$results[$feed_url_hash]['body'] = mb_convert_encoding(trim(substr($response, $header_size)), 'UTF-8');
+			// exec connexions
+			$running = $oldrunning = 0;
+			$utime = microtime(true);
+			do {
+				curl_multi_exec($master, $running);
+
+				// echoes the nb of feeds remaining
+				if ($echo_progress === true) {
+					if ($utime + 0.5 < microtime(true)) { // only echos every 0.5 secondes max
+						echo ($total_feed_chunk-$running).'/'.$total_feed.' '; ob_flush(); flush();
+						$utime = microtime(true);
+					}
+				}
+				usleep(1001);
+			} while ($running > 0);
+
+			// multi select contents
+			foreach ($chunk as $url => $feed_url_hash) {
+				$response = curl_multi_getcontent($curl_arr[$url]);
+				$header_size = curl_getinfo($curl_arr[$url], CURLINFO_HEADER_SIZE);
+				$results[$feed_url_hash]['url'] = curl_getinfo($curl_arr[$url], CURLINFO_EFFECTIVE_URL);
+				$results[$feed_url_hash]['headers'] = http_parse_headers(mb_strtolower(substr($response, 0, $header_size)));
+				$results[$feed_url_hash]['body'] = mb_convert_encoding(trim(substr($response, $header_size)), 'UTF-8');
+
+			}
+			// Ferme les gestionnaires
+			curl_multi_close($master);
 
 	}
-	// Ferme les gestionnaires
-	curl_multi_close($master);
 
 	return $results;
 }
@@ -523,11 +528,12 @@ function feed2array($feed_content) {
 */
 function send_rss_json($rss_entries, $enclose_in_script_tag) {
 	// send all the entries data in a JSON format
-	$out = '';
+
+	$out = '{'."\n";
+	$out .= '"sites":'.json_encode($GLOBALS['liste_flux']).', '."\n";
 
 	// RSS entries
-	$out .= '['."\n";
-	$count = count($rss_entries)-1;
+	$out .= '"posts":'.'[';
 	foreach ($rss_entries as $i => $entry) {
 		if (isset($GLOBALS['liste_flux'][$entry['bt_feed']])) {
 			$out .= '{'.
@@ -541,11 +547,12 @@ function send_rss_json($rss_entries, $enclose_in_script_tag) {
 				'"sitename":'.json_encode($GLOBALS['liste_flux'][$entry['bt_feed']]['title'], JSON_UNESCAPED_UNICODE).', '.
 				'"folder":'.json_encode($GLOBALS['liste_flux'][$entry['bt_feed']]['folder']).', '.
 				'"content":'.json_encode($entry['bt_content'], JSON_UNESCAPED_UNICODE).''.
-			'},'."\n";
+			'},';
 		}
 	}
 	$out = rtrim(trim($out), ','); // trim out the last ',' (causes JSON error);
-	$out .= "\n".']'."\n";
+	$out .= ']';
+	$out .= '}';
 
 	if ($enclose_in_script_tag) {
 		$out = '<script id="json_rss" type="application/json">'.$out.'</script>'."\n";

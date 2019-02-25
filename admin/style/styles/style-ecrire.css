@@ -32,16 +32,51 @@
 	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
 }
 
+/* bootstrap style */
 #apercu pre,
 .link-content pre,
 .commentbloc .comm-content pre {
-	padding: 0;
-	white-space: pre-wrap;
-	font-size: .8em;
-	position: relative;
-	display: flex;
-	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    font-size: .9em;
+    margin: .5em 0;
+    background-color: #272822;
+    font-family: monospace, 'courier new';
+    padding: 1em;
+	overflow-x: auto;
+	color: #f8f8f2;
+	border-radius: 4px;
 }
+
+#apercu code,
+.link-content code,
+.commentbloc .comm-content code {
+	padding: 3px;
+	margin: 0;
+	color: #c7254e;
+	background-color: #f9f2f4;
+}
+
+#apercu pre > code,
+.link-content pre > code,
+.commentbloc .comm-content pre > code {
+	background-color: inherit;
+	color: inherit;
+	padding: 0;
+	word-break: keep-all;
+	white-space: pre;
+	hyphens: none;
+}
+
+#apercu kbd,
+.link-content kbd,
+.commentbloc .comm-content kbd {
+	padding: 1px 2px;
+	border: 2px #000 outset;
+	background: #333;
+	color: #fff;
+	border-radius: 5px;
+	font-size: .9em;
+}
+
 
 #apercu pre[data-language]::before,
 .link-content pre[data-language]::before,
@@ -53,14 +88,6 @@
 	flex: 0 0 45px;
 	text-align: center;
 	font-family: inherit;
-}
-
-#apercu pre > code,
-.link-content pre > code,
-.commentbloc .comm-content pre > code {
-	flex: 1 1 auto;
-	display: block;
-	padding: 15px;
 }
 
 #apercu img {
@@ -346,8 +373,9 @@ p.formatbut {
 
 #selected > li > a {
 	color: inherit;
-	margin-left: 8px;
+	margin-left: 6px;
 	text-decoration: none;
+	padding: 3px;
 }
 
 #selected > li:hover > a {

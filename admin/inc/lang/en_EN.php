@@ -164,6 +164,8 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'pref_agenda_format'			=> 'Default agenda display',
 'pref_agenda_bigmonth'			=> 'Calendar',
 'pref_agenda_tasklist'			=> 'Tasklist',
+'pref_agenda_ical_link'			=> 'iCal (.ics) links for agenda export:',
+'pref_agenda_show_ical_link'	=> 'Display iCal link.',
 
 // placeholders
 'placeholder_nom_fichier'		=> 'name',
@@ -186,6 +188,8 @@ $GLOBALS['lang'] = array_merge($GLOBALS['lang'], array(
 'note_no_feed'					=> 'No RSS feed',
 'note_no_feed_entry'			=> 'No RSS entry',
 'note_no_notifs'				=> 'No notification',
+'note_notifs_near_event'		=> 'near events.',
+'note_notifs_new_comment'		=> 'new comment(s).',
 
 //Formulaire Images
 'label_jusqua'					=> 'Up to',

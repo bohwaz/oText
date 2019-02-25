@@ -6,6 +6,11 @@
 // See "LICENSE" file for info.
 // *** LICENSE ***
 
+/*
+	This file is called by the other files. It is an underground working script,
+	It is not intended to be called directly in your browser.
+*/
+
 require_once '../inc/boot.php';
 
 // Update all RSS feeds using GET (for cron jobs).
@@ -21,14 +26,20 @@ if (isset($_GET['refresh_all'], $_GET['guid'])) {
 	}
 }
 
-
 operate_session();
 $GLOBALS['liste_flux'] = open_serialzd_file(FEEDS_DB);
 
-/*
-	This file is called by the other files. It is an underground working script,
-	It is not intended to be called directly in your browser.
-*/
+
+// retrieve all RSS feeds on page load.
+if (isset($_POST['get_initial_data'])) {
+	$tableau = liste_elements('SELECT * FROM rss WHERE bt_statut=1 OR bt_bookmarked=1 ORDER BY bt_date DESC', array());
+	header('Cache-Control: max-age=0');
+	header("Content-type:application/json;charset=utf-8");
+	echo 'Success';
+
+	echo send_rss_json($tableau, false);
+	die();
+}
 
 // retreive all RSS feeds from the sources, and save them in DB.
 // echoes the new feeds in JSON format to browser

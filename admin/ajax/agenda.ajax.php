@@ -71,16 +71,16 @@ if (isset($_POST['save_events'])) {
 		foreach ($events as $i => $event) {
 			switch ($event['action']) {
 				case 'newEvent':
-					$req = $GLOBALS['db_handle']->prepare('INSERT INTO agenda ( bt_id, bt_date, bt_color, bt_event_loc, bt_title, bt_content ) VALUES (?, ?, ?, ?, ?, ?)');
-					$req->execute(array($event['id'], json_encode($event['date']), $event['color'], $event['loc'], $event['title'], $event['content'] ));
+					$req = $GLOBALS['db_handle']->prepare('INSERT INTO agenda ( bt_id, bt_date, bt_color, bt_event_loc, bt_title, bt_persons, bt_content ) VALUES (?, ?, ?, ?, ?, ?, ?)');
+					$req->execute(array($event['id'], json_encode($event['date']), $event['color'], $event['loc'], $event['title'], json_encode($event['persons']), $event['content'] ));
 					break;
 				case 'deleteEvent':
 					$req = $GLOBALS['db_handle']->prepare('DELETE FROM agenda WHERE bt_id = ?');
 					$req->execute(array($event['id']));
 					break;
 				case 'updateEvent':
-					$req = $GLOBALS['db_handle']->prepare('UPDATE agenda SET bt_date = ?, bt_color = ?, bt_event_loc = ?, bt_title = ?, bt_content = ? WHERE bt_id = ?');
-					$req->execute(array(json_encode($event['date']), $event['color'], $event['loc'], $event['title'], $event['content'], $event['id']));
+					$req = $GLOBALS['db_handle']->prepare('UPDATE agenda SET bt_date = ?, bt_color = ?, bt_event_loc = ?, bt_title = ?, bt_persons = ?, bt_content = ? WHERE bt_id = ?');
+					$req->execute(array(json_encode($event['date']), $event['color'], $event['loc'], $event['title'], json_encode($event['persons']), $event['content'], $event['id']));
 					break;
 			}
 		}

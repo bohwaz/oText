@@ -15,6 +15,7 @@ function afficher_html_head($titre, $page_css_class) {
 	$html .= "\t".'<title>'.$titre.' | '.BLOGOTEXT_NAME.'</title>'."\n";
 	$html .= "\t".'<meta name="viewport" content="initial-scale=1.0, user-scalable=yes" />'."\n";
 	$html .= "\t".'<link type="text/css" rel="stylesheet" href="style/styles/style.css.php" />'."\n";
+	$html .= "\t".'<link rel="manifest" href="manifest.json" />'."\n";
 	$html .= '</head>'."\n";
 	$html .= '<body id="body" class="'.$page_css_class.'">'."\n";
 	echo $html;
@@ -116,7 +117,7 @@ function get_notifications() {
 		$nb_new = liste_elements_count($query, $array);
 		if ($nb_new > 0) {
 			$hasNotifs += $nb_new;
-			$lis .= "\t\t\t".'<li><a href="feed.php">'.$nb_new .' new RSS entries</a></li>'."\n";
+			$lis .= "\t\t\t".'<li><a href="feed.php">'.$nb_new .' '.$GLOBALS['lang']['rss_nouveau_flux'].'</a></li>'."\n";
 		}
 	}
 
@@ -127,9 +128,10 @@ function get_notifications() {
 		$nb_new = liste_elements_count($query, $array);
 		if ($nb_new > 0) {
 			$hasNotifs += $nb_new;
-			$lis .= "\t\t\t".'<li><a href="commentaires.php">'.$nb_new .' new comments</a></li>'."\n";
+			$lis .= "\t\t\t".'<li><a href="commentaires.php">'.$nb_new .' '.$GLOBALS['lang']['note_notifs_new_comment'].'</a></li>'."\n";
 		}
 	}
+
 
 	// get near events
 	//if (isset($_COOKIE['lastAccessAgenda']) and is_numeric($_COOKIE['lastAccessAgenda'])) {
@@ -138,7 +140,7 @@ function get_notifications() {
 	$nb_new = liste_elements_count($query, $array);
 	if ($nb_new > 0) {
 		$hasNotifs += $nb_new;
-		$lis .= "\t\t\t\t".'<li><a href="agenda.php">'.$nb_new .' near events</a></li>'."\n";
+		$lis .= "\t\t\t\t".'<li><a href="agenda.php">'.$nb_new .' '.$GLOBALS['lang']['note_notifs_near_event'].'</a></li>'."\n";
 	}
 	//}
 

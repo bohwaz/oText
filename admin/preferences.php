@@ -199,8 +199,6 @@ function afficher_form_prefs($erreurs = '') {
 		$fld_cfg_rss .= "\t".'<label>'.$GLOBALS['lang']['pref_rss_go_to_imp-export'].'</label>'."\n";
 		$fld_cfg_rss .= "\t".'<a href="maintenance.php">'.$GLOBALS['lang']['label_import-export'].'</a>'."\n";
 		$fld_cfg_rss .= '</p>'."\n";
-		$fld_cfg_rss .= '<p>'."\n";
-		$fld_cfg_rss .= '</p>'."\n";
 		$fld_cfg_rss .= '</div>'."\n";
 		$fld_cfg_rss .= $submit_box;
 		$fld_cfg_rss .= '</div>';
@@ -211,17 +209,17 @@ function afficher_form_prefs($erreurs = '') {
 		$fld_cfg_agenda .= '<div class="form-lines">'."\n";
 		$fld_cfg_agenda .= '<p>'."\n";
 		$nbs = array('eventCalendar'=> $GLOBALS['lang']['pref_agenda_taskcalendar'], 'eventlist'=> $GLOBALS['lang']['pref_agenda_tasklist']);
-		$fld_cfg_agenda .= '<p>'."\n";
 		$fld_cfg_agenda .= form_select('default_agenda_display', $nbs, $GLOBALS['agenda_display'], $GLOBALS['lang']['pref_agenda_format']);
 		$fld_cfg_agenda .= '</p>'."\n";
-		$fld_cfg_agenda .= '</p>'."\n";
 		$fld_cfg_agenda .= '<p>'."\n";
+		$a = explode('/', dirname($_SERVER['SCRIPT_NAME']));
+		$fld_cfg_agenda .= '<label>'.$GLOBALS['lang']['pref_agenda_ical_link'].'</label>'."\n";
+		$fld_cfg_agenda .= '<a onclick="prompt(\''.$GLOBALS['lang']['pref_agenda_ical_link'].'\', \''.$GLOBALS['racine'].$a[count($a)-1].'/ajax/agenda.ajax.php?guid='.BLOG_UID.'&get_ics'.'\');return false;" href="#">'.$GLOBALS['lang']['pref_agenda_show_ical_link'].'</a>';
 		$fld_cfg_agenda .= '</p>'."\n";
 		$fld_cfg_agenda .= '</div>'."\n";
 		$fld_cfg_agenda .= $submit_box;
 		$fld_cfg_agenda .= '</div>';
 	echo $fld_cfg_agenda;
-
 
 		$fld_maintenance = '<div role="group" class="pref">';
 		$fld_maintenance .= '<div class="form-legend"><legend class="legend-sweep">'.$GLOBALS['lang']['titre_maintenance'].'</legend></div>'."\n";

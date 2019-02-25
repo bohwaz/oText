@@ -47,8 +47,8 @@
 }
 
 #table-contacts tr > td.icon {
-	width: 80px;
-	max-width: 80px;
+	width: 40px;
+	max-width: 40px;
 	cursor: pointer;
 }
 
@@ -133,6 +133,13 @@
 /* the display-contact popup
 ----------------------------------------------- */
 
+#popup.popup-contact > .contact-title {
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+#popup.popup-contact > .contact-title > .contact-img-name {
+	flex: 1;
+}
 #popup.popup-contact > .contact-title .contact-img {
 	vertical-align: middle;
 	margin-right: 5px;
@@ -232,6 +239,11 @@
 
 /* the edit-contact popup
 ----------------------------------------------- */
+
+#popup.popup-edit-contact > .contact-title {
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
 
 #popup.popup-edit-contact .contact-content > .onshowmore {
 	display: none;

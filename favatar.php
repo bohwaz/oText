@@ -33,7 +33,7 @@ if ($_GET['w'] == 'favicon') {
 	$domain = parse_url($_GET['q'], PHP_URL_HOST); // full URL given?
 	if ($domain === NULL) { $domain = parse_url($_GET['q'], PHP_URL_PATH); } // or only domain name?
 	if ($domain === NULL) { header("HTTP/1.0 400 Bad Request"); exit; } // or some unusable crap?
-	$source_file = 'https://api.faviconkit.com/'.$domain.'/32';
+	$source_file = 'http://www.google.com/s2/favicons?domain='.$domain;
 	// dest file
 	$target_file = $target_dir.'/'.md5($domain).'.png';
 	// expiration delay
@@ -98,9 +98,35 @@ if (!file_exists($target_file) or $force_new === TRUE) {
 	// testing format
 	$imagecheck = getimagesize($target_file);
 	if ($imagecheck['mime'] !== 'image/png') {
-		imagepng(imagecreatefromjpeg($target_file), $target_file.'2');  // if not, creating PNG and replacing
-		rename($target_file.'2', $target_file);
+		imagepng(imagecreatefromjpeg($target_file), $target_file);  // if not, creating PNG and replacing
 	}
+
+	// resizing to 32x32px
+	
+	$width = 32;
+	$height = 32;
+
+	// image actual ratio
+	$orig_ratio = $imagecheck[0] / $imagecheck[1];
+
+	// destinatino image sizes
+	if ($width/$height > $orig_ratio) {
+		$width = $height*$orig_ratio;
+	} else {
+		$height = $width/$orig_ratio;
+	}
+
+	// Resizing (keeping alpha channel)
+	$image = imagecreatefrompng($target_file);
+
+	$newImg = imagecreatetruecolor($width, $height);
+	imagealphablending($newImg, false);
+	imagesavealpha($newImg, true);
+	imagefilledrectangle($newImg, 0, 0, $width, $height, imagecolorallocate($newImg, 255, 255, 255));
+	imagecopyresampled($newImg, $image, 0, 0, 0, 0, $width, $height, $imagecheck[0], $imagecheck[1]);
+
+	imagepng($newImg, $target_file, 9);
+
 }
 
 // send file to browser

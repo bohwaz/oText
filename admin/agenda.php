@@ -24,6 +24,7 @@ function send_agenda_json($events, $enclose_in_script_tag) {
 			'"title": '.json_encode($event['bt_title']).', '.
 			'"color": '.json_encode($event['bt_color']).', '.
 			'"content": '.json_encode($event['bt_content']).', '.
+			'"persons": '.json_encode(json_decode($event['bt_persons'])).', '.
 			'"loc": '.json_encode($event['bt_event_loc']).
 
 		'}'.(($count==$i) ? '' :',')."\n";
@@ -87,12 +88,12 @@ $out_html .= "\t\t\t\t".'<tr class="dayAbbr">'; for ($i=0 ; $i<7 ; $i++) { $out_
 $out_html .= "\t\t\t\t".'</thead>'."\n";
 $out_html .= "\t\t\t\t".'<tbody></tbody>'."\n";
 $out_html .= "\t\t\t".'</table>'."\n";
-
+$a = explode('/', dirname($_SERVER['SCRIPT_NAME']));
+$out_html .= '<p class="ical-link"><button type="button" onclick="prompt(\''.$GLOBALS['lang']['pref_agenda_ical_link'].'\', \''.$GLOBALS['racine'].$a[count($a)-1].'/ajax/agenda.ajax.php?guid='.BLOG_UID.'&get_ics'.'\');">'.$GLOBALS['lang']['pref_agenda_show_ical_link'].'</button></p>'."\n";
 $out_html .= "\t".'</div>'."\n";
 
-
-
 $out_html .= "\t".'<div id="popup-wrapper" hidden>'."\n";
+
 $out_html .= "\t\t".'<form class="popup-edit-event" hidden>'."\n";
 $out_html .= "\t\t\t".'<div class="popup-title event-title">'."\n";
 $out_html .= "\t\t\t\t".'<button type="button" class="event-color"></button>'."\n";
@@ -120,10 +121,24 @@ $out_html .= "\t\t\t\t\t".'<label for="time-end"><input class="text" type="time"
 $out_html .= "\t\t\t\t".'</p>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
 $out_html .= "\t\t\t".'<div class="event-content-loc">'."\n";
-$out_html .= "\t\t\t\t".'<input placeholder="'.$GLOBALS['lang']['label_add_location'].'" type="text" class="text" name="loc">'."\n";
+$out_html .= "\t\t\t\t".'<label for="event-loc"><input type="text" class="text" name="event-loc" value="" placeholder=" " /><span>'.$GLOBALS['lang']['label_add_location'].'</span></label>'."\n";
+$out_html .= "\t\t\t".'</div>'."\n";
+$out_html .= "\t\t\t".'<datalist id="htmlListContacts">'."\n";
+$tab_contacts = nb_entries_as('contacts', 'bt_label');
+foreach ($tab_contacts as $contact) {
+	if (isset($contact['bt_label']) and !empty($contact['bt_label']) ) $out_html .= "\t\t\t\t".'<option value="'.htmlspecialchars($contact['bt_label']).'">(groupe) '.htmlspecialchars($contact['bt_label']).'</option>'."\n";
+}
+$tab_contacts = nb_entries_as('contacts', 'bt_fullname');
+foreach ($tab_contacts as $contact) {
+	if (isset($contact['bt_fullname']) and !empty($contact['bt_fullname']) ) $out_html .= "\t\t\t\t".'<option value="'.htmlspecialchars($contact['bt_fullname']).'">'."\n";
+}
+$out_html .= "\t\t\t".'</datalist>'."\n";
+$out_html .= "\t\t\t".'<div class="event-content-persons">'."\n";
+$out_html .= "\t\t\t\t".'<ul id="event-content-persons-selected"><li class="tag"><span></span><a href="#">×</a></li></ul>'."\n";
+$out_html .= "\t\t\t\t".'<label for="event-persons"><input list="htmlListContacts" type="text" class="text" name="event-persons" value="" placeholder=" " /><span>'.$GLOBALS['lang']['label_add_persons'].'</span></label>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
 $out_html .= "\t\t\t".'<div class="event-content-descr">'."\n";
-$out_html .= "\t\t\t\t".'<textarea placeholder="'.$GLOBALS['lang']['label_add_description'].'" cols="30" rows="3" class="text" name="descr"></textarea>'."\n";
+$out_html .= "\t\t\t\t".'<label for="event-descr"><textarea type="text" class="text" name="event-descr" placeholder=" "></textarea><span>'.$GLOBALS['lang']['label_add_description'].'</span></label>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
 $out_html .= "\t\t\t".'<div class="popup-footer event-footer">'."\n";
@@ -147,6 +162,7 @@ $out_html .= "\t\t\t".'<div class="popup-content event-content">'."\n";
 $out_html .= "\t\t\t\t".'<ul>'."\n";
 $out_html .= "\t\t\t\t\t".'<li class="event-time"><span></span><span></span></li>'."\n";
 $out_html .= "\t\t\t\t\t".'<li class="event-loc"></li>'."\n";
+$out_html .= "\t\t\t\t\t".'<li class="event-persons"><span></span></li>'."\n";
 $out_html .= "\t\t\t\t\t".'<li class="event-description"></li>'."\n";
 $out_html .= "\t\t\t\t".'</ul>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
@@ -154,10 +170,9 @@ $out_html .= "\t\t".'</div>'."\n";
 
 $out_html .= "\t".'</div>'."\n";
 $out_html .= "\t".'<div id="cal-sizer" class="'.($GLOBALS['agenda_display']).'">';
+
 $out_html .= "\t\t".'<div id="calendar-wrapper">'."\n";
-
 $out_html .= "\t\t\t".'<table id="calendar-table" class="table-month-mode">'."\n";
-
 $out_html .= "\t\t\t\t".'<thead class="day-mode">'."\n";
 $out_html .= "\t\t\t\t\t".'<tr class="monthrow">'."\n";
 $out_html .= "\t\t\t\t\t\t".'<td id="changeMonth" colspan="4"><button id="show-full-month"></button><span></span></td>'."\n";
@@ -165,7 +180,6 @@ $out_html .= "\t\t\t\t\t\t".'<td id="day" colspan="3"><button id="prev-day"></bu
 $out_html .= "\t\t\t\t\t".'</tr>'."\n";
 $out_html .= "\t\t\t\t".'</thead>'."\n";
 $out_html .= "\t\t\t\t".'<tbody class="day-mode"></tbody>'."\n";
-
 $out_html .= "\t\t\t\t".'<thead class="month-mode">'."\n";
 $out_html .= "\t\t\t\t\t".'<tr class="monthrow">'."\n";
 $out_html .= "\t\t\t\t\t\t".'<td id="changeYear" colspan="4"><button id="show-full-year"></button><span></span></td>'."\n";
@@ -174,16 +188,15 @@ $out_html .= "\t\t\t\t\t".'</tr>'."\n";
 $out_html .= "\t\t\t\t\t".'<tr class="dayAbbr">'; for ($i=0 ; $i<7 ; $i++) { $out_html .= '<th>'.$GLOBALS['lang']['days_abbr_narrow'][$i].'</th>';} $out_html .= "\t\t\t\t\t".'</tr>'."\n";
 $out_html .= "\t\t\t\t".'</thead>'."\n";
 $out_html .= "\t\t\t\t".'<tbody class="month-mode"></tbody>'."\n";
-
 $out_html .= "\t\t\t\t".'<thead class="year-mode">'."\n";
 $out_html .= "\t\t\t\t\t".'<tr class="monthrow">'."\n";
 $out_html .= "\t\t\t\t\t\t".'<td id="year" colspan="4"><button id="prev-year"></button><span></span><button id="next-year"></button></td>'."\n";
 $out_html .= "\t\t\t\t\t".'</tr>'."\n";
 $out_html .= "\t\t\t\t".'</thead>'."\n";
 $out_html .= "\t\t\t\t".'<tbody class="year-mode"></tbody>'."\n";
-
 $out_html .= "\t\t\t".'</table>'."\n";
 $out_html .= "\t\t".'</div>'."\n";
+
 $out_html .= "\t\t".'<div id="daily-events-wrapper">'."\n";
 $out_html .= "\t\t\t".'<p>'."\n";
 $out_html .= "\t\t\t\t".'<select id="filter-events">'."\n";
@@ -197,7 +210,7 @@ $out_html .= "\t\t\t\t\t".'<option value="past">'.$GLOBALS['lang']['label_past_e
 $out_html .= "\t\t\t\t".'</select>'."\n";
 $out_html .= "\t\t\t".'</p>'."\n";
 $out_html .= "\t\t\t".'<div id="daily-events">'."\n";
-$out_html .= "\t\t\t\t".'<div data-index-id="" class="" hidden>'."\n";
+$out_html .= "\t\t\t\t".'<div data-id="" data-date="" class="" hidden>'."\n";
 $out_html .= "\t\t\t\t\t".'<div class="eventDate">'."\n";
 $out_html .= "\t\t\t\t\t\t".'<span class="event-dd"></span><span class="event-mmdd"></span><span class="event-hhii"></span>'."\n";
 $out_html .= "\t\t\t\t\t".'</div>'."\n";
@@ -221,4 +234,3 @@ $out_html .= '</script>'."\n";
 echo $out_html;
 
 footer($begin);
-

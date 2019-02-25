@@ -14,15 +14,6 @@ function afficher_form_billet($article, $erreurs) {
 	$html = '';
 	if ($erreurs) { $html .= erreurs($erreurs); }
 
-	function form_statut($etat) {
-		$choix = array('1' => $GLOBALS['lang']['label_publie'], '0' => $GLOBALS['lang']['label_invisible']);
-		return form_select('statut', $choix, $etat, $GLOBALS['lang']['label_dp_etat']);
-	}
-	function form_allow_comment($etat) {
-		$choix= array('1' => $GLOBALS['lang']['ouverts'], '0' => $GLOBALS['lang']['fermes']);
-		return form_select('allowcomment', $choix, $etat, $GLOBALS['lang']['label_dp_commentaires']);
-	}
-
 	if (!empty($article)) {
 		$date_dec = decode_id($article['bt_date']);
 		$defaut_ymd = $date_dec['y'].'-'.$date_dec['m'].'-'.$date_dec['d'];
@@ -36,7 +27,7 @@ function afficher_form_billet($article, $erreurs) {
 		$statutdefaut = $article['bt_statut'];
 		$allowcommentdefaut = $article['bt_allow_comments'];
 
-		$html .= '<form id="form-ecrire" method="post" onsubmit="return moveTag();" action="'.basename($_SERVER['SCRIPT_NAME']).'?post_id='.$article['bt_id'].'" >'."\n";
+		$html .= '<form id="form-ecrire" method="post" action="'.basename($_SERVER['SCRIPT_NAME']).'?post_id='.$article['bt_id'].'" >'."\n";
 	} else {
 		$defaut_ymd = date('Y-m-d');
 		$defaut_his = date('H:i:s');
@@ -49,7 +40,7 @@ function afficher_form_billet($article, $erreurs) {
 		$statutdefaut = '1';
 		$allowcommentdefaut = '1';
 
-		$html .= '<form id="form-ecrire" method="post" onsubmit="return moveTag();" action="'.basename($_SERVER['SCRIPT_NAME']).'" >'."\n";
+		$html .= '<form id="form-ecrire" method="post" action="'.basename($_SERVER['SCRIPT_NAME']).'" >'."\n";
 	}
 
 	$html .= '<div class="main-form">'."\n";
@@ -83,8 +74,12 @@ function afficher_form_billet($article, $erreurs) {
 	$html .= "\t\t".'<span id="formheure"><input class="text" required="" step="1" name="his" id="his" type="time" value='.$defaut_his.' /></span>'."\n";
 	$html .= "\t".'</div>'."\n";
 	$html .= "\t".'<div id="opts">'."\n";
-	$html .= "\t\t".'<span id="formstatut">'."\n".form_statut($statutdefaut).'</span>'."\n";
-	$html .= "\t\t".'<span id="formallowcomment">'."\n".form_allow_comment($allowcommentdefaut).'</span>'."\n";
+	$html .= "\t\t".'<span id="formstatut">'."\n";
+	$html .= form_select('statut', array('1' => $GLOBALS['lang']['label_publie'], '0' => $GLOBALS['lang']['label_invisible']), $statutdefaut, $GLOBALS['lang']['label_dp_etat']);
+	$html .= "\t\t".'</span>'."\n";
+	$html .= "\t\t".'<span id="formallowcomment">'."\n";
+	$html .= form_select('allowcomment', array('1' => $GLOBALS['lang']['ouverts'], '0' => $GLOBALS['lang']['fermes']), $allowcommentdefaut, $GLOBALS['lang']['label_dp_commentaires']);
+	$html .= '</span>'."\n";
 	$html .= "\t".'</div>'."\n";
 
 	$html .= '<p class="submit-bttns">'."\n";
@@ -100,7 +95,6 @@ function afficher_form_billet($article, $erreurs) {
 		$html .= "\t\t".'<button class="submit button-delete" type="button" name="supprimer" onclick="rmArticle(this)" />'.$GLOBALS['lang']['supprimer'].'</button>'."\n";
 	}
 	$html .= "\t".'</p>'."\n";
-
 
     $html .= '</div>'."\n";
 
@@ -196,7 +190,10 @@ window.addEventListener("beforeunload", function (e) {
 	if (!form.dataset.edited) { return true; };
 	(e || window.event).returnValue = confirmationMessage || \'\'; //Gecko + IE
 	return confirmationMessage;                                   // Webkit : ignore this.
-});';
+});'."\n";
+
+echo 'handleTags(\'form-ecrire\', \'type_tags\', \'categories\', \'selected\');'."\n";
+
 echo '</script>'."\n";
 
 
