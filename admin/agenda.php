@@ -11,6 +11,7 @@ operate_session();
 
 setcookie('lastAccessAgenda', time(), time()+365*24*60*60, null, null, true, true);
 
+
 // Notes are send to browser in JSON format, rendering is done client side.
 function send_agenda_json($events, $enclose_in_script_tag) {
 	// events data
@@ -19,7 +20,8 @@ function send_agenda_json($events, $enclose_in_script_tag) {
 	foreach ($events as $i => $event) {
 		$out .= '{'.
 			'"id": '.json_encode($event['bt_id']).', '.
-			'"date": '.json_encode(json_decode($event['bt_date'])).', '.
+			'"date_start": '.json_encode($event['bt_date_start']).', '.
+			'"date_end": '.json_encode($event['bt_date_end']).', '.
 			'"action": "", '.
 			'"title": '.json_encode($event['bt_title']).', '.
 			'"color": '.json_encode($event['bt_color']).', '.
@@ -43,36 +45,21 @@ $tableau = array();
 if (!empty($_GET['q'])) {
 	$arr = parse_search($_GET['q']);
 	$sql_where = implode(array_fill(0, count($arr), '( bt_content || bt_title || bt_event_loc ) LIKE ? '), 'AND '); // AND operator between words
-	$query = "SELECT * FROM agenda WHERE ".$sql_where."ORDER BY bt_date ASC";
+	$query = "SELECT * FROM agenda WHERE ".$sql_where."ORDER BY bt_date_start ASC";
 	$GLOBALS['agenda_display'] = 'eventlist';
 	$tableau = liste_elements($query, $arr);
 // no filter, send everything
 } else {
-	$query = "SELECT * FROM agenda ORDER BY bt_date ASC";
+	$query = "SELECT * FROM agenda ORDER BY bt_date_start ASC";
 	$tableau = liste_elements($query, array());
 }
 
 // count total nb of events
 $nb_events_displayed = count($tableau);
-$html_sub_menu = "\t".'<div id="sub-menu" class="sm-agenda">'."\n";
-$html_sub_menu .= "\t\t".'<button id="hide-side-nav"></button>'."\n";
-$html_sub_menu .= "\t\t".'<span id="count-posts"><span id="counter"></span></span>'."\n";
-$html_sub_menu .= "\t\t".'<span id="message-return"></span>'."\n";
-$options = array('eventCalendar'=> $GLOBALS['lang']['pref_agenda_taskcalendar'], 'eventlist'=> $GLOBALS['lang']['pref_agenda_tasklist']);
-$html_sub_menu .= form_select('cal-size', $options, $GLOBALS['agenda_display'], '');
-
-
-
-$html_sub_menu .= "\t\t".'<ul class="sub-menu-buttons agenda-menu-buttons">'."\n";
-$html_sub_menu .= "\t\t\t".'<li><button class="submit button-submit" type="submit" name="enregistrer" id="enregistrer" disabled>'.$GLOBALS['lang']['enregistrer'].'</button></li>'."\n";
-$html_sub_menu .= "\t\t".'</ul>'."\n";
-$html_sub_menu .= "\t\t".'<button type="button" id="fab" class="add-event" title="'.$GLOBALS['lang']['label_event_ajout'].'">'.$GLOBALS['lang']['label_event_ajout'].'</button>'."\n";
-$html_sub_menu .= "\t".'</div>'."\n";	
-
 
 // DEBUT PAGE
 afficher_html_head($GLOBALS['lang']['monagenda'], "agenda"); // <head></head>
-afficher_topnav($GLOBALS['lang']['monagenda'], $html_sub_menu); // #header #top
+afficher_topnav($GLOBALS['lang']['monagenda'], ''); // #header #top
 
 echo '<div id="axe">'."\n";
 
@@ -88,6 +75,9 @@ $out_html .= "\t\t\t\t".'<tr class="dayAbbr">'; for ($i=0 ; $i<7 ; $i++) { $out_
 $out_html .= "\t\t\t\t".'</thead>'."\n";
 $out_html .= "\t\t\t\t".'<tbody></tbody>'."\n";
 $out_html .= "\t\t\t".'</table>'."\n";
+$options = array('eventCalendar'=> $GLOBALS['lang']['pref_agenda_taskcalendar'], 'eventlist'=> $GLOBALS['lang']['pref_agenda_tasklist']);
+$out_html .= form_select('cal-size', $options, $GLOBALS['agenda_display'], '');
+
 $a = explode('/', dirname($_SERVER['SCRIPT_NAME']));
 $out_html .= '<p class="ical-link"><button type="button" onclick="prompt(\''.$GLOBALS['lang']['pref_agenda_ical_link'].'\', \''.$GLOBALS['racine'].$a[count($a)-1].'/ajax/agenda.ajax.php?guid='.BLOG_UID.'&get_ics'.'\');">'.$GLOBALS['lang']['pref_agenda_show_ical_link'].'</button></p>'."\n";
 $out_html .= "\t".'</div>'."\n";
@@ -222,6 +212,13 @@ $out_html .= "\t\t\t".'</div>'."\n";
 
 $out_html .= "\t\t".'</div>'."\n";
 $out_html .= "\t".'</div>'."\n";
+
+
+// (+) button, fab
+$out_html .= "\t\t".'<button type="button" id="fab" class="add-event" title="'.$GLOBALS['lang']['label_event_ajout'].'">'.$GLOBALS['lang']['label_event_ajout'].'</button>'."\n";
+// notif popup bubble
+$out_html .= "\t".'<span id="popup-notif"><span id="count-posts"><span id="counter"></span></span><span id="message-return"></span></span>'."\n";
+
 
 $out_html .= send_agenda_json($tableau, true); // 1
 $out_html .= php_lang_to_js(); // 2

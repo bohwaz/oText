@@ -556,8 +556,10 @@ function import_html_links($content) {
 			$link = array('bt_id' => '', 'bt_title' => '', 'bt_link' => '', 'bt_content' => '', 'bt_wiki_content' => '', 'bt_tags' => '', 'bt_statut' => 1, 'bt_type' => 'link');
 			$d = explode('<DD>', $dt);
 			if (strcmp(substr($d[0], 0, strlen('<A ')), '<A ') === 0) {
-				$link['bt_content'] = (isset($d[1]) ? html_entity_decode(trim($d[1]), ENT_QUOTES,'utf-8') : '');  // Get description (optional)
-				$link['bt_wiki_content'] = $link['bt_content'];
+				$raw_content = (isset($d[1]) ? html_entity_decode(trim($d[1]), ENT_QUOTES,'utf-8') : '');
+				$link['bt_content'] = markup(htmlspecialchars(clean_txt($raw_content), ENT_NOQUOTES));  // Get description (optional)
+				$link['bt_wiki_content'] = $raw_content;
+
 				preg_match('!<A .*?>(.*?)</A>!i',$d[0],$matches); $link['bt_title'] = (isset($matches[1]) ? trim($matches[1]) : '');  // Get title
 				$link['bt_title'] = html_entity_decode($link['bt_title'], ENT_QUOTES, 'utf-8');
 				preg_match_all('# ([A-Z_]+)=\"(.*?)"#i', $dt, $matches, PREG_SET_ORDER); // Get all other attributes
@@ -793,7 +795,7 @@ if (!isset($_GET['do']) and !isset($_FILES['file'])) {
 		echo '<fieldset>'."\n";
 		echo '<legend class="legend-backup">'.$GLOBALS['lang']['maintenance_export'].'</legend>';
 		echo "\t".'<p><label for="json">'.$GLOBALS['lang']['bak_export_json'].'</label><input type="radio" name="exp-format" value="json" id="json" onchange="switch_export_type(\'e_json\')" /></p>'."\n";
-		echo "\t".'<p><label for="html">'.$GLOBALS['lang']['bak_export_netscape'].'</label><input type="radio" name="exp-format" value="html" id="html" onchange="switch_export_type(\'e_html\')" /></p>'."\n";
+		echo "\t".'<p><label for="html">'.$GLOBALS['lang']['bak_export_netscape'].'</label><input type="radio" name="exp-format" value="html" id="html" onchange="switch_export_type(\'\')" /></p>'."\n";
 		echo "\t".'<p><label for="opml">'.$GLOBALS['lang']['bak_export_opml'].'</label><input type="radio" name="exp-format" value="opml" id="opml" onchange="switch_export_type(\'\')" /></p>'."\n";
 		echo "\t".'<p><label for="xmln">'.$GLOBALS['lang']['bak_export_xmln'].'</label><input type="radio" name="exp-format" value="xmln" id="xmln" onchange="switch_export_type(\'\')" /></p>'."\n";
 		echo "\t".'<p><label for="zip">'.$GLOBALS['lang']['bak_export_zip'].'</label><input type="radio" name="exp-format" value="zip" id="zip" onchange="switch_export_type(\'e_zip\')" /></p>'."\n";
@@ -807,17 +809,12 @@ if (!isset($_GET['do']) and !isset($_FILES['file'])) {
 		echo "\t".'<p>'.form_checkbox('incl-comms', 0, $GLOBALS['lang']['bak_comments_do']).'</p>'."\n";
 		echo '</fieldset>'."\n";
 
-		// export links in html
-		echo '<fieldset id="e_html">'."\n";
-		echo '<legend class="legend-backup">'.$GLOBALS['lang']['bak_combien_linx'].'</legend>';
-		echo "\t".'<p>'.form_select('nb-links2', $nbs, 50, $GLOBALS['lang']['bak_combien_linx']).'</p>'."\n";
-		echo '</fieldset>'."\n";
-
 		// export data in zip
 		echo '<fieldset id="e_zip">';
 		echo '<legend class="legend-backup">'.$GLOBALS['lang']['maintenance_incl_quoi'].'</legend>';
-		if (DBMS == 'sqlite')
-		echo "\t".'<p>'.form_checkbox('incl-sqlit', 0, $GLOBALS['lang']['bak_incl_sqlit']).'</p>'."\n";
+		if (DBMS == 'sqlite') {
+			echo "\t".'<p>'.form_checkbox('incl-sqlit', 0, $GLOBALS['lang']['bak_incl_sqlit']).'</p>'."\n";
+		}
 		echo "\t".'<p>'.form_checkbox('incl-files', 0, $GLOBALS['lang']['bak_incl_files']).'</p>'."\n";
 		echo "\t".'<p>'.form_checkbox('incl-confi', 0, $GLOBALS['lang']['bak_incl_confi']).'</p>'."\n";
 		echo "\t".'<p>'.form_checkbox('incl-theme', 0, $GLOBALS['lang']['bak_incl_theme']).'</p>'."\n";

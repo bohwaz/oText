@@ -65,7 +65,7 @@ Date.prototype.getWeekNumber = function () {
 
 /* date from YYYYMMDDHHIISS format */
 Date.dateFromYMDHIS = function(d) {
-	var d = new Date(d.substr(0, 4), d.substr(4, 2) - 1, d.substr(6, 2), d.substr(8, 2), d.substr(10, 2), d.substr(12, 2));
+ 	var d = new Date(d.toString().substr(0, 4), d.toString().substr(4, 2) - 1, d.toString().substr(6, 2), d.toString().substr(8, 2), d.toString().substr(10, 2), d.toString().substr(12, 2));
 	return d;
 }
 
@@ -771,116 +771,150 @@ function imgListWall() {
 	this.imgList = JSON.parse(document.getElementById('json_images').textContent);
 	if (typeof this.imgList == 'undefined' || !this.imgList.length) return;
 
-
 	// get some DOM elements
-	this.imgDomWall = document.getElementById('image-wall');
+	this.imgsList = document.getElementById('image-wall');
 
-	// put som listeners
+	// put some listeners
 	// init the « folders sorting » buttons.
-	this.showAllButton = document.getElementById('butIdAll');
-	this.showAllButton.addEventListener('click', function(){ _this.albumSort(""); });
-	this.showFolders = document.querySelectorAll('#list-albums > button:not([id])');
-	for (var i = 0, len = this.showFolders.length ; i < len ; i++) {
-		this.showFolders[i].addEventListener('click', function() { _this.albumSort(this); });
-	}
+	document.querySelectorAll('#list-albums > button:not([id])').forEach(function(item) {
+		item.addEventListener('click', function(e) { _this.albumSort(e); });
+	});
 
+	// "load all" button
+	document.getElementById('load_all').addEventListener('click', function(e) { _this.loadAll(e); });
+
+	// built page
+	window.addEventListener("load", function() {
+		_this.rebuiltWall();
+	});
+
+	// get Templates
+	this.imgTemplate = this.imgsList.removeChild(this.imgsList.firstElementChild);
 
 	/***********************************
 	** The HTML tree builder :
-	** Rebuilts the whole list of thumbnails.
 	*/
-	this.rebuiltWall = function(imgList, limit) {
-		// empties the actual list
-		while (this.imgDomWall.firstChild) {
-			 this.imgDomWall.removeChild(this.imgDomWall.firstChild);
-		}
 
-		if (0 === imgList.length) return false;
+	// Rebuilts the whole list of thumbnails
+	this.rebuiltWall = function() {
+		// empties the actual list
+		//while (this.imgsList.firstChild) {
+		//	 this.imgsList.removeChild(this.imgsList.firstChild);
+		//}
+
+		var countImg = this.imgList.length;
+		if (0 === countImg) return false;
+
+		var divList = document.createDocumentFragment();
+		var listAlbums = document.getElementById('list-albums');
 
 		// populates the new list
-		for (var i = 0, len = imgList.length ; i < (Math.min(len, limit)) ; i++) {
-			var item = imgList[i];
+		this.imgList.forEach(function(item) {
+			if (item.action == "deleteImg") return;
 
-			var bloc = document.createElement('div');
-			bloc.id = 'bloc_' + item.id;
-			bloc.classList.add('image_bloc');
-			bloc.addEventListener('click', function(e){ this.classList.toggle('show-buttons'); } );
-			bloc.dataset.folder = item.folder;
+			var div = _this.imgTemplate.cloneNode(true);
+			div.id = 'bloc_' + item.id;
 
-			var imgThb = document.createElement('img');
-			imgThb.src = item.thbPath;
-			imgThb.alt = '#';
-			imgThb.width = item.w;
-			imgThb.height = item.h;
-			bloc.appendChild(imgThb);
+			div.setAttribute('data-folder', item.folder);
+			var tempImg = new Image();
+			tempImg.onload = function() {
+				div.removeAttribute('hidden');
+				div.querySelector('img').src = this.src;
+			};
+			tempImg.src = item.thbPath;
 
+			div.querySelector('img').width = item.w;
+			div.querySelector('img').height = item.h;
+			div.querySelector('a.imgShow').href = item.absPath + item.fileName;
+			div.querySelector('a.imgEdit').href = 'fichiers.php?file_id='+item.id;
+			div.querySelector('a.imgDL').href = item.absPath + item.fileName;
+			div.querySelector('a.imgDL').download = item.fileName;
 
-			var spanBtns = document.createElement('span');
+			div.querySelector('button.imgSuppr').addEventListener('click', function(e){ _this.deleteFile(item); } );
+			div.addEventListener('click', function(e){ this.classList.toggle('show-buttons'); } );
 
-			var btnShow = document.createElement('a')
-			btnShow.classList.add('vignetteAction', 'imgShow');
-			btnShow.href = item.absPath + item.fileName;
-			spanBtns.appendChild(btnShow);
+			// populate .data-folder buttons
+			listAlbums.querySelector('button[data-folder=""]').dataset.count++
+			if (item.folder !== "") {
+				var button = null;
+				if (button = listAlbums.querySelector('button[data-folder="'+item.folder+'"]')) {
+					button.dataset.count++
+				} else {
+					var button = document.createElement('BUTTON');
+					button.dataset.count = 1;
+					button.dataset.folder = item.folder;
+					button.textContent = item.folder;
+					button.addEventListener('click', function(e) { _this.albumSort(e); });
+					listAlbums.insertBefore(button, document.getElementById('load_all'));
+				}
+			}
+			divList.appendChild(div);
+		});
 
-			var btnEdit = document.createElement('a')
-			btnEdit.classList.add('vignetteAction', 'imgEdit');
-			btnEdit.href = 'fichiers.php?file_id='+item.id;
-			spanBtns.appendChild(btnEdit);
-
-			var btnDL = document.createElement('a')
-			btnDL.classList.add('vignetteAction', 'imgDL');
-			btnDL.href = item.absPath + item.fileName;
-			btnDL.download = item.fileName;
-			spanBtns.appendChild(btnDL);
-
-			var btnSuppr = document.createElement('button')
-			btnSuppr.classList.add('vignetteAction', 'imgSuppr');
-			btnSuppr.dataset.id = item.id;
-			btnSuppr.addEventListener('click', function(e){ _this.deleteFile(this.dataset.id); } );
-
-			spanBtns.appendChild(btnSuppr);
-
-			bloc.appendChild(spanBtns);
-
-			this.imgDomWall.appendChild(bloc);
-		}
-		return false;
+		this.imgsList.appendChild(divList);
 	}
-	// init the whole DOM list
-	this.rebuiltWall(this.imgList, 25);
 
+	this.loadAll = function(e) {
+		// prepare XMLHttpRequest
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', 'ajax/files.ajax.php');
+		xhr.onload = function() {
+			var newImgs = JSON.parse(this.responseText);
+
+			// if not empty, add items to DomList
+			var oldList = _this.imgList;
+			_this.imgList = newImgs;
+			_this.rebuiltWall();
+
+			// and to logical JSON list
+			_this.imgList = oldList;
+			if (0 != newImgs.length) {
+				for (var i = 0, len = newImgs.length ; i < len ; i++) {
+					_this.imgList.push(newImgs[i]);
+				}
+			}
+
+			// remove button.
+			e.target.parentNode.removeChild(e.target);
+		};
+		// prepare and send FormData
+		var formData = new FormData();
+		formData.append('do', 'loadall');
+		xhr.send(formData);
+
+	}
 
 
 	/***********************************
 	** Sors the images with respect to the folders,
-	** then rebuilts the list of thumbnails.
 	*/
-	this.albumSort = function (button) {
+	this.albumSort = function (e) {
+		var folder = e.target.dataset.folder;
 
-		if (button != "") {
-			var newList = new Array();
-			for (var i = 0, len = this.imgList.length ; i < len ; i++) {
-				if ((this.imgList[i].folder != 'null') && (this.imgList[i].folder).search(button.dataset.folder) != -1 ) { // if match
-					newList.push(this.imgList[i]);
-				}
-			}
-			this.rebuiltWall(newList, newList.length);
+		if ("" === folder) {
+			this.imgsList.querySelectorAll(':scope > div').forEach(function(item) {
+				item.removeAttribute('hidden');
+			})
 		}
 		else {
-			this.rebuiltWall(this.imgList, this.imgList.length);
-		}
-		for (var i = 0, len = this.showFolders.length ; i < len ; i++) {
-			if (this.showFolders[i].nodeName=="BUTTON") this.showFolders[i].classList.remove('current');
+			this.imgsList.querySelectorAll(':scope > div').forEach(function(item) {
+				if (item.dataset.folder === folder) {
+					item.removeAttribute('hidden');
+				} else {
+					item.setAttribute('hidden', "");
+				}
+			})			
 		}
 
-		if (button.classList) { button.classList.add('current'); }
+		document.querySelector('#list-albums > button.current').classList.remove('current');
+		e.target.classList.add('current');
 	}
 
 
 	/***********************************
 	** Sends a "delete" request to server,
 	*/
-	this.deleteFile = function (id) {
+	this.deleteFile = function (item) {
 		// ask for popup confirmation
 		if (!window.confirm(BTlang.questionSupprFichier)) { return false; }
 		// prepare XMLHttpRequest
@@ -888,15 +922,15 @@ function imgListWall() {
 		xhr.open('POST', 'ajax/files.ajax.php');
 		xhr.onload = function() {
 			if (this.responseText == 'success') {
-				// remove image form page
-				_this.imgDomWall.removeChild(document.getElementById('bloc_'.concat(id)));
+				_this.imgList.action = 'deleteImg';
+				_this.imgsList.removeChild(_this.imgsList.getElementById('bloc_'.concat(item.id)));
 			} else {
-				alert(this.responseText+' '+id);
+				alert(this.responseText+' '+item.id);
 			}
 		};
 		// prepare and send FormData
 		var formData = new FormData();
-		formData.append('file_id', id);
+		formData.append('file_id', item.id);
 		formData.append('do', 'delete');
 		xhr.send(formData);
 	}
@@ -911,100 +945,102 @@ function docListWall() {
 	** Some properties & misc actions
 	*/
 	// init JSON List
-	this.docsList = JSON.parse(document.getElementById('json_docs').textContent);
-	if (typeof this.docsList == 'undefined' || !this.docsList.length) return;
+	this.docList = JSON.parse(document.getElementById('json_docs').textContent);
+	if (typeof this.docList == 'undefined' || !this.docList.length) return;
 
 
 	// get some DOM elements
-	this.docsDomTable = document.getElementById('file-list').getElementsByTagName('tbody')[0];
+	this.docsList = document.getElementById('file-list').tBodies[0];
 
-	// put som listeners
+
+	// put some listeners
 	// init the « folders sorting » buttons.
-	this.showAllButton = document.getElementById('butIdAllFiles');
-	this.showAllButton.addEventListener('click', function(){ _this.albumSort(""); }); // TODO
-	this.showFolders = document.querySelectorAll('#list-types > button:not([id])');
-	for (var i = 0, len = this.showFolders.length ; i < len ; i++) {
-		this.showFolders[i].addEventListener('click', function() { _this.albumSort(this); });
-	}
+	document.querySelectorAll('#list-types > button').forEach(function(item) {
+		item.addEventListener('click', function(e) { _this.typeSort(e); });
+	});
 
+	// built page
+	window.addEventListener("load", function() {
+		_this.rebuiltTable();
+	});
+
+	// get Templates
+	this.docTemplate = this.docsList.removeChild(this.docsList.firstElementChild); this.docTemplate.removeAttribute('hidden');
 
 
 	/***********************************
 	** The HTML tree builder :
-	** Rebuilts the whole list of files.
 	*/
-	this.rebuiltTable = function(docsList) {
 
+	// Rebuilts the whole list of files.
+	this.rebuiltTable = function() {
 		// empties the actual list
-		while (this.docsDomTable.firstChild) {
-			 this.docsDomTable.removeChild(this.docsDomTable.firstChild);
+		while (this.docsList.firstChild) {
+			this.docsList.removeChild(this.docsList.firstChild);
 		}
 
-		if (0 === docsList.length) return false;
+		var countDoc = this.docList.length;
+		if (0 === countDoc) return false;
+
+		var rowList = document.createDocumentFragment();
 
 		// populates the new list
-		for (var i = 0, len = docsList.length ; i < len ; i++) {
-			var item = docsList[i];
+		this.docList.forEach(function(item) {
 
-
-			var row = document.createElement('tr');
+			let row = _this.docTemplate.cloneNode(true);
 			row.id = 'bloc_' + item.id;
+
 			row.dataset.type = item.fileType;
+			row.querySelector('img').alt = 'icon.';
+			row.querySelector('img').src = 'style/imgs/filetypes/'+item.fileType+'.png';
+			row.querySelector('td:nth-of-type(2) > a').textContent = item.fileName;
+			row.querySelector('td:nth-of-type(2) > a').href = '?file_id='+item.id+'&amp;edit';
+			row.querySelector('td:nth-of-type(3)').textContent = item.fileSize;
+			row.querySelector('td:nth-of-type(4)').textContent = Date.dateFromYMDHIS(item.id).toLocaleString('fr', {year: "numeric", weekday: "short", month: "short", day: "numeric"});
+			row.querySelector('td:nth-of-type(5) > a').href = item.absPath + item.fileName;
+			row.querySelector('td:nth-of-type(5) > a').download = item.fileName;
 
-			var cellIcon = document.createElement('td');
-			var icon = document.createElement('img');
-			icon.id = item.id;
-			icon.alt = item.fileName;
-			icon.src = 'style/imgs/filetypes/'+item.fileType+'.png';
-			cellIcon.appendChild(icon);
-			row.appendChild(cellIcon);
+			row.querySelector('td:nth-of-type(6) > a').addEventListener('click', function(e) {
+				_this.deleteFile(item);
+				e.preventDefault();
+			});
 
-			var cellName = document.createElement('td');
-			var fileLink = document.createElement('a');
-			fileLink.appendChild(document.createTextNode(item.fileName));
-			fileLink.href = '?file_id='+item.id+'&amp;edit';
-			cellName.appendChild(fileLink);
-			row.appendChild(cellName);
+			rowList.appendChild(row);
+		});
 
-			var cellSize = document.createElement('td');
-			cellSize.appendChild(document.createTextNode(item.fileSize));
-			row.appendChild(cellSize);
-
-			var cellDate = document.createElement('td');
-			cellDate.appendChild(document.createTextNode(Date.dateFromYMDHIS(item.id).toLocaleString('fr', {year: "numeric", weekday: "short", month: "short", day: "numeric"})));
-			row.appendChild(cellDate);
-
-			var cellDwnd = document.createElement('td');
-			var fileDL = document.createElement('a');
-			fileDL.appendChild(document.createTextNode('DL'));
-			fileDL.href = item.absPath + item.fileName;
-			fileDL.download = item.fileName;
-			cellDwnd.appendChild(fileDL);
-			row.appendChild(cellDwnd);
-
-			var cellSupr = document.createElement('td');
-			var fileRM = document.createElement('a');
-			fileRM.appendChild(document.createTextNode('DEL'));
-			fileRM.href = '#';
-			fileRM.dataset.id = item.id;
-			fileRM.addEventListener('click', function(e){ _this.deleteFile(this.dataset.id); e.preventDefault(); } );
-			cellSupr.appendChild(fileRM);
-			row.appendChild(cellSupr);
-
-			this.docsDomTable.appendChild(row);
-		}
-		return false;
+		this.docsList.appendChild(rowList);
 	}
-	// init the whole DOM table
-	this.rebuiltTable(this.docsList);
 
+	/***********************************
+	** Sors the documents with respect to their type,
+	*/
+	this.typeSort = function (e) {
+		var type = e.target.dataset.type;
 
+		if ("" === type) {
+			this.docsList.querySelectorAll(':scope > tr').forEach(function(item) {
+				item.removeAttribute('hidden');
+			})
+		}
+		else {
+			this.docsList.querySelectorAll(':scope > tr').forEach(function(item) {
+				if (item.dataset.type === type) {
+					item.removeAttribute('hidden');
+				} else {
+					item.setAttribute('hidden', "");
+				}
+			});
+		}
+
+		document.querySelector('#list-types > button.current').classList.remove('current');
+		e.target.classList.add('current');
+	}
 
 
 	/***********************************
 	** Sends a "delete" request to server,
 	*/
-	this.deleteFile = function (id) {
+	this.deleteFile = function (item) {
 		// ask for popup confirmation
 		if (!window.confirm(BTlang.questionSupprFichier)) { return false; }
 		// prepare XMLHttpRequest
@@ -1013,14 +1049,15 @@ function docListWall() {
 		xhr.onload = function() {
 			if (this.responseText == 'success') {
 				// remove image form page
-				_this.docsDomTable.removeChild(document.getElementById('bloc_'.concat(id)));
+				_this.docList.action = 'deleteFile';
+				_this.docsList.removeChild(document.getElementById('bloc_'.concat(item.id)));
 			} else {
-				alert(this.responseText+' '+id);
+				alert(this.responseText+' '+item.id);
 			}
 		};
 		// prepare and send FormData
 		var formData = new FormData();
-		formData.append('file_id', id);
+		formData.append('file_id', item.id);
 		formData.append('do', 'delete');
 		xhr.send(formData);
 		return false;
@@ -1067,21 +1104,36 @@ function loading_animation(onoff) {
 function RssReader() {
 	var _this = this;
 
+	// hasUpdated flag
+	this.hasUpdated = false;
+
 	/***********************************
 	** Some properties & misc actions
 	*/
 	// init JSON List
-	var theJSON = JSON.parse(document.getElementById('json_rss').textContent);
-	this.feedList = theJSON.posts;
-	this.siteList = theJSON.sites;
+	//var theJSON = JSON.parse(document.getElementById('json_rss').textContent);
+	//this.feedList = theJSON.posts;
+	//this.siteList = theJSON.sites;
+	this.feedList = new Array();
+	this.siteList = new Array();
 
 	// init local "mark as read" buffer
 	this.readQueue = {"count": "0", "urlList": []};
 
 	// get some DOM elements
+	this.notifNode = document.getElementById('message-return');
+	this.domPage = document.getElementById('page');
 	this.postsList = document.getElementById('post-list');
 	this.feedsList = document.getElementById('feed-list');
-	this.notifNode = document.getElementById('message-return');
+
+	// get edit-popup template
+	this.editFeedPopupTemplate = document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
+	this.editFeedPopupTemplate.removeAttribute('hidden');
+
+	// get post/folder/site templates
+	this.postTemplate = this.postsList.removeChild(this.postsList.firstElementChild);                 this.postTemplate.removeAttribute('hidden');
+	this.siteTemplate = this.feedsList.removeChild(this.feedsList.querySelector('.feed-site'));       this.siteTemplate.removeAttribute('hidden');
+	this.folderTemplate = this.feedsList.removeChild(this.feedsList.querySelector('.feed-folder'));   this.folderTemplate.removeAttribute('hidden');
 
 	// init the « open-all » toogle-button.
 	this.openAllButton = document.getElementById('openallitemsbutton');
@@ -1099,16 +1151,17 @@ function RssReader() {
 	document.getElementById('markasread').addEventListener('click', function(){ _this.markAsRead(); });
 
 	// init the « refresh all » button event
-	document.getElementById('refreshAll').addEventListener('click', function(e){ _this.refreshAllFeeds(e); });
+	document.getElementById('refreshFeeds').addEventListener('click', function(e){ _this.refreshAllFeeds(e); });
 
 	// init the « reload JSON » button event
-	document.getElementById('reloadFeeds').addEventListener('click', function(e){ _this.refreshJsonData(e); });
+	document.getElementById('reloadFeeds').addEventListener('click', function(e){ _this.reloadJsonData(e); });
 
 	// init the « delete old » button
 	document.getElementById('deleteOld').addEventListener('click', function(){ _this.deleteOldFeeds(); });
 
 	// init the « add new feed » button
 	document.getElementById('fab').addEventListener('click', function(){ _this.addNewFeed(); });
+
 
 	// Global Page listeners
 	// onkeydown : detect "open next/previous" action with keyboard
@@ -1126,25 +1179,52 @@ function RssReader() {
 		navigator.sendBeacon('ajax/rss.ajax.php', formData);
 	});
 
-	// if the tab is hidden (or (on mobile) if the browser is hidden : send a "mark as read" request)
+	// if the tab is hidden (or if the browser is hidden (on mobile): send a "mark as read" request)
 	document.addEventListener("visibilitychange", function() {
 		if (document.visibilityState == 'hidden' && _this.readQueue.urlList.length !== 0) {
 			_this.markAsReadXHR('postlist', JSON.stringify(_this.readQueue.urlList));
 		}
+	});
 
+	// allows a "popup close" when the user goes back 1 time in history (esp. on Android)
+	window.addEventListener("popstate", function(e) {
+		_this.closePopup();
 	});
 
 	// built page
 	window.addEventListener("load", function() {
-		_this.rebuiltPostsTree();
-		_this.rebuiltSitesTree();
+		_this.reloadJsonData();
 	});
 
-	// get templates
-	this.postTemplate = this.postsList.firstElementChild.parentNode.removeChild(this.postsList.firstElementChild); this.postTemplate.removeAttribute('hidden');
-	this.siteTemplate = this.feedsList.removeChild(this.feedsList.querySelector('.feed-site')); this.siteTemplate.removeAttribute('hidden');
-	this.folderTemplate = this.feedsList.removeChild(this.feedsList.querySelector('.feed-folder')); this.folderTemplate.removeAttribute('hidden');
 
+	/* Feedback notif form scripts (handles the popup state: visible, hiding…) */
+	this.backgroundWorkingPopup = function(state) {
+		var notifPopup = document.getElementById('popup-notif');
+		var spinner = document.getElementById('counter');
+
+		// started : popup shows + spinner is running
+		if (state === 'started') {
+			notifPopup.classList.add('visible');
+			spinner.classList.add('rotating');
+		}
+
+		// finished : working is done. Hide popup.
+		if (state === 'finished') {
+			spinner.classList.remove('rotating');
+			notifPopup.classList.remove('visible');
+		}
+
+		// waiting for dissapearing
+		if (state === 'waiting') {
+			spinner.classList.remove('rotating');
+			notifPopup.classList.add('fading');
+			notifPopup.addEventListener('animationend', function(e) {
+				notifPopup.classList.remove('fading');
+				_this.backgroundWorkingPopup('finished');
+			}, {'once': true});
+
+		}
+	}
 
 	/***********************************
 	** The HTML builder methods
@@ -1161,12 +1241,15 @@ function RssReader() {
 
 		var liList = document.createDocumentFragment();
 
-		var DateTimeFormat = new Intl.DateTimeFormat('fr', {year: "numeric", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "numeric"});
+		var dateTimeToday = new Date(); dateTimeToday.setHours(0); dateTimeToday.setMinutes(0); dateTimeToday.setSeconds(0);
+		var dateTimeFormat = new Intl.DateTimeFormat('fr', {year: "numeric", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "numeric"});
+		var timeFormat = new Intl.DateTimeFormat('fr', {hour: "numeric", minute: "numeric"});
 
 		// populates the new list
 		this.feedList.forEach(function(item) {
 
 			var li = _this.postTemplate.cloneNode(true);
+			var dateTimeArticle = Date.dateFromYMDHIS(item.datetime);
 
 			li.id = 'i_'+item.id;
 			li.setAttribute('data-id', item.id);
@@ -1175,20 +1258,25 @@ function RssReader() {
 			li.setAttribute('data-sitehash', item.feedhash);
 			li.setAttribute('data-is-fav', item.fav);
 			if (0 === item.statut) { li.classList.add('read'); }
-			li.querySelector('.post-head > .lien-fav').addEventListener('click', function(e){ _this.markAsFav(this); e.preventDefault(); } );
-			li.querySelector('.post-head > .site').textContent = item.sitename;
-			if (item.folder) { li.querySelector('.post-head > .folder').textContent = item.folder; }
-			else { li.querySelector('.post-head').removeChild(li.querySelector('.folder')); }
+			li.querySelector('.post-head > .folder').textContent = item.folder;
 			li.querySelector('.post-head > .post-title').href = item.link;
 			li.querySelector('.post-head > .post-title').title = item.title;
 			li.querySelector('.post-head > .post-title').textContent = item.title;
-			li.querySelector('.post-head > .post-title').addEventListener('click', function(e){ if(!_this.openThisItem(this.parentNode.parentNode)) e.preventDefault(); } );
-			li.querySelector('.post-head > .share > .lien-share').href = 'links.php?url='+encodeURIComponent(item.link);
-			li.querySelector('.post-head > .share > .lien-open').href = item.link;
-			li.querySelector('.post-head > .share > .lien-mail').href = 'mailto:?&subject='+ encodeURIComponent(item.title) + '&body=' + encodeURIComponent(item.link);
-			li.querySelector('.post-head > .date').textContent = DateTimeFormat.format(Date.dateFromYMDHIS(item.datetime));
-			li.querySelector('.rss-item-content').appendChild(document.createComment(item.content));
+			li.querySelector('.post-head > .meta > .site').textContent = item.sitename;
+			li.querySelector('.post-head > .meta > .share > .lien-share').href = 'links.php?url='+encodeURIComponent(item.link);
+			li.querySelector('.post-head > .meta > .share > .lien-open').href = item.link;
+			li.querySelector('.post-head > .meta > .share > .lien-mail').href = 'mailto:?&subject='+ encodeURIComponent(item.title) + '&body=' + encodeURIComponent(item.link);
 
+			if (dateTimeArticle < dateTimeToday) {
+				li.querySelector('.post-head > .meta > .date').textContent = dateTimeFormat.format(dateTimeArticle);
+			} else {
+				li.querySelector('.post-head > .meta > .date').textContent = timeFormat.format(dateTimeArticle);
+			}
+
+			li.querySelector('.post-head > .post-title').addEventListener('click', function(e){ if(!_this.openThisItem(item)) e.preventDefault(); } );
+			li.querySelector('.post-head > .lien-fav').addEventListener('click', function(e){ _this.markAsFav(item); e.preventDefault(); } );
+			
+			//li.querySelector('.rss-item-content').appendChild(document.createComment(item.content));
 			liList.appendChild(li);
 		});
 
@@ -1205,23 +1293,23 @@ function RssReader() {
 	this.rebuiltSitesTree = function() {
 		// remove existing entries (if any)
 		this.feedsList.querySelectorAll(':scope > li:not(.special)').forEach(function (li) {
-			 li.parentNode.removeChild(li);
+			li.parentNode.removeChild(li);
 		});
 
 		var ulList = document.createDocumentFragment();
 
 		// populates the new list
-		for (var i in this.siteList) {
-			var item = this.siteList[i];
+		this.siteList.forEach(function(item) {
 
 			var li = _this.siteTemplate.cloneNode(true);
 			li.style.backgroundImage = "url(../favatar.php?w=favicon&q="+((new URL(item.link)).hostname)+')';
 			li.setAttribute('data-nbrun', item.nbrun);
-			li.setAttribute('data-feed-hash', i);
+			li.setAttribute('data-feed-hash', item.id);
 			if (0 !== item.iserror) { li.classList.add('feed-error'); }
-			li.textContent = item.title;
+			li.appendChild(document.createTextNode(item.title));
 
 			li.addEventListener('click', function(e) { _this.sortElements(e); });
+			li.querySelector(':scope > button').addEventListener('click', function(e) { e.stopPropagation(); _this.showFeedEditPopup(item); });
 
 			if ("" !== item.folder) {
 				// check if folder UL already exists
@@ -1232,7 +1320,7 @@ function RssReader() {
 					folderUl.addEventListener('click', function(e) { _this.sortElements(e); });
 					folderUl.querySelector('.unfold').addEventListener('click', function(e) { 
 						e.stopPropagation();
-						e.target.parentNode.classList.toggle('open');
+						this.parentNode.classList.toggle('open');
 					 } ) ;
 
 					folderUl.setAttribute('data-folder', item.folder);
@@ -1261,19 +1349,112 @@ function RssReader() {
 			else {
 				ulList.appendChild(li);
 			}
-		};
+		});
 		this.feedsList.appendChild(ulList);
 	
 		return false;
 	}
 
-	/***********************************
-	** Methods to "open" elements (all, one, next…)
+	/************************************
+	** Methos to handle popup
 	*/
+
+	// show the "edit feed" popup
+	this.showFeedEditPopup = function (item) {
+
+		// new popup
+		var popupWrapper = this.editFeedPopupTemplate.cloneNode(true);
+		popupWrapper.querySelector('.popup-edit-feed').id = 'popup';
+		var popup = popupWrapper.querySelector('#popup');
+		popup.removeAttribute('hidden');
+
+		// this allows closing the popup with the "back" button (espacially on Android)
+		if (history.state === null) history.pushState({'popupOpen': true}, null, window.location.pathname + '#popup');
+
+		popupWrapper.addEventListener('click', function(e) {
+			// clic is on wrapper (back drop) but not the popup
+			if (e.target == this) {
+				_this.closePopup();
+			}
+		});
+
+		document.body.classList.add('noscroll');
+
+		popup.querySelector('.feed-content-error').textContent = item.iserror || '';
+		popup.querySelector('.feed-content-lastpost > time').textContent = Date.dateFromYMDHIS(item.time).toLocaleDateString('fr', {weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "numeric"});
+		popup.querySelector('.feed-content input[name="feed-url"]').value = item.link;
+		popup.querySelector('.feed-content input[name="feed-url"]').style.backgroundImage = "url(../../../favatar.php?w=favicon&q="+((new URL(item.link)).hostname)+')';
+		popup.querySelector('.feed-content input[name="feed-title"]').value = item.title;
+		popup.querySelector('.feed-content input[name="feed-folder"]').value = item.folder;
+
+		popup.querySelector('.popup-title > .button-cancel').addEventListener('click', function() {
+			_this.closePopup();
+		});
+
+		popup.querySelector('.feed-footer > .button-submit').addEventListener('click', function() {
+			_this.saveEditFeed(item);
+			_this.closePopup();
+		});
+
+		popup.querySelector('.feed-footer > .button-delete').addEventListener('click', function() {
+			if (!window.confirm(BTlang.questionSupprFlux)) { return false; }
+			_this.deleteFeed(item);
+			_this.closePopup();
+		});
+
+		this.domPage.appendChild(popupWrapper);
+	}
+
+
+	// close actual popup
+	this.closePopup = function() {
+		var popupWrapper = document.getElementById('popup-wrapper');
+		if (popupWrapper) popupWrapper.parentNode.removeChild(popupWrapper);
+		document.body.classList.remove('noscroll');
+	}
+
+	/***********************************
+	** Methods to "open/close" elements (all, one, next…)
+	*/
+
+	// close item 
+	this.closeThisPost = function(post) {
+		var contentDiv = post.querySelector('.rss-item-content');
+		if (contentDiv.firstChild) {
+			while (contentDiv.firstChild) { contentDiv.removeChild(contentDiv.firstChild); }
+		}
+		post.classList.remove('open-post');
+	}
+
 	// open ALL the items
 	this.openAll = function() {
 		var posts = this.postsList.querySelectorAll('li:not([hidden])');
 
+		// unfold items
+		if (!this.openAllButton.classList.contains('unfold')) {
+			this.feedList.forEach(function(item) {
+				var post = _this.postsList.querySelector('li[data-id="'+item.id+'"]:not([hidden])');
+				if (post) {
+					// opens this post
+					post.classList.add('open-post');
+					// append content
+					post.querySelector('.rss-item-content').innerHTML = item.content;
+				}
+			});
+			this.openAllButton.classList.add('unfold');
+		}
+		// refold them back
+		else {
+			var posts = this.postsList.querySelectorAll('li.open-post');
+			posts.forEach(function(post) {
+				_this.closeThisPost(post);
+			});
+			this.openAllButton.classList.remove('unfold');
+		}
+
+
+
+		/*
 		if (!this.openAllButton.classList.contains('unfold')) {
 			posts.forEach(function(post) {
 				post.classList.add('open-post');
@@ -1288,41 +1469,43 @@ function RssReader() {
 				post.classList.remove('open-post');
 			});
 			this.openAllButton.classList.remove('unfold');
-		}
+		}*/
 		return false;
 	}
 
 	// open clicked item
-	this.openThisItem = function(theItem) {
-		if (theItem.classList.contains('open-post')) { return true; }
+	this.openThisItem = function(item) {
+		var post = this.postsList.querySelector('li[data-id="'+item.id+'"]');
+		if (post.classList.contains('open-post')) { return true; }
 
 		// close previously opened posts
 		this.postsList.querySelectorAll('.open-post').forEach(function(post) {
-			post.classList.remove('open-post');
+			_this.closeThisPost(post);
 		});		
 		this.openAllButton.classList.remove('unfold');
 
 		// opens this post
-		theItem.classList.add('open-post');
+		post.classList.add('open-post');
 
 		// unveil the content
-		var content = theItem.querySelector('.rss-item-content');
-		if (content.childNodes[0].nodeType == 8) {
-			content.innerHTML = content.childNodes[0].data;
-		}
+		var content = post.querySelector('.rss-item-content');
+		//if (content.childNodes[0].nodeType == 8) {
+		//	content.innerHTML = content.childNodes[0].data;
+		//}
+		content.innerHTML = item.content;
 
 		// jump to post (anchor + 120px)
-		var rect = theItem.getBoundingClientRect();
+		var rect = post.getBoundingClientRect();
 		var isVisible = ( (rect.top < 144) || (rect.bottom > window.innerHeight) ) ? false : true ;
 		if (!isVisible) {
-			window.location.hash = theItem.id;
+			window.location.hash = post.id;
 			window.scrollBy(0, -144);
 		}
 
 		// mark as read in DOM and saves for mark as read in DB
-		if (!theItem.classList.contains('read')) {
-			this.markAsReadPost(theItem);
-			theItem.classList.add('read');
+		if (!post.classList.contains('read')) {
+			this.markAsReadPost(item);
+			post.classList.add('read');
 		}
 		return false;
 	}
@@ -1339,7 +1522,13 @@ function RssReader() {
 			if (!toOpenPost) { var toOpenPost = this.postsList.querySelector('li:not([hidden])'); }
 			// ... or return if no post in list
 			if (!toOpenPost) return false;
-			this.openThisItem(toOpenPost);
+
+			// find item
+			var item = this.feedList.find(function(i) {
+				return (i.id == toOpenPost.dataset.id);
+			});
+
+			this.openThisItem(item);
 		}
 		// up
 		if (e.keyCode == '38' && e.ctrlKey) {
@@ -1354,10 +1543,18 @@ function RssReader() {
 			}
 
 			if (theOpenPost.previousSibling) {
-				this.openThisItem(theOpenPost.previousSibling);
+				toOpenPost = theOpenPost.previousSibling;
+
+				// find item
+				var item = this.feedList.find(function(i) {
+					return (i.id == toOpenPost.dataset.id);
+				});
+
+				this.openThisItem(item);
 			}
 		}
 	}
+
 
 	/***********************************
 	** Method to "sort" elements (by site, folder, favs…)
@@ -1370,7 +1567,7 @@ function RssReader() {
 		// sort all feeds
 		if (e.target.classList.contains('all-feeds')) {
 			this.postsList.querySelectorAll('#post-list > li').forEach(function(post) {
-				post.classList.remove('open-post');
+				_this.closeThisPost(post);
 				post.removeAttribute('hidden');
 			});
 		}
@@ -1379,7 +1576,7 @@ function RssReader() {
 		else if (e.target.classList.contains('feed-site')) {
 			var theSite = e.target.getAttribute('data-feed-hash');
 			this.postsList.querySelectorAll('#post-list > li').forEach(function(post) {
-				post.classList.remove('open-post');
+				_this.closeThisPost(post);
 				if (post.getAttribute('data-sitehash') === theSite) {
 					post.removeAttribute('hidden');
 				} else {
@@ -1392,7 +1589,7 @@ function RssReader() {
 		else if (e.target.classList.contains('feed-folder')) {
 			var theFolder = e.target.getAttribute('data-folder');
 			this.postsList.querySelectorAll('#post-list > li').forEach(function(post) {
-				post.classList.remove('open-post');
+				_this.closeThisPost(post);
 				if (post.getAttribute('data-folder') === theFolder) {
 					post.removeAttribute('hidden');
 				} else {
@@ -1404,7 +1601,7 @@ function RssReader() {
 		// sort favs
 		else if (e.target.classList.contains('fav-feeds')) {
 			this.postsList.querySelectorAll('#post-list > li').forEach(function(post) {
-				post.classList.remove('open-post');
+				_this.closeThisPost(post);
 				if (post.getAttribute('data-is-fav') == 1) {
 					post.removeAttribute('hidden');
 				} else {
@@ -1417,8 +1614,8 @@ function RssReader() {
 		else if (e.target.classList.contains('today-feeds')) {
 
 			this.postsList.querySelectorAll('#post-list > li').forEach(function(post) {
-				post.classList.remove('open-post');
-				var d = new Date();
+				_this.closeThisPost(post);
+					var d = new Date();
 				var ymd000 = '' + d.getFullYear() + ('0' + (d.getMonth()+1)).slice(-2) + ('0' + d.getDate()).slice(-2) + '000000';
 
 				if (post.getAttribute('data-datetime') >= ymd000) {
@@ -1437,8 +1634,8 @@ function RssReader() {
 		window.location.hash = '';
 		this.openAllButton.classList.remove('unfold');
 		this.feedsList.classList.remove('hidden-list'); // on mobile: hide the sites 
-
 	}
+
 
 	/***********************************
 	** Methods to "mark as read" item in the local list and on screen
@@ -1450,21 +1647,16 @@ function RssReader() {
 		if (markWhat.classList.contains('all-feeds')) {
 			// for "all" feeds, ask confirmation
 			if (!confirm("Tous les éléments seront marqués comme lus ?")) { // TODO : $lang
-				loading_animation('off');
 				return false;
 			}
 			// send XHR
 			if (!this.markAsReadXHR('all', 'all')) return false;
 
 			// mark items as read in list
-			for (var i = 0, len = this.feedList.length ; i < len ; i++) {
-				this.feedList[i].statut = 0;
-			}
-
-			// mark as read in dom
-			this.postsList.querySelectorAll('#post-list > li').forEach(function(post) {
-				post.classList.add('read');
+			this.feedList.forEach(function(item) {
+				item.statut = 0;
 			});
+
 		}
 
 		// Mark one FOLDER as read
@@ -1478,23 +1670,14 @@ function RssReader() {
 			markWhat.dataset.nbrun = 0;
 
 			// mark 0 for the sites in that folder
-			var sitesInFolder = this.feedsList.querySelectorAll('li[data-feed-folder="' + folder + '"]');
-
-			this.feedsList.querySelectorAll('li[data-feed-folder="' + folder + '"]').forEach(function(site) {
+			markWhat.querySelectorAll('li.feed-site:not([data-nbrun="0"])').forEach(function(site) {
 				site.dataset.nbrun = 0;
 			});
 
 			// mark items as "read" in list
 			for (var i = 0, len = this.feedList.length ; i < len ; i++) {
-				if (this.feedList[i].folder == folder) {
-					this.feedList[i].statut = 0;
-				}
+				if (this.feedList[i].folder == folder) this.feedList[i].statut = 0;
 			}
-
-			this.postsList.querySelectorAll('#post-list > li[data-folder="'+folder+'"]').forEach(function(post) {
-				post.classList.add('read');
-			});
-
 		}
 
 		// else… mark one SITE as read
@@ -1510,28 +1693,27 @@ function RssReader() {
 				parentFolder.dataset.nbrun -= markWhat.dataset.nbrun;
 			}
 
+			// mark 0 for that sites
+			markWhat.dataset.nbrun = 0;
+
 			// mark items as "read" in list
 			for (var i = 0, len = this.feedList.length ; i < len ; i++) {
-				if (this.feedList[i].feedhash == siteHash) {
-					this.feedList[i].statut = 0;
-				}
+				if (this.feedList[i].feedhash == siteHash) this.feedList[i].statut = 0;
 			}
 
-			// mark items as "read" on screen
-			this.postsList.querySelectorAll('#post-list > li[data-sitehash="'+siteHash+'"]').forEach(function(post) {
-				post.classList.add('read');
-			});
-
-			// mark 0 for that folder sites’s unread counters
-			markWhat.dataset.nbrun = markWhat.dataset.nbtoday = 0;
-
 		}
+
+		// mark items as "read" on screen
+		this.postsList.querySelectorAll('#post-list > li:not([hidden])').forEach(function(post) {
+			post.classList.add('read');
+		});
+
 	}
 
 	// This is called when a post is opened (for the first time)
-	this.markAsReadPost = function(thePost) {
+	this.markAsReadPost = function(item) {
 		// add thePost to local read posts buffer
-		this.readQueue.urlList.push(thePost.dataset.id);
+		this.readQueue.urlList.push(item.id);
 		// if 10 items in queue, send XHR request and reset list to zero.
 		if (this.readQueue.urlList.length >= 10) {
 			var list = this.readQueue.urlList;
@@ -1540,21 +1722,14 @@ function RssReader() {
 		}
 
 		// mark as read in list
-		for (var i = 0, len = this.feedList.length ; i < len ; i++) {
-			if (this.feedList[i].id == thePost.dataset.id) {
-				this.feedList[i].statut = 0;
-				break;
-			}
-		}
+		item.statut = 0;
 
 		// decrement site "unread"
-		var site = this.feedsList.querySelector('li[data-feed-hash="'+thePost.dataset.sitehash+'"]');
-		site.dataset.nbrun -= 1;
+		this.feedsList.querySelector('li[data-feed-hash="'+item.feedhash+'"]').dataset.nbrun -= 1;
 
 		// decrement folder (if any)
-		var parentFolder = site.parentNode.parentNode;
-		if (parentFolder.dataset.folder) {
-			parentFolder.dataset.nbrun -= 1;
+		if (item.folder !== "") {
+			this.feedsList.querySelector('li[data-folder="'+item.folder+'"]').dataset.nbrun -= 1;
 		}
 	}
 
@@ -1564,25 +1739,20 @@ function RssReader() {
 	*/
 	// Mark as read by user input.
 	this.markAsReadXHR = function(marType, marWhat) {
-		loading_animation('on');
-		var notifDiv = document.createElement('div');
+		this.backgroundWorkingPopup('started');
 		var xhr = new XMLHttpRequest();
 		xhr.open('POST', 'ajax/rss.ajax.php', true);
 
 		// onload
 		xhr.onload = function() {
-			var resp = this.responseText;
-			loading_animation('off');
-			return (resp.indexOf("Success") == 0);
+			_this.backgroundWorkingPopup('finished');
+			_this.notifNode.textContent = '';
 		};
 
 		// onerror
 		xhr.onerror = function(e) {
-			loading_animation('off');
-			notifDiv.appendChild(document.createTextNode('AJAX Error ' +e.target.status));
-			notifDiv.classList.add('no_confirmation');
-			document.getElementById('top').appendChild(notifDiv);
-			notfiNode.appendChild(document.createTextNode(resp));
+			_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
+			_this.backgroundWorkingPopup('finished');
 		};
 
 		// prepare and send FormData
@@ -1595,61 +1765,36 @@ function RssReader() {
 		return true;
 	}
 
-	/***********************************
-	** Methods to mark a post a favorite
-	*/
-	this.markAsFav = function(favButton) {
-		var thePost = favButton.parentNode.parentNode;
+	// Mark a post a favorite
+	this.markAsFav = function(item) {
+		this.backgroundWorkingPopup('started');
 
-		// mark as fav on screen and in favCounter
-		thePost.dataset.isFav = 1 - parseInt(thePost.dataset.isFav);
-
-		// mark as fav in local list
-		for (var i = 0, len = this.feedList.length ; i < len ; i++) {
-			if (this.feedList[i].id == thePost.dataset.id) {
-				this.feedList[i].fav = thePost.dataset.isFav;
-				break;
-			}
-		}
-
-		// mark as fav in DB (with XHR)
-		loading_animation('on');
-
-		var notifDiv = document.createElement('div');
+		item.fav = 1 - item.fav;
+		this.postsList.querySelector('li[data-id="'+item.id+'"]').dataset.isFav = item.fav;
 
 		var xhr = new XMLHttpRequest();
 		xhr.open('POST', 'ajax/rss.ajax.php');
 
 		// onload
 		xhr.onload = function() {
-			var resp = this.responseText;
-			loading_animation('off');
-			return (resp.indexOf("Success") == 0);
+			_this.backgroundWorkingPopup('finished');
+			_this.notifNode.textContent = '';
 		};
 
 		// onerror
 		xhr.onerror = function(e) {
-			var resp = this.responseText;
-			loading_animation('off');
-			notifDiv.appendChild(document.createTextNode('AJAX Error ' +e.target.status));
-			notifDiv.classList.add('no_confirmation');
-			document.getElementById('top').appendChild(notifDiv);
-			notfiNode.appendChild(document.createTextNode(resp));
-			return false;
+			_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
+			_this.backgroundWorkingPopup('finished');
 		};
 
 		// prepare and send FormData
 		var formData = new FormData();
 		formData.append('token', token);
 		formData.append('mark-as-fav', 1);
-		formData.append('url', thePost.dataset.id);
+		formData.append('url', item.id);
 		xhr.send(formData);
-		return false;
 	}
 
-	/***********************************
-	** Methods to refresh the feeds.
-	*/
 
 	// This requests the server to download the feeds and send the new ones to browser
 	// This call is long, also it updates gradually on screen.
@@ -1662,7 +1807,7 @@ function RssReader() {
 			_refreshButton.dataset.refreshOngoing = 1;
 		}
 		// else refresh
-		loading_animation('on');
+		this.backgroundWorkingPopup('started');
 
 		// prepare XMLHttpRequest
 		var xhr = new XMLHttpRequest();
@@ -1670,7 +1815,6 @@ function RssReader() {
 
 		// Counts the feeds that have been updated already and displays it like « 10/42 feeds »
 		var glLength = 0;
-		_this.notifNode.textContent = "";
 		xhr.onprogress = function() {
 			if (glLength != this.responseText.length) {
 				var posSpace = (this.responseText.substr(0, this.responseText.length-1)).lastIndexOf(" ");
@@ -1680,16 +1824,17 @@ function RssReader() {
 		}
 
 		// when finished : displays amount of items gotten.
-		xhr.onload = function() {
+		xhr.onload = function(e) {
 			var resp = this.responseText;
 
+
 			// grep new feeds
-			var newJson = JSON.parse(resp.substr(resp.indexOf("Success")+7))
+			var newJson = JSON.parse(resp.substr(resp.indexOf("{")));
 			var newFeeds = newJson.posts;
 			this.siteList = newJson.sites
 
 			// update status
-			_this.notifNode.firstChild.nodeValue = newFeeds.length+' new feeds'; // TODO $[lang]
+			_this.notifNode.textContent = newFeeds.length+' nouveaux éléments'; // TODO $[lang]
 
 			// if not empty, add items to list
 			if (0 != newFeeds.length) {
@@ -1703,27 +1848,25 @@ function RssReader() {
 
 				// hide all items but the recently added ones
 				_this.postsList.querySelectorAll('#post-list > li').forEach(function(post) {
-					post.classList.remove('open-post');
+					_this.closeThisPost(post);
 					post.setAttribute('hidden', '');
 
-					for (var i = 0, len = newFeeds.length ; i < len ; i++) {
-						if (post.getAttribute('data-id') === newFeeds[i].id) {
-							post.removeAttribute('hidden');
-							break;
-						}
-					}
+					var item = newFeeds.find(function(i) {
+						return (i.id === post.getAttribute('data-id'));
+					});
+					if (item) post.removeAttribute('hidden');
+
 				});
 			}
 
 			_refreshButton.dataset.refreshOngoing = 0;
-			loading_animation('off');
-			return false;
+			_this.backgroundWorkingPopup('waiting');
 		};
 
-		xhr.onerror = function() {
-			_this.notifNode.appendChild(document.createTextNode(this.responseText));
-			loading_animation('off');
+		xhr.onerror = function(e) {
+			_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
 			_refreshButton.dataset.refreshOngoing = 0;
+			_this.backgroundWorkingPopup('waiting');
 		};
 
 		// prepare and send FormData
@@ -1731,80 +1874,99 @@ function RssReader() {
 		formData.append('token', token);
 		formData.append('refresh_all', 1);
 		xhr.send(formData);
-		return false;
 	}
 
-	// This requests the server to send it the latest feeds it has in DB
-	this.refreshJsonData = function(e) {
-		loading_animation('on');
+	// This requests the server to send it the latest feeds it has in DB.
+	// It’s a two time request : first, the meta-data is retreived, then the contents of the feeds.
+	//  This behaviour makes it look/feel faster.
+	this.reloadJsonData = function(e) {
+		this.backgroundWorkingPopup('started');
 
 		if (this.readQueue.urlList.length !== 0) {
 			this.markAsReadXHR('postlist', JSON.stringify(this.readQueue.urlList));
 		}
 
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', 'ajax/rss.ajax.php');
+		xhr.open('POST', 'ajax/rss.ajax.php'+window.location.search);
 		var formData = new FormData();
 		formData.append('token', token);
 		formData.append('get_initial_data', 1);
 
 		// when finished : builts wall of objects
 		xhr.onload = function() {
-			var resp = this.responseText;
-			resp = (JSON.parse(this.responseText.substr(this.responseText.indexOf("Success")+7)))
+			//var resp = this.responseText;
+			var resp = (JSON.parse(this.responseText));
 			_this.feedList = resp.posts;
 			_this.siteList = resp.sites;
 
-			_this.rebuiltPostsTree();
 			_this.rebuiltSitesTree();
-			loading_animation('off');
-			return false;
+			_this.rebuiltPostsTree();
+
+
+			// secondth request once the first is loaded
+			var xhr2 = new XMLHttpRequest();
+			xhr2.open('POST', 'ajax/rss.ajax.php');
+
+			xhr2.onload = function() {
+				//var resp = this.responseText;
+				var resp = (JSON.parse(this.responseText));
+
+
+				var feedsContents = resp.posts;
+
+				for (var i = 0, len = _this.feedList.length ; i < len ; i++) {
+
+					_this.feedList[i].content = feedsContents.find(function(post) {
+						if (post.id == _this.feedList[i].id) {
+							return post.content;
+						}
+					});
+
+					_this.feedList[i].content = feedsContents[i].content;
+
+				}
+
+				_this.notifNode.textContent = '';
+				_this.backgroundWorkingPopup('finished');
+			}
+
+			var formData2 = new FormData();
+			formData2.append('token', token);
+			formData2.append('get_initial_data', 1);
+			formData2.append('only_content', 1);
+			xhr2.send(formData2);
+
 		};
 
-		xhr.onerror = function() {
-			_this.notifNode.appendChild(document.createTextNode('Error status ' + xhr.status));
-			loading_animation('off');
+		xhr.onerror = function(e) {
+			_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
+			_this.backgroundWorkingPopup('finished');
 		};
 
 		xhr.send(formData);
-		return false;
 	}
 
-	/***********************************
-	** Method to delete old feeds from DB
-	*/
+
+	// Method to delete old feeds from DB
 	this.deleteOldFeeds = function() {
-		// ask confirmation
 		if (!confirm("Les vieilles entrées seront supprimées ?")) {
-			loading_animation('off');
 			return false;
 		}
 
-		loading_animation('on');
-		var notifDiv = document.createElement('div');
-
+		this.backgroundWorkingPopup('started');
 		var xhr = new XMLHttpRequest();
 		xhr.open('POST', 'ajax/rss.ajax.php');
 
 		xhr.onload = function() {
 			var resp = this.responseText;
 			if (resp.indexOf("Success") == 0) {
-				// adding notif
-				notifDiv.textContent = BTlang.confirmFeedClean;
-				notifDiv.classList.add('confirmation');
-			} else {
-				notifDiv.textContent = 'Error: '+resp;
-				notifDiv.classList.add('no_confirmation');
+				_this.notifNode.textContent = BTlang.confirmFeedClean;
 			}
-			document.getElementById('top').appendChild(notifDiv);
-			loading_animation('off');
+			_this.backgroundWorkingPopup('waiting');
 		};
 		xhr.onerror = function(e) {
-			loading_animation('off');
-			// adding notif
-			notifDiv.textContent = BTlang.errorPhpAjax + e.target.status;
-			notifDiv.classList.add('no_confirmation');
-			document.getElementById('top').appendChild(notifDiv);
+			_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
+			_this.backgroundWorkingPopup('waiting');
 		};
 
 		// prepare and send FormData
@@ -1812,12 +1974,9 @@ function RssReader() {
 		formData.append('token', token);
 		formData.append('delete_old', 1);
 		xhr.send(formData);
-		return false;
 	}
 
-	/***********************************
-	** Method to add a new feed (promt for URL and send to server)
-	*/
+	// Method to add a new feed (promt for URL and send to server)
 	this.addNewFeed = function() {
 		var newLink = window.prompt(BTlang.rssJsAlertNewLink, '');
 		// if empty string : stops here
@@ -1825,206 +1984,150 @@ function RssReader() {
 		// ask folder
 		var newFolder = window.prompt(BTlang.rssJsAlertNewLinkFolder, '');
 
-		var notifDiv = document.createElement('div');
-		loading_animation('on');
+		this.backgroundWorkingPopup('started');
 
 		var xhr = new XMLHttpRequest();
 		xhr.open('POST', 'ajax/rss.ajax.php');
 
-		xhr.onload = function() {
+		xhr.onload = function(e) {
 			var resp = this.responseText;
 			// if error : stops
-			if (resp.indexOf("Success") == -1) {
-				loading_animation('off');
-				_this.notifNode.appendChild(document.createTextNode(this.responseText));
-				return false;
+			if (resp.indexOf("Success") !== -1) {
+				_this.notifNode.textContent = 'FLux ajouté.';
+			} else {
+				_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +resp;
 			}
-
-			// recharge la page en cas de succès
-			loading_animation('off');
-			_this.notifNode.appendChild(document.createTextNode('FLux ajouté, rechargez la page.'));
-			return false;
+			_this.backgroundWorkingPopup('waiting');
 		};
 
 		xhr.onerror = function(e) {
-			loading_animation('off');
-			// adding notif
-			notifDiv.textContent = 'Une erreur PHP/Ajax s’est produite :'+e.target.status;
-			notifDiv.classList.add('no_confirmation');
-			document.getElementById('top').appendChild(notifDiv);
+			_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
+			_this.backgroundWorkingPopup('waiting');
 		};
+
 		// prepare and send FormData
 		var formData = new FormData();
 		formData.append('token', token);
 		formData.append('add-feed', newLink);
 		formData.append('add-feed-folder', newFolder);
 		xhr.send(formData);
-		return false;
 	}
 
-};
+	this.saveEditFeed = function(item) {
+		var popup = document.getElementById('popup');
+		this.backgroundWorkingPopup('started');
 
-
-
-
-
-
-function RssConfig() {
-	var _this = this;
-
-	// hasUpdated flag
-	this.hasUpdated = false;
-
-	// the table with the feeds-info
-	this.feedTable = document.getElementById('rss-feed').tBodies[0];
-
-	// Global Page listeners
-	// beforeunload : warns the user if some data is not saved
-	window.addEventListener("beforeunload", function(e) {
-		if (_this.hasUpdated) {
-			var confirmationMessage = BTlang.questionQuitPage;
-			(e || window.event).returnValue = confirmationMessage;	//Gecko + IE
-			return confirmationMessage;								// Webkit : ignore this.
-		}
-		else { return true; }
-	});
-
-	// Save button
-	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveFeedsXHR(); } );
-
-	// add events for edition & deletion
-	this.feedTableTR = this.feedTable.querySelectorAll('tr');
-	for (var i = 0, len = this.feedTableTR.length; i < len; i++) {
-		var tr = this.feedTableTR[i];
-
-		// "input" / edit event on row
-		tr.addEventListener('input', function(e) {
-			this.classList.add('edited');
-			_this.raiseUpdateFlag(true);
-		}, {once: true});
-
-		// "delete" event on button
-		tr.querySelector('td.suppr > button').addEventListener('click', function(e) {
-			if (!window.confirm(BTlang.questionSupprFlux)) { return false; }
-			this.parentNode.parentNode.classList.add('deleted');
-			_this.raiseUpdateFlag(true);
-		});
-	}
-
-
-
-
-
-	/**************************************
-	 * AJAX call to save changes to DB
-	*/
-	this.saveFeedsXHR = function() {
-		loading_animation('on');
-		// only keep modified notes
-		var toSaveFeeds = Array();
-		for (var i=0, len=this.feedTableTR.length; i<len ; i++) {
-
-			if (this.feedTableTR[i].classList.contains('edited') || this.feedTableTR[i].classList.contains('deleted')) {
-
-				// mark for removal
-				if (this.feedTableTR[i].classList.contains('deleted')) {
-					var feedObj = {
-						id: this.feedTableTR[i].getAttribute('data-feed-hash'),
-						action: 'delete'
-					};
-				}
-				// mark for edit
-				else {
-					var feedObj = {
-						id: this.feedTableTR[i].getAttribute('data-feed-hash'),
-						action: 'edited',
-						title: this.feedTableTR[i].querySelector('.title').textContent,
-						link: this.feedTableTR[i].querySelector('.link').textContent,
-						folder: this.feedTableTR[i].querySelector('.folder').textContent
-					};
-				}
-			
-				toSaveFeeds.push(feedObj);
-
-			}
-		}
-
-		// make a string out of it
-		var feedsDataText = JSON.stringify(toSaveFeeds);
-
-		var notifDiv = document.createElement('div');
-		// create XHR
 		var xhr = new XMLHttpRequest();
 		xhr.open('POST', 'ajax/rss.ajax.php');
 
-		// onload
-		xhr.onload = function() {
-			if (this.responseText.indexOf("Success") == 0) {
-				loading_animation('off');
-				_this.raiseUpdateFlag(false);
-				// adding notif
-				notifDiv.textContent = BTlang.confirmFeedSaved;
-				notifDiv.classList.add('confirmation');
-				document.getElementById('top').appendChild(notifDiv);
+		var toSaveFeed = new Object();
+		toSaveFeed.id = item.id;
+		toSaveFeed.folder = popup.querySelector('.feed-content input[name="feed-folder"]').value
+		toSaveFeed.title = popup.querySelector('.feed-content input[name="feed-title"]').value
+		toSaveFeed.link = popup.querySelector('.feed-content input[name="feed-url"]').value
+		toSaveFeed.action = 'edited'
 
-				// reset flags on tableTR
+		// make a string out of it
+		var feedDataText = JSON.stringify(toSaveFeed);
 
-				for (var i=0, len=_this.feedTableTR.length; i<len ; i++) {
-					var tr = _this.feedTableTR[i];
-					// mark for removal
-					if (tr.classList.contains('deleted')) {
-						tr.parentNode.removeChild(tr);
-					}
-					// mark for edit
-					if (tr.classList.contains('edited')) {
-						tr.classList.remove('edited')
-					}
-				
-				}
-				return true;
+		xhr.onload = function(e) {
+			var resp = this.responseText;
+			if (resp.indexOf("Success") != -1) {
+				_this.notifNode.textContent = 'FLux édité.';
 			} else {
-				loading_animation('off');
-				// adding notif
-				notifDiv.textContent = this.responseText;
-				notifDiv.classList.add('no_confirmation');
-				document.getElementById('top').appendChild(notifDiv);
-				return false;
+				_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +resp;
 			}
+			_this.backgroundWorkingPopup('waiting');
+
+			// update info in list
+			var oldFolder = item.folder;
+			var oldTitle = item.title;
+			item.folder = popup.querySelector('.feed-content input[name="feed-folder"]').value;
+			item.title = popup.querySelector('.feed-content input[name="feed-title"]').value;
+			item.link =  popup.querySelector('.feed-content input[name="feed-url"]').value;
+
+			// if item has been edited, rebuilt sites/post trees
+			if (oldFolder !== item.folder || oldTitle !== item.title) {
+				_this.rebuiltSitesTree();
+				// todo : change sitename / folder on posts (if changed)
+				//_this.rebuiltPostsTree();
+			}
+
+			_this.backgroundWorkingPopup('waiting');
 		};
 
-		// onerror
 		xhr.onerror = function(e) {
-			loading_animation('off');
-			// adding notif
-			notifDiv.textContent = 'AJAX Error ' +e.target.status;
-			notifDiv.classList.add('no_confirmation');
-			document.getElementById('top').appendChild(notifDiv);
-			_this.notifNode.appendChild(document.createTextNode(this.responseText));
+			_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
+			_this.backgroundWorkingPopup('waiting');
 		};
-
 		// prepare and send FormData
 		var formData = new FormData();
 		formData.append('token', token);
-		formData.append('edit-feed-list', feedsDataText);
+		formData.append('edit-feed-list', feedDataText);
 		xhr.send(formData);
 	}
 
+	this.deleteFeed = function(item) {
+		var popup = document.getElementById('popup');
+		this.backgroundWorkingPopup('started');
 
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', 'ajax/rss.ajax.php');
 
+		var toSaveFeed = new Object();
+		toSaveFeed.id = item.id;
+		toSaveFeed.action = 'delete'
 
+		// make a string out of it
+		var feedDataText = JSON.stringify(toSaveFeed);
 
-	this.raiseUpdateFlag = function(flagRaised) {
-		if (flagRaised) {
-			this.hasUpdated = true;
-			document.getElementById('enregistrer').disabled = false;
-		} else {
-			this.hasUpdated = false;
-			document.getElementById('enregistrer').disabled = true;
-		}
+		xhr.onload = function(e) {
+			var resp = this.responseText;
+			// if error : stops
+			if (resp.indexOf("Success") == 0) {
+				_this.notifNode.textContent = 'FLux supprimé.';
+			} else {
+				_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +resp;
+			_this.backgroundWorkingPopup('waiting');
+			}
+	
+			// delete feed in list
+			_this.siteList.splice(_this.siteList.indexOf(item), 1);
+
+			// delete feed on screen
+			var li = _this.feedsList.querySelector('li.feed-site[data-feed-hash="' + item.id + '"]');
+			if (li.parentNode.parentNode.dataset.folder) { li.parentNode.parentNode.dataset.nbrun -= item.nbrun; }
+			li.parentNode.removeChild(li);
+
+			_this.postsList.querySelectorAll('#post-list > li[data-sitehash="'+item.id+'"]').forEach(function(post) {
+				post.parentNode.removeChild(post);
+			});
+			// todo  :remove posts from list object (and then rebuilt the li.list). On rebuilst, test for "current active site"
+			_this.backgroundWorkingPopup('waiting');
+		};
+
+		xhr.onerror = function(e) {
+			_this.backgroundWorkingPopup('waiting');
+			// adding notif
+			_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
+		};
+		// prepare and send FormData
+		var formData = new FormData();
+		formData.append('token', token);
+		formData.append('edit-feed-list', feedDataText);
+		xhr.send(formData);
 	}
 
+	/**********************
+	* Registers service worker (for offline capability)
+	*/
+	//if ('serviceWorker' in navigator) {
+	//	navigator.serviceWorker
+	//		.register('service-worker.js')
+	//		.then(function() { console.log('Service Worker Registered'); });
+	//}
+};
 
-}
 
 
 /**************************************************************************************************************************************
@@ -2104,8 +2207,6 @@ function draw(container) {
 
 
 
-
-
 /**************************************************************************************************************************************
 	***     ***   ************   ***********    *********      ****     
 	****    ***   ************   ***********    *********    ********   
@@ -2145,7 +2246,6 @@ function NoteBlock() {
 
 	// buttons
 	document.getElementById('post-new-note').addEventListener('click', function(e) { _this.addNewNote(); });
-	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveNotesXHR(); } );
 
 	// Global Page listeners
 	// beforeunload : warns the user if some data is not saved
@@ -2165,6 +2265,35 @@ function NoteBlock() {
 		_this.rebuiltNotesWall(_this.notesList);
 	});
 
+	/* Feedback notif form scripts (handles the popup state: visible, hiding…) */
+	this.backgroundWorkingPopup = function(state) {
+		var notifPopup = document.getElementById('popup-notif');
+		var spinner = document.getElementById('counter');
+
+		// started : popup shows + spinner is running
+		if (state === 'started') {
+			notifPopup.classList.add('visible');
+			spinner.classList.add('rotating');
+		}
+
+		// finished : working is done. Hide popup.
+		if (state === 'finished') {
+			spinner.classList.remove('rotating');
+			notifPopup.classList.remove('visible');
+		}
+
+		// waiting for dissapearing
+		if (state === 'waiting') {
+			spinner.classList.remove('rotating');
+			notifPopup.classList.add('fading');
+			notifPopup.addEventListener('animationend', function(e) {
+				notifPopup.classList.remove('fading');
+				_this.backgroundWorkingPopup('finished');
+			}, {'once': true});
+
+		}
+	}
+
 	/***********************************
 	** The HTML tree builder :
 	** Builts the whole list of notes.
@@ -2172,18 +2301,14 @@ function NoteBlock() {
 	this.rebuiltNotesWall = function(NotesData) {
 		if (0 === NotesData.length) return false;
 
-		var notesPinned = document.createDocumentFragment();
-		var notesUnPinned = document.createDocumentFragment();
-
-		// "pinnedNotes" <h2>
-		var pinnedTitle = document.getElementById('are-pinned');
+		var notesPinned = document.getElementById('are-pinned');
+		var notesUnPinned = document.getElementById('are-unpinned');
 
 		// populates the new list
-		for (var i = 0, len = NotesData.length ; i < len ; i++) {
-			var item = NotesData[i];
+		for (let i = 0, len = NotesData.length ; i < len ; i++) {
+			let item = NotesData[i];
 
 			var div = this.noteTemplate.cloneNode(true);
-			//div.id = 'i_' + item.id;
 			div.dataset.updateAction = item.action;
 			div.dataset.ispinned = item.ispinned;
 			div.dataset.isarchived = item.isstatut;
@@ -2192,7 +2317,7 @@ function NoteBlock() {
 			div.querySelector('.title > h2').textContent = item.title;
 			div.querySelector('.content').textContent = item.content;
 			div.addEventListener('click', function(e) {
-				_this.showNotePopup(this.dataset.id);
+				_this.showNotePopup(item);
 			});
 
 			if (item.ispinned == 1) {
@@ -2200,15 +2325,6 @@ function NoteBlock() {
 			} else {
 				notesUnPinned.appendChild(div);
 			}
-		}
-
-		// add to page
-		if (0 !== notesUnPinned.children.length) {
-			this.noteContainer.append(notesUnPinned);
-		}
-		if (0 !== notesPinned.children.length) {
-			pinnedTitle.removeAttribute('hidden');
-			this.noteContainer.insertBefore(notesPinned, pinnedTitle.nextSibling);
 		}
 
 	}
@@ -2234,18 +2350,7 @@ function NoteBlock() {
 	/**************************************
 	 * Popup handling
 	*/
-	this.showNotePopup = function(id) {
-		// grep item
-		if (id.action === 'newNote') {
-			item = id;
-		} else {
-			for (var i = 0, len = this.notesList.length ; i < len ; i++) {
-				if (id == this.notesList[i].id) {
-					var item = this.notesList[i];
-					break;
-				}
-			}
-		}
+	this.showNotePopup = function(item) {
 
 		// new popup
 		var popupWrapper = this.notePopupTemplate.cloneNode(true);
@@ -2261,7 +2366,7 @@ function NoteBlock() {
 			if (e.target == this) {
 				_this.closePopup();
 			}
-		} );
+		});
 
 		// note info
 		popupWrapper.querySelector('#popup').style.backgroundColor = item.color;
@@ -2311,17 +2416,6 @@ function NoteBlock() {
 	this.markAsEdited = function(item) {
 		var popup = document.getElementById('popup');
 
-		// if item is in list : it’s an edit
-		var isEdit = false;
-
-		for (var i = 0, len = this.notesList.length ; i < len ; i++) {
-			if (item.id == this.notesList[i].id) {
-				var isEdit = true;
-				var theNote = this.noteContainer.querySelector('.notebloc[data-id="'+item.id+'"')
-				break;
-			}
-		}
-
 		item.content = popup.querySelector('.popup-content').value;
 		item.title = popup.querySelector('.popup-title > h2').textContent;
 		item.color = window.getComputedStyle(popup).backgroundColor;
@@ -2329,35 +2423,26 @@ function NoteBlock() {
 		item.isstatut = popup.dataset.isarchived;
 		item.action = item.action || 'updateNote';
 
-		// if note has been archived : hide it from this list
-		if (popup.dataset.isarchived == 0 && popup.dataset.isarchived != item.isstatut && document.querySelector('select[name="filtre"]').value != 'archived') {
-			theNote.classList.add('deleteFadeOutH');
-			theNote.addEventListener('animationend', function(e){e.target.parentNode.removeChild(event.target);}, false);
-		}
-
 		// it’s an edit of actual note
-		if (isEdit) {
+		if (this.notesList.includes(item)) {
+			var theNote = this.noteContainer.querySelector('.notebloc[data-id="'+item.id+'"')
+
+			// if note has been archived : hide it from this list
+			if (popup.dataset.isarchived == 0 && popup.dataset.isarchived != item.isstatut && document.querySelector('select[name="filtre"]').value != 'archived') {
+				theNote.classList.add('deleteFadeOutH');
+				theNote.addEventListener('animationend', function(e){e.target.parentNode.removeChild(event.target);}, false);
+			}
+
 			theNote.style.backgroundColor = item.color;
 			theNote.querySelector('.content').textContent = item.content;
 			theNote.querySelector('h2').textContent = item.title;
-			var oldPinnedState = theNote.dataset.ispinned;
-			theNote.dataset.ispinned = item.ispinned;
-
+	
 			// if pined/unpinned : move note in proper section
-			if (oldPinnedState != theNote.dataset.ispinned) {
-				var pinnedTitle = document.getElementById('are-pinned');
-				if (item.ispinned == 1) {
-					this.noteContainer.insertBefore(theNote, pinnedTitle.nextSibling);
-				}
-				else {
-					this.noteContainer.appendChild(theNote);
-				}
-				// if no pinned : hide <h2> (this is not yet possible in CSS only…)
-				if (pinnedTitle.nextElementSibling.tagName === 'H2') {
-					pinnedTitle.setAttribute('hidden', '');
-				} else {
-					pinnedTitle.removeAttribute('hidden');
-				}
+			if (theNote.dataset.ispinned != item.ispinned) {
+				theNote.dataset.ispinned = item.ispinned;
+				if (item.ispinned == 1) document.getElementById('are-pinned').appendChild(theNote);
+				else document.getElementById('are-unpinned').appendChild(theNote);
+
 			}
 		}
 
@@ -2367,10 +2452,10 @@ function NoteBlock() {
 			this.notesList.push(item);     // append it to the main List
 		}
 
-		// raises global "updated" flag.
+		// raises global "updated" flag and saves
 		this.raiseUpdateFlag(true);
+		this.saveNotesXHR();
 	}
-
 
 	/**************************************
 	 * Mark a note as having been deleted
@@ -2388,6 +2473,7 @@ function NoteBlock() {
 		
 		// raises global "updated" flag.
 		this.raiseUpdateFlag(true);
+		this.saveNotesXHR();
 	}
 
 
@@ -2406,10 +2492,10 @@ function NoteBlock() {
 	this.raiseUpdateFlag = function(flagRaised) {
 		if (flagRaised) {
 			this.hasUpdated = true;
-			document.getElementById('enregistrer').disabled = false;
+			//document.getElementById('enregistrer').disabled = false;
 		} else {
 			this.hasUpdated = false;
-			document.getElementById('enregistrer').disabled = true;
+			//document.getElementById('enregistrer').disabled = true;
 		}
 	}
 
@@ -2418,7 +2504,8 @@ function NoteBlock() {
 	 * AJAX call to save notes to DB
 	*/
 	this.saveNotesXHR = function() {
-		loading_animation('on');
+		this.backgroundWorkingPopup('started');
+
 		// only keep modified notes
 		var toSaveNotes = Array();
 		for (var i=0, len=this.notesList.length; i<len ; i++) {
@@ -2430,44 +2517,36 @@ function NoteBlock() {
 		// make a string out of it
 		var notesDataText = JSON.stringify(toSaveNotes);
 
-		var notifDiv = document.createElement('div');
 		// create XHR
 		var xhr = new XMLHttpRequest();
 		xhr.open('POST', 'ajax/notes.ajax.php');
 
 		// onload
-		xhr.onload = function() {
+		xhr.onload = function(e) {
 			if (this.responseText.indexOf("Success") == 0) {
-				loading_animation('off');
 				_this.raiseUpdateFlag(false);
 				// adding notif
-				notifDiv.textContent = BTlang.confirmNotesSaved;
-				notifDiv.classList.add('confirmation');
-				document.getElementById('top').appendChild(notifDiv);
+				_this.notifNode.textContent = BTlang.confirmNotesSaved;
 
 				// reset flags on notes to "void"
 				for (var i=0, len=toSaveNotes.length; i<len ; i++) {
 					toSaveNotes[i].action = "";
 				}
+				_this.backgroundWorkingPopup('waiting');
 				return true;
 			} else {
-				loading_animation('off');
 				// adding notif
-				notifDiv.textContent = this.responseText;
-				notifDiv.classList.add('no_confirmation');
-				document.getElementById('top').appendChild(notifDiv);
+				_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
+				_this.backgroundWorkingPopup('waiting');
 				return false;
 			}
 		};
 
 		// onerror
 		xhr.onerror = function(e) {
-			loading_animation('off');
 			// adding notif
-			notifDiv.textContent = 'AJAX Error ' +e.target.status;
-			notifDiv.classList.add('no_confirmation');
-			document.getElementById('top').appendChild(notifDiv);
-			_this.notifNode.appendChild(document.createTextNode(this.responseText));
+			_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
+			_this.backgroundWorkingPopup('waiting');
 		};
 
 		// prepare and send FormData
@@ -2476,10 +2555,7 @@ function NoteBlock() {
 		formData.append('save_notes', notesDataText);
 		xhr.send(formData);
 	}
-
 }
-
-
 
 
 
@@ -2589,19 +2665,17 @@ function EventAgenda() {
 
 	// buttons events
 	document.getElementById('fab').addEventListener('click', function(e) { _this.addNewEvent(); });
-	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveEventsXHR(); });
 	document.getElementById('hide-side-nav').addEventListener('click', function(){ _this.hideSideNav(); });
 
 	// Global Page listeners
 	// beforeunload : warns the user if some data is not saved when page closes
 	window.addEventListener("beforeunload", function(e) {
 		if (_this.hasUpdated) {
-			var confirmationMessage = BTlang.questionQuitPage;
-			(e || window.event).returnValue = confirmationMessage;	//Gecko + IE
-			return confirmationMessage;								// Webkit: ignore this shit.
+			e.returnValue = BTlang.questionQuitPage;
 		}
 		else { return true; }
 	});
+
 
 	// allows a "popup close" when the user goes back 1 time in history (esp. on Android)
 	window.addEventListener("popstate", function(e) {
@@ -2616,12 +2690,41 @@ function EventAgenda() {
 		_this.sortEventByFilter();
 	});
 
+	/* Feedback notif form scripts (handles the popup state: visible, hiding…) */
+	this.backgroundWorkingPopup = function(state) {
+		var notifPopup = document.getElementById('popup-notif');
+		var spinner = document.getElementById('counter');
+
+		// started : popup shows + spinner is running
+		if (state === 'started') {
+			notifPopup.classList.add('visible');
+			spinner.classList.add('rotating');
+		}
+
+		// finished : working is done. Hide popup.
+		if (state === 'finished') {
+			spinner.classList.remove('rotating');
+			notifPopup.classList.remove('visible');
+		}
+
+		// waiting for dissapearing
+		if (state === 'waiting') {
+			spinner.classList.remove('rotating');
+			notifPopup.classList.add('fading');
+			notifPopup.addEventListener('animationend', function(e) {
+				notifPopup.classList.remove('fading');
+				_this.backgroundWorkingPopup('finished');
+			}, {'once': true});
+
+		}
+	}
+
 	/**************************************
 	 * Sort Events by date (sorting)
 	*/
 	this.sortEventsByDate = function() {
 		this.eventsList.sort(function(a, b) {
-			if (a.date.start > b.date.start) return 1;
+			if (a.date_start > b.date_start) return 1;
 			return -1;
 		});
 	}
@@ -2671,7 +2774,7 @@ function EventAgenda() {
 
 		// complete the actual <table>
 		for (var cell = 1; cell < lastDay.getDate() + nbDaysPrevMonth + nbDaysNextMonth ; cell++) {
-			var dateOfCell = new Date(date.getFullYear(), date.getMonth(), cell-(nbDaysPrevMonth-1) );
+			let dateOfCell = new Date(date.getFullYear(), date.getMonth(), cell-(nbDaysPrevMonth-1) );
 
 			// starts new line every %7 days
 			if (cell % 7 == 1) {
@@ -2695,8 +2798,7 @@ function EventAgenda() {
 			}
 
 			td.addEventListener('click', function(e) {
-				var oldInitDate = _this.initDate;
-				_this.initDate = new Date(this.dataset.date);
+				_this.initDate = dateOfCell;
 				_this.eventTable.classList.remove('table-month-mode');
 				_this.eventTable.classList.add('table-day-mode');
 				_this.rebuiltDailyCal();
@@ -2713,7 +2815,7 @@ function EventAgenda() {
 		** append the events to the calendar
 		*/
 		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
-			var eventDateTime = new Date(this.eventsList[i].date.start);
+			var eventDateTime = new Date(this.eventsList[i].date_start);
 
 			// is event in different month ? in different year ?
 			if ( (eventDateTime.getMonth() !== date.getMonth()) || (eventDateTime.getFullYear() !== date.getFullYear()) ) continue;
@@ -2750,15 +2852,16 @@ function EventAgenda() {
 			}
 
 			var td = tr.appendChild(document.createElement('td'));
-			td.dataset.datetime = (new Date(this.initDate.getFullYear(), cell, 1 ) );
+			let dateOfCell = new Date(this.initDate.getFullYear(), cell, 1 );
+			td.dataset.datetime = dateOfCell;
 
-			td.appendChild(document.createTextNode( (new Date(this.initDate.getFullYear(), cell, 1)).toLocaleDateString('fr-FR', {month: "short"}) ));
+			td.appendChild(document.createTextNode( dateOfCell.toLocaleDateString('fr-FR', {month: "short"}) ));
 
 			td.addEventListener('click', function(e){
 				_this.eventTable.classList.remove('table-year-mode');
 				_this.eventTable.classList.add('table-month-mode');
 
-				_this.initDate = new Date( this.dataset.datetime );
+				_this.initDate = dateOfCell;
 				_this.rebuiltMonthlyCal();
 			});
 		}
@@ -2791,7 +2894,7 @@ function EventAgenda() {
 
 		// complete the actual <table>
 		for (var cell = 1; cell < lastDay.getDate() + nbDaysPrevMonth + nbDaysNextMonth ; cell++) {
-			var dateOfCell = new Date(date.getFullYear(), date.getMonth(), cell-(nbDaysPrevMonth-1) );
+			let dateOfCell = new Date(date.getFullYear(), date.getMonth(), cell-(nbDaysPrevMonth-1) );
 
 			// starts new line every %7 days
 			if (cell % 7 == 1) {
@@ -2829,7 +2932,7 @@ function EventAgenda() {
 					if (this !== e.target) return;
 				}
 				var oldInitDate = _this.initDate;
-				_this.initDate = new Date(this.dataset.date);
+				_this.initDate = dateOfCell;
 				_this.eventTable.classList.remove('table-month-mode');
 				_this.eventTable.classList.add('table-day-mode');
 
@@ -2844,9 +2947,9 @@ function EventAgenda() {
 		/*******************
 		** append the events to the calendar
 		*/
-		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
-			var item = this.eventsList[i];
-			var eventDateTime = new Date(item.date.start);
+		for (let i = 0, len = this.eventsList.length ; i < len ; i++) {
+			let item = this.eventsList[i];
+			var eventDateTime = new Date(item.date_start);
 
 			// is event flaged as deleted?
 			if (item.action == "deleteEvent") continue;
@@ -2859,7 +2962,7 @@ function EventAgenda() {
 				var span = document.createElement('SPAN');
 				span.style.backgroundColor = item.color;
 				var time = document.createElement('TIME');
-				time.setAttribute('datetime', item.date.start);
+				time.setAttribute('datetime', item.date_start);
 				time.textContent = (eventDateTime).toLocaleTimeString('fr-FR', {hour: "2-digit", minute: "2-digit"});
 				span.appendChild(time);
 				span.appendChild(document.createTextNode(item.title));
@@ -2868,7 +2971,7 @@ function EventAgenda() {
 				span.dataset.id = item.id;
 				if (!isMobile()) {
 					span.addEventListener('click', function() {
-							_this.showEventPopup(this.dataset.id);
+							_this.showEventPopup(item);
 					} );
 				}
 				selectCell.appendChild(span);
@@ -2899,14 +3002,14 @@ function EventAgenda() {
 			while (calBody.firstChild) {calBody.removeChild(calBody.firstChild);}
 		}
 
-		/* the days */
+		// delimiting current day
 		var firstHour = (new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0 ));
-		var lastHour = (new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 0, 0));
+		var lastHour = (new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59));
 
 
 		// complete the actual <table>
 		for (var cell = 0; cell <= lastHour.getHours() ; cell++) {
-			var timeOfCell = new Date(date.getFullYear(), date.getMonth(), date.getDate(), cell, 0, 0 );
+			let timeOfCell = new Date(date.getFullYear(), date.getMonth(), date.getDate(), cell, 0, 0 );
 
 			var tr = calBody.appendChild(document.createElement("tr"));
 			tr.id = 'h' + ("00" + (timeOfCell.getHours())).slice(-2) + "00";
@@ -2920,8 +3023,7 @@ function EventAgenda() {
 			}
 
 			td.addEventListener('click', function() {
-				var oldInitDate = _this.initDate;
-				_this.initDate = new Date(this.dataset.date);
+				_this.initDate = timeOfCell;
 			});
 
 			td.addEventListener('dblclick', function(e) {
@@ -2939,32 +3041,31 @@ function EventAgenda() {
 			tr.appendChild(td);
 
 		}
-		/*******************
-		** append the events to the calendar
-		*/
-		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
-			var item = this.eventsList[i];
-			var eventDateTime = new Date(item.date.start);
 
-			// is event flaged as deleted?
+		// append the events to the calendar
+		for (let i = 0, len = this.eventsList.length ; i < len ; i++) {
+			let item = this.eventsList[i];
+			var eventDateTime = new Date(item.date_start);
+
+			// ignore if event flaged as deleted
 			if (item.action == "deleteEvent") continue;
-			// is event in current month?
-			if (!( eventDateTime >= firstHour && eventDateTime <= lastHour ) ) continue;
+			// ignore if event is not today
+			if ( eventDateTime < firstHour || eventDateTime > lastHour ) continue;
 
 			var selectCell = document.getElementById( 'h' + ("00" + (eventDateTime.getHours())).slice(-2) + "00" ).querySelector('td:nth-of-type(2)');
-
 			var span = document.createElement('SPAN');
 			span.classList.add('eventLabel');
 			span.style.backgroundColor = item.color;
 			span.textContent = item.title;
 			span.dataset.id = item.id;
 			span.addEventListener('click', function() {
-				_this.showEventPopup(this.dataset.id);
+				_this.showEventPopup(item);
 			});
 			// spans the SPAN to give it a height proportionnal to the duration
-			var duration = (new Date(item.date.end) - eventDateTime) / 1000 / 60 / 60 ; // in hours
+			var duration = (new Date(item.date_end) - eventDateTime) / 1000 / 60 / 60 ; // in hours
 			var parentHeight = selectCell.parentNode.getBoundingClientRect().bottom - selectCell.parentNode.getBoundingClientRect().top;
 			span.style.height = (parentHeight * duration  - (2*3)) + 'px';
+			span.style.top = parentHeight * eventDateTime.getMinutes() / 60 + 'px';
 
 			if (duration < 23) {
 				span.style.marginLeft = duration * 2 + '%';
@@ -2991,30 +3092,31 @@ function EventAgenda() {
 		var evList = document.createDocumentFragment();
 
 		// populates the new list
-		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
-			var item = this.eventsList[i];
+		for (let i = 0, len = this.eventsList.length ; i < len ; i++) {
+			let item = this.eventsList[i];
 
 			// ignore deleted events
 			if (item.action == 'deleteEvent') continue;
 
-			var itemDate = new Date(item.date.start);
+			var itemDate = new Date(item.date_start);
+			var itemDateEnd = new Date(item.date_end);
 			var div = _this.eventTemplate.cloneNode(true);
 
 			div.setAttribute('data-id', item.id);
-			div.setAttribute('data-date', item.date.start);
+			div.setAttribute('data-date', item.date_start);
 			if (itemDate >= new Date()) { div.classList.add('futureEvent'); }
 			else { div.classList.add('pastEvent'); }
 
 			div.querySelector('.eventDate').title = itemDate.toLocaleDateString('fr', {weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "numeric"});
 			div.querySelector('.event-dd').textContent = itemDate.getDate();
 			div.querySelector('.event-mmdd').textContent = itemDate.toLocaleDateString('fr', {month: "short"}) + ", " + itemDate.toLocaleDateString('fr', {weekday: "short"});
-			div.querySelector('.event-hhii').textContent = itemDate.toLocaleTimeString('fr', {hour: 'numeric', minute: 'numeric'});
+			div.querySelector('.event-hhii').textContent = itemDate.toLocaleTimeString('fr', {hour: 'numeric', minute: 'numeric'}) + ' - ' + itemDateEnd.toLocaleTimeString('fr', {hour: 'numeric', minute: 'numeric'});
 			div.querySelector('.eventSummary > .color').style.backgroundColor = item.color;
 			div.querySelector('.eventSummary > .title').textContent = item.title;
 			div.querySelector('.eventSummary > .loc').textContent = item.loc;
 
 			div.addEventListener('click', function() {
-				_this.showEventPopup(this.dataset.id);
+				_this.showEventPopup(item);
 			} );
 
 			evList.appendChild(div);
@@ -3080,13 +3182,7 @@ function EventAgenda() {
 	 * Popup handling
 	*/
 	// Displays the "show event" popup
-	this.showEventPopup = function(id) {
-		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
-			if (this.eventsList[i].id === id) {
-				var item = this.eventsList[i];
-				break;
-			}
-		}
+	this.showEventPopup = function(item) {
 
 		// new popup
 		var popupWrapper = this.editEventPopupTemplate.cloneNode(true);
@@ -3110,8 +3206,8 @@ function EventAgenda() {
 		// fils data in popup
 		popup.querySelector('.event-title > .event-color').style.backgroundColor = item.color;
 		popup.querySelector('.event-title > .event-name').textContent = item.title;
-		popup.querySelector('.event-content > ul > li.event-time > span:nth-of-type(1)').textContent = (new Date(item.date.start)).toLocaleDateString('fr-FR', {weekday: "long", year: "numeric", month: "long", day: "numeric"});
-		popup.querySelector('.event-content > ul > li.event-time > span:nth-of-type(2)').textContent = (new Date(item.date.start)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}) + '-' + (new Date(item.date.end)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+		popup.querySelector('.event-content > ul > li.event-time > span:nth-of-type(1)').textContent = (new Date(item.date_start)).toLocaleDateString('fr-FR', {weekday: "long", year: "numeric", month: "long", day: "numeric"});
+		popup.querySelector('.event-content > ul > li.event-time > span:nth-of-type(2)').textContent = (new Date(item.date_start)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}) + '-' + (new Date(item.date_end)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
 		popup.querySelector('.event-content > ul > li.event-loc').textContent = item.loc;
 
 		// fill persons
@@ -3167,11 +3263,11 @@ function EventAgenda() {
 		// fill popup data
 		popup.querySelector('.event-title > .event-color').style.backgroundColor = item.color;
 		popup.querySelector('.event-title > input').value = item.title;
-		popup.querySelector('.event-content > .event-content-date #time-start').value = item.date.start.substr(11, 5);
-		popup.querySelector('.event-content > .event-content-date #time-end').value = item.date.end.substr(11, 5);
-		popup.querySelector('.event-content > .event-content-date #date').value = item.date.start.substr(0, 10);
+		popup.querySelector('.event-content > .event-content-date #time-start').value = item.date_start.substr(11, 5);
+		popup.querySelector('.event-content > .event-content-date #time-end').value = item.date_end.substr(11, 5);
+		popup.querySelector('.event-content > .event-content-date #date').value = item.date_start.substr(0, 10);
 		popup.querySelector('.event-content input[name="event-loc"]').value = item.loc;
-		popup.querySelector('.event-content textarea[name="event-descr"]').value = item.loc;
+		popup.querySelector('.event-content textarea[name="event-descr"]').value = item.content;
 
 		var liTempl = popup.querySelector('#event-content-persons-selected').removeChild(popup.querySelector('#event-content-persons-selected').firstChild);
 		item.persons.forEach(function(pers) {
@@ -3236,23 +3332,11 @@ function EventAgenda() {
 	}
 
 
-
 	/**************************************
 	 * Mark an Event object as having been edited
 	*/
 	this.markAsEdited = function(item) {
 		var popup = document.getElementById('popup');
-
-		// is Edit ?
-		// search item in eventsList.
-		// Can’t test on "item.action == newEvent", since an edited-new event remains "new" (not "edited").
-		var isEdit = false;
-		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
-			if (item.id == this.eventsList[i].id) {
-				var isEdit = true;
-				break;
-			}
-		}
 
 		item.color = window.getComputedStyle(popup.querySelector('.event-title .event-color')).backgroundColor;
 		item.title = popup.querySelector('.event-title input').value || BTlang.emptyTitle;
@@ -3264,7 +3348,9 @@ function EventAgenda() {
 			var newDateStart = new Date(document.getElementById('date').value + " " + document.getElementById('time-start').value);
 			var newDateEnd = new Date(document.getElementById('date').value + " " + document.getElementById('time-end').value);
 		}
-		item.date = {"start": newDateStart.toLocalISOString(), "end": newDateEnd.toLocalISOString()};
+		item.date_start = newDateStart.toLocalISOString();
+		item.date_end = newDateEnd.toLocalISOString();
+
 
 		var listPersons = popup.querySelectorAll('#event-content-persons-selected > li > span');
 		item.persons = new Array();
@@ -3276,9 +3362,9 @@ function EventAgenda() {
 
 		item.content = popup.querySelector('.event-content-descr .text').value;
 
-		// event is new:
-		if (!isEdit) {
-			this.eventsList.push(item);     // append it to the eventsList{}
+		// event is new: append it to the eventsList{}
+		if (!this.eventsList.includes(item)) {
+			this.eventsList.push(item);
 		}
 
 		// re-sort by date
@@ -3296,6 +3382,7 @@ function EventAgenda() {
 
 		// raises global "updated" flag.
 		this.raiseUpdateFlag(true);
+		this.saveEventsXHR();
 	}
 
 
@@ -3304,9 +3391,11 @@ function EventAgenda() {
 	*/
 	this.addNewEvent = function() {
 		var date = this.initDate;
+		var dateEnd = new Date(date.getTime()); dateEnd.setHours(date.getHours()+1);
 		var newEv = {
 			"id": new Date().getTime().toString(),
-			"date": {'start':date.toLocalISOString(),'end':date.toLocalISOString()},
+			"date_start": date.toLocalISOString(),
+			"date_end": dateEnd.toLocalISOString(),
 			"title": '',
 			"content": '',
 			"color" : '#ff8a80',
@@ -3339,6 +3428,7 @@ function EventAgenda() {
 
 		// raises global "updated" flag.
 		this.raiseUpdateFlag(true);
+		this.saveEventsXHR();
 	}
 
 
@@ -3357,10 +3447,10 @@ function EventAgenda() {
 	this.raiseUpdateFlag = function(flagRaised) {
 		if (flagRaised) {
 			this.hasUpdated = true;
-			document.getElementById('enregistrer').disabled = false;
+			//document.getElementById('enregistrer').disabled = false;
 		} else {
 			this.hasUpdated = false;
-			document.getElementById('enregistrer').disabled = true;
+			//document.getElementById('enregistrer').disabled = true;
 		}
 	}
 
@@ -3368,13 +3458,13 @@ function EventAgenda() {
 	 * AJAX call to save events to DB
 	*/
 	this.saveEventsXHR = function() {
-		loading_animation('on');
+		this.backgroundWorkingPopup('started');
+
 		// only keep modified events
 		var toSaveEvents = Array();
 		for (var i=0, len=this.eventsList.length; i<len ; i++) {
 			if (this.eventsList[i].action && 0 !== this.eventsList[i].action.length) {
 				var ev = this.eventsList[i];
-				//ev.ymdhisDate = ev.date.substr(0,19).replace(/[:T-]/g, '');
 				toSaveEvents.push(ev);
 			}
 		}
@@ -3382,46 +3472,34 @@ function EventAgenda() {
 		// make a string out of it
 		var eventsDataText = JSON.stringify(toSaveEvents);
 
-		var notifDiv = document.createElement('div');
 		// create XHR
 		var xhr = new XMLHttpRequest();
 		xhr.open('POST', 'ajax/agenda.ajax.php');
 
 		// onload
-		xhr.onload = function() {
+		xhr.onload = function(e) {
 			if (this.responseText.indexOf("Success") == 0) {
-				loading_animation('off');
-				_this.raiseUpdateFlag(false);
-				// adding notif
-				notifDiv.textContent = BTlang.confirmEventsSaved;
-				notifDiv.classList.add('confirmation');
-				document.getElementById('top').appendChild(notifDiv);
-
-				// resetq flags on events (but not those that are deleted)
+				_this.notifNode.textContent = BTlang.confirmEventsSaved;
+				// reset flags on events (edited only, not deleted)
 				for (var i=0, len=toSaveEvents.length; i<len ; i++) {
 					if (toSaveEvents[i].action == 'updateEvent' || toSaveEvents[i].action == 'newEvent') {
 						toSaveEvents[i].action = "";
 					}
 				}
+				_this.raiseUpdateFlag(false);
+				_this.backgroundWorkingPopup('waiting');
 				return true;
 			} else {
-				loading_animation('off');
-				// adding notif
-				notifDiv.textContent = this.responseText;
-				notifDiv.classList.add('no_confirmation');
-				document.getElementById('top').appendChild(notifDiv);
+				_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
+				_this.backgroundWorkingPopup('waiting');
 				return false;
 			}
 		};
 
 		// onerror
 		xhr.onerror = function(e) {
-			loading_animation('off');
-			// adding notif
-			notifDiv.textContent = 'AJAX Error ' +e.target.status;
-			notifDiv.classList.add('no_confirmation');
-			document.getElementById('top').appendChild(notifDiv);
-			_this.notifNode.appendChild(document.createTextNode(this.responseText));
+			_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
+			_this.backgroundWorkingPopup('waiting');
 		};
 
 		// prepare and send FormData
@@ -3484,13 +3562,10 @@ function ContactsList() {
 	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveContactsXHR(); } );
 
 	// Global Page listeners
-
 	// beforeunload : warns the user if some data is not saved when page closes
 	window.addEventListener("beforeunload", function(e) {
 		if (_this.hasUpdated) {
-			var confirmationMessage = BTlang.questionQuitPage;
-			(e || window.event).returnValue = confirmationMessage;	//Gecko + IE
-			return confirmationMessage;								// Webkit: ignore this shit.
+			e.returnValue = BTlang.questionQuitPage;
 		}
 		else { return true; }
 	});
@@ -3516,10 +3591,10 @@ function ContactsList() {
 		var ctList = document.createDocumentFragment();
 
 		// populates the new list
-		for (var i = 0, len = ContactsData.length ; i < len ; i++) {
+		for (let i = 0, len = ContactsData.length ; i < len ; i++) {
 			if (this.contactList[i].action == "deleteContact") continue;
 
-			var item = ContactsData[i]; // sort in reverse order
+			let item = ContactsData[i]; // sort in reverse order
 			var tr = this.contactTemplate.cloneNode(true);
 			tr.setAttribute('data-id', item.id);
 
@@ -3531,9 +3606,7 @@ function ContactsList() {
 			}
 
 			tr.querySelector('.name').textContent = item.title + ' ' + item.fullname;
-
-			tr.querySelector('.icon').addEventListener('click', function() { _this.showContactPopup(this.parentNode.dataset.id); })
-			tr.querySelector('.name').addEventListener('click', function() { _this.showContactPopup(this.parentNode.dataset.id); })
+			tr.querySelector('.label > span').textContent = item.label;
 
 			var aTempl = tr.querySelector('.tel').removeChild(tr.querySelector('.tel').firstChild);
 			item.tel.forEach(function(tel) {
@@ -3542,7 +3615,6 @@ function ContactsList() {
 				a.href = 'tel:' + tel;
 				tr.querySelector('.tel').appendChild(a);
 			});
-
 
 			var aTempl = tr.querySelector('.email').removeChild(tr.querySelector('.email').firstChild);
 			item.email.forEach(function(mail) {
@@ -3553,10 +3625,9 @@ function ContactsList() {
 			});
 
 
-			tr.querySelector('.label > span').textContent = item.label;
-			if (item.label.trim().length === 0) tr.querySelector('.label').removeChild(tr.querySelector('.label > span'));
-
-			tr.querySelector('.button-edit').addEventListener('click', function() {
+			tr.addEventListener('click', function() { _this.showContactPopup(item); })
+			tr.querySelector('.button-edit').addEventListener('click', function(e) {
+				e.stopPropagation();
 				_this.showContactEditPopup(item);
 			});
 
@@ -3574,14 +3645,7 @@ function ContactsList() {
 	/**************************************
 	 * Displays the "show contact" popup
 	*/
-	this.showContactPopup = function(id) {
-		for (var i = 0, len = this.contactList.length ; i < len ; i++) {
-			if (this.contactList[i].id === id) {
-				var item = this.contactList[i];
-				break;
-			}
-		}
-
+	this.showContactPopup = function(item) {
 		var popupWrapper = this.contactPopupTemplate.cloneNode(true);
 		popupWrapper.addEventListener('click', function(e) {
 			// clic is outside popup: closes popup
@@ -3591,23 +3655,14 @@ function ContactsList() {
 		});
 		popupWrapper.querySelector('.popup-contact').id = 'popup';
 		popupWrapper.querySelector('.popup-contact').removeAttribute('hidden');
+
 		document.body.classList.add('noscroll');
+		// this allows closing the popup with the "back" button (espacially on Android)
+		if (history.state === null) history.pushState({'popupOpen': true}, null, window.location.pathname + '#popup');
+
 
 		// POPUP TITLE
 		var popupTitle = popupWrapper.querySelector('#popup > .contact-title');
-
-		// misc events
-		popupTitle.querySelector('.item-menu-options > ul > li > a').addEventListener('click', function(e){
-			_this.markAsDeleted(item);
-			_this.closePopup();
-		});
-		popupTitle.querySelector('.button-cancel').addEventListener('click', function() {
-			_this.closePopup();
-		});
-		popupTitle.querySelector('.button-edit').addEventListener('click', function() {
-			_this.closePopup();
-			_this.showContactEditPopup(item);
-		});
 
 		// icon
 		if (item.img != "") {
@@ -3620,7 +3675,6 @@ function ContactsList() {
 		// name & label
 		popupTitle.querySelector('.contact-name').textContent = item.title + ' ' + item.fullname;
 		popupTitle.querySelector('.contact-label').textContent = item.label;
-		if (item.label.trim().length === 0) popupTitle.querySelector('.contact-label').parentNode.removeChild(popupTitle.querySelector('.contact-label'));
 
 		// POPUP CONTENT
 		// name + pseudo
@@ -3691,8 +3745,21 @@ function ContactsList() {
 		while (popupContent.lastElementChild.tagName === 'DIV') {
 			popupContent.removeChild(popupContent.lastElementChild);
 		}
-		popupContent.querySelectorAll('div').forEach(function(div){
+		popupContent.querySelectorAll('div').forEach(function(div) {
 			if (div.nextElementSibling.tagName === 'DIV') div.parentNode.removeChild(div);
+		});
+
+		// misc events
+		popupTitle.querySelector('.item-menu-options > ul > li > a').addEventListener('click', function(e){
+			_this.markAsDeleted(item);
+			_this.closePopup();
+		});
+		popupTitle.querySelector('.button-cancel').addEventListener('click', function() {
+			_this.closePopup();
+		});
+		popupTitle.querySelector('.button-edit').addEventListener('click', function() {
+			_this.closePopup();
+			_this.showContactEditPopup(item);
 		});
 
 		this.domPage.appendChild(popupWrapper);
@@ -3709,7 +3776,10 @@ function ContactsList() {
 		});
 		popupWrapper.querySelector('.popup-edit-contact').id = 'popup';
 		popupWrapper.querySelector('.popup-edit-contact').removeAttribute('hidden');
+
 		document.body.classList.add('noscroll');
+		// this allows closing the popup with the "back" button (espacially on Android)
+		if (history.state === null) history.pushState({'popupOpen': true}, null, window.location.pathname + '#popup');
 
 		popupWrapper.querySelector('.popup-edit-contact .contact-title > .button-cancel').addEventListener('click', function() {
 			_this.closePopup();
@@ -3751,7 +3821,6 @@ function ContactsList() {
 			});
 		}
 
-
 		popupWrapper.querySelector('#popup input[name="contact-nb"]').value = item.address.nb;
 		popupWrapper.querySelector('#popup input[name="contact-st"]').value = item.address.st;
 		popupWrapper.querySelector('#popup input[name="contact-co"]').value = item.address.co;
@@ -3761,7 +3830,6 @@ function ContactsList() {
 		popupWrapper.querySelector('#popup input[name="contact-cn"]').value = item.address.cn;
 		popupWrapper.querySelector('#popup input[name="contact-birthday"]').value = item.birthday.replace(/(....)(..)(..)/, "$1-$2-$3");
 		popupWrapper.querySelector('#popup input[name="contact-surname"]').value = item.pseudo;
-
 
 		// website(s)
 		if (item.websites.length) {
@@ -3783,39 +3851,31 @@ function ContactsList() {
 			});
 		}
 
-		this.showContactEditPopup.duplicateLabelGroup = function(e) {
-			var newLabel = e.parentNode.cloneNode(true);
+		this.showContactEditPopup.duplicateLabelGroup = function() {
+			var newLabel = this.parentNode.cloneNode(true);
 			newLabel.querySelector('input').value = "";
-			newLabel.querySelector('button.add').addEventListener('click', function() {
-				_this.showContactEditPopup.duplicateLabelGroup(this);
-			});
-			newLabel.querySelector('button.rem').addEventListener('click', function() {
-				_this.showContactEditPopup.removeLabelGroup(this);
-			});
-			e.parentNode.parentNode.appendChild(newLabel);
+			newLabel.querySelector('button.add').addEventListener('click', _this.showContactEditPopup.duplicateLabelGroup);
+			newLabel.querySelector('button.rem').addEventListener('click', _this.showContactEditPopup.removeLabelGroup);
+			this.parentNode.parentNode.appendChild(newLabel);
 		}
-		this.showContactEditPopup.removeLabelGroup = function(e) {
-			e.parentNode.parentNode.removeChild(e.parentNode);
+		this.showContactEditPopup.removeLabelGroup = function() {
+			this.parentNode.parentNode.removeChild(this.parentNode);
 		}
 
 		// Buttons « + »
 		popupWrapper.querySelectorAll('#popup button.add').forEach(function(add) {
-			add.addEventListener('click', function() {
-				_this.showContactEditPopup.duplicateLabelGroup(this);
-			});
+			add.addEventListener('click', _this.showContactEditPopup.duplicateLabelGroup);
 		});
 
 		// Buttons « × »
 		popupWrapper.querySelectorAll('#popup button.rem').forEach(function(rem) {
-			rem.addEventListener('click', function() {
-				_this.showContactEditPopup.removeLabelGroup(this);
-			});
+			rem.addEventListener('click', _this.showContactEditPopup.removeLabelGroup);
 		});
 
 		popupWrapper.querySelector('#popup input[name="contact-notes"]').value = item.notes;
 		popupWrapper.querySelector('#popup input[name="contact-other"]').value = item.other;
 
-		popupWrapper.querySelector('#popup .contact-footer > .button-showmore').addEventListener('click', function() {
+		popupWrapper.querySelector('#popup .contact-footer > .button-cancel').addEventListener('click', function() {
 			popupWrapper.querySelectorAll('#popup .contact-content > .onshowmore').forEach(function(hidden) {
 				hidden.classList.remove('onshowmore');
 			});
@@ -3841,7 +3901,6 @@ function ContactsList() {
 	 * Creates a new Contact, init it, display it and add it to list.
 	*/
 	this.addNewContact = function() {
-		var date = this.initDate;
 		var newCt = {
 			"id": (new Date()).toLocalISOString().substr(0,19).replace(/[:T-]/g, ''),
 			"title": '',
@@ -3863,7 +3922,6 @@ function ContactsList() {
 			"action": 'newContact'
 		};
 
-
 		// opens freshly created event popup
 		this.showContactEditPopup(newCt);
 	}
@@ -3879,7 +3937,8 @@ function ContactsList() {
 		this.rebuiltContactsTable(this.contactList);
 
 		// close popup
-		document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
+		//document.getElementById('popup-wrapper').parentNode.removeChild(document.getElementById('popup-wrapper'));
+		this.closePopup();
 
 		// raises global "updated" flag.
 		this.raiseUpdateFlag(true);
@@ -3890,17 +3949,6 @@ function ContactsList() {
 	*/
 	this.markAsEdited = function(item) {
 		var popup = document.getElementById('popup');
-
-		// is Edit ?
-		// search item in eventsList.
-		// Can’t test on "item.action == newEvent", since an edited-new event remains "new" (not "edited").
-		var isEdit = false;
-		for (var i = 0, len = this.contactList.length ; i < len ; i++) {
-			if (item.id == this.contactList[i].id) {
-				var isEdit = true;
-				break;
-			}
-		}
 
 		item.title = popup.querySelector('input[name="contact-title"]').value;
 		item.fullname = popup.querySelector('input[name="contact-fullname"]').value;
@@ -3952,7 +4000,7 @@ function ContactsList() {
 			}
 		}
 
-		if (!isEdit) {
+		if (!this.contactList.includes(item)) {
 			this.contactList.push(item); // append it to the contactList
 		}
 
@@ -4027,7 +4075,6 @@ function ContactsList() {
 			reader.readAsDataURL(this.files[0]);
 		});
 		input.click();
-
 	}
 
 	/**************************************
@@ -4040,7 +4087,6 @@ function ContactsList() {
 		for (var i=0, len=this.contactList.length; i<len ; i++) {
 			if (this.contactList[i].action && 0 !== this.contactList[i].action.length) {
 				var ct = this.contactList[i];
-				//ct.ymdhisDate = ev.date.substr(0,19).replace(/[:T-]/g, '');
 				toSaveContacts.push(ct);
 			}
 		}
@@ -4054,26 +4100,20 @@ function ContactsList() {
 		xhr.open('POST', 'ajax/contacts.ajax.php');
 
 		// onload
-		xhr.onload = function() {
+		xhr.onload = function(e) {
 			if (this.responseText.indexOf("Success") == 0) {
-				loading_animation('off');
-				_this.raiseUpdateFlag(false);
 				// adding notif
-				notifDiv.textContent = BTlang.confirmContactsSaved;
-				notifDiv.classList.add('confirmation');
-				document.getElementById('top').appendChild(notifDiv);
-
+				_this.notifNode.textContent = BTlang.confirmContactsSaved;
 				// reset flags on contacts
 				for (var i=0, len=toSaveContacts.length; i<len ; i++) {
 					toSaveContacts[i].action = "";
 				}
+				loading_animation('off');
+				_this.raiseUpdateFlag(false);
 				return true;
 			} else {
+				_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
 				loading_animation('off');
-				// adding notif
-				notifDiv.textContent = this.responseText;
-				notifDiv.classList.add('no_confirmation');
-				document.getElementById('top').appendChild(notifDiv);
 				return false;
 			}
 		};
@@ -4082,10 +4122,7 @@ function ContactsList() {
 		xhr.onerror = function(e) {
 			loading_animation('off');
 			// adding notif
-			notifDiv.textContent = 'AJAX Error ' +e.target.status;
-			notifDiv.classList.add('no_confirmation');
-			document.getElementById('top').appendChild(notifDiv);
-			_this.notifNode.appendChild(document.createTextNode(this.responseText));
+			_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
 		};
 
 		// prepare and send FormData
@@ -4094,6 +4131,4 @@ function ContactsList() {
 		formData.append('save_contacts', contactsDataText);
 		xhr.send(formData);
 	}
-
-
 }

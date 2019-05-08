@@ -21,6 +21,7 @@ function send_files_json($files) {
 			'"absPath":'.json_encode($dossier.'/'.$im['bt_path'].'/').', '.
 			'"fileName":'.json_encode($im['bt_filename']).', '.
 			'"thbPath":'.json_encode(chemin_thb_img_test($dossier.'/'.$im['bt_path'].'/'.$im['bt_filename'])).', '.
+			'"action":'.'""'.', '.
 			'"w":'.json_encode($im['bt_dim_w']).', '.
 			'"h":'.json_encode($im['bt_dim_h']).
 		'},'."\n";
@@ -36,6 +37,7 @@ function send_files_json($files) {
 			'"fileSize":'.json_encode(taille_formate($doc['bt_filesize'])).', '.
 			'"fileType":'.json_encode($doc['bt_type']).', '.
 			'"absPath":'.json_encode($dossier.'/'.$doc['bt_path']).', '.
+			'"action":'.'""'.', '.
 			'"fileName":'.json_encode($doc['bt_filename']).
 		'},'."\n";
 	}
@@ -134,10 +136,14 @@ function afficher_form_fichier($erreurs, $fichiers, $what) { // ajout d’un fic
 		// for images
 		if ($myfile['bt_type'] == 'image') {
 			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<img src="'.$absolute_URI.'" alt="i" width="'.$myfile['bt_dim_w'].'" height="'.$myfile['bt_dim_h'].'" />\' />'."\n";
-			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<img src="/'.$relativeFilePath.'" alt="i" width="'.$myfile['bt_dim_w'].'" height="'.$myfile['bt_dim_h'].'" />\' />'."\n";
+			//$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<img src="/'.$relativeFilePath.'" alt="i" width="'.$myfile['bt_dim_w'].'" height="'.$myfile['bt_dim_h'].'" />\' />'."\n";
 			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<img src="'.$relativeFilePath.'" alt="i" width="'.$myfile['bt_dim_w'].'" height="'.$myfile['bt_dim_h'].'" />\' />'."\n";
-			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'[img]'.$absolute_URI.'[/img]\' />'."\n";
-			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'[spoiler][img]'.$absolute_URI.'[/img][/spoiler]\' />'."\n";
+			//$form .= '<input onfocus="this.select()" class="text" type="text" value=\'[img]'.$absolute_URI.'[/img]\' />'."\n";
+			//$form .= '<input onfocus="this.select()" class="text" type="text" value=\'[spoiler][img]'.$absolute_URI.'[/img][/spoiler]\' />'."\n";
+
+			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<img src="'.$relativeFilePath.'" alt="i" srcset="'.$relativeFilePath.' '.$myfile['bt_dim_w'].'w, '.substr(chemin_thb_img_test('../'.$relativeFilePath), 3).' 600w" sizes="50vw" class="" />\' />'."\n";
+			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<figure><img src="'.$relativeFilePath.'" alt="i" width="'.$myfile['bt_dim_w'].'" height="'.$myfile['bt_dim_h'].'" /><figcaption></figcaption></figure>\' />'."\n";
+
 		// video
 		} elseif ($myfile['bt_type'] == 'video') {
 			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<video src="'.$absolute_URI.'" type="video/'.$myfile['bt_fileext'].'" load="" controls="controls"></video>\' />'."\n";
@@ -189,12 +195,12 @@ if ( !empty($_GET['filtre']) ) {
 	}
 	elseif (strpos($_GET['filtre'], 'type.') === 0) {
 		$search = htmlspecialchars(ltrim(strstr($_GET['filtre'], '.'), '.'));
-		$query = "SELECT * FROM images WHERE bt_type LIKE=? ORDER BY bt_id DESC";
+		$query = "SELECT * FROM images WHERE bt_type LIKE ? ORDER BY bt_id DESC";
 		$tableau = liste_elements($query, array($search));
 	}
 	else {
-		$query = "SELECT * FROM images ORDER BY bt_id DESC";
-		$tableau = liste_elements($query, array());
+		$query = "SELECT * FROM images WHERE bt_type=? ORDER BY bt_id DESC LIMIT 25";
+		$tableau = liste_elements($query, array('image'));
 	}
 // recheche par mot clé
 } elseif (!empty($_GET['q'])) {
@@ -213,8 +219,8 @@ if ( !empty($_GET['filtre']) ) {
 	$tableau = liste_elements($query, array($_GET['file_id']));
 }
 else {
-	$query = "SELECT * FROM images ORDER BY bt_id DESC";
-	$tableau = liste_elements($query, array());
+	$query = "SELECT * FROM images WHERE bt_type=? ORDER BY bt_id DESC LIMIT 25";
+	$tableau = liste_elements($query, array('image'));
 }
 
 
@@ -237,7 +243,10 @@ echo '<div id="axe">'."\n";
 echo '<div id="subnav">'."\n";
 afficher_form_filtre('images', (isset($_GET['filtre'])) ? htmlspecialchars($_GET['filtre']) : '');
 echo '<div class="nombre-elem">'."\n";
-echo ucfirst(nombre_objets(count($tableau), 'fichier')).' '.$GLOBALS['lang']['sur'].' '.liste_elements_count("SELECT count(ID) AS nbr FROM images", array());
+$count_element = count($tableau);
+$count_element_total = liste_elements_count("SELECT count(ID) AS nbr FROM images WHERE bt_type=? ", array('image'));
+$diffcount = $count_element_total - $count_element;
+echo ucfirst(nombre_objets($count_element, 'fichier')).' '.$GLOBALS['lang']['sur'].' '.$count_element_total;
 echo '</div>'."\n";
 
 echo '</div>'."\n";
@@ -270,39 +279,57 @@ else {
 	// Send JSON data to browser
 	$out_html = send_files_json($sorted_files);
 
-	// Send HTML main blocs
-
+	// img-wall
 	if (!empty($sorted_files['images'])) {
 		$out_html .= '<div id="image-section">'."\n";
 		$out_html .= "\t".'<div class="list-buttons" id="list-albums">'."\n";
-		$out_html .= "\t\t".'<button class="current" id="butIdAll">'.(count($sorted_files['images'])).' '.$GLOBALS['lang']['label_images'].'</button>'."\n";
-
-		// create folder list
-		$tab_folders = explode(',', str_replace(array(', ', ' ,'), ',', trim($folders_files['images'], ',')));
-		$tab_folders = array_count_values($tab_folders);
-		//unset($tab_folders['']);
-		foreach ($tab_folders as $folder => $nb) {
-			$out_html .= "\t\t".'<button data-folder="'.$folder.'">'.$folder.' ('.$nb.')</button>'."\n";
-		}
+		$out_html .= "\t\t".'<button class="current" data-folder="" data-count="0">'.$GLOBALS['lang']['label_images'].'</button>'."\n";
+		$out_html .= "\t\t".'<button id="load_all" class="submit button-cancel" data-diff="'.$diffcount.'">Charger les '.$diffcount.' autres images</button>'."\n";
 		$out_html .= "\t".'</div>'."\n";
-		$out_html .= "\t".'<div id="image-wall"></div>'."\n";
+		$out_html .= "\t".'<div id="image-wall">'."\n";
+		$out_html .= "\t\t".'<div id="" class="image_bloc" data-folder="" hidden>'."\n";
+		$out_html .= "\t\t\t".'<img src="" alt="#" width="" height="" />'."\n";
+		$out_html .= "\t\t\t".'<span>'."\n";
+		$out_html .= "\t\t\t\t".'<a class="vignetteAction imgShow" href=""></a>'."\n";
+		$out_html .= "\t\t\t\t".'<a class="vignetteAction imgEdit" href=""></a>'."\n";
+		$out_html .= "\t\t\t\t".'<a class="vignetteAction imgDL" href="" download=""></a>'."\n";
+		$out_html .= "\t\t\t\t".'<button class="vignetteAction imgSuppr" data-id=""></button>'."\n";
+		$out_html .= "\t\t\t".'</span>'."\n";
+		$out_html .= "\t\t".'</div>'."\n";
+
+		$out_html .= "\t".'</div>'."\n";
 		$out_html .= '</div>'."\n";
 	}
+
+	// documents/files table
 	if (!empty($sorted_files['documents'])) {
 		$out_html .= '<div id="files-section">'."\n";
 		$out_html .= "\t".'<div class="list-buttons" id="list-types">'."\n";
-		$out_html .= "\t\t".'<button class="current" id="butIdAllFiles">'.count($sorted_files['documents']).' '.$GLOBALS['lang']['label_fichiers'].'</button>'."\n";
-
-
+		$out_html .= "\t\t".'<button data-type="" class="current">'.count($sorted_files['documents']).' '.$GLOBALS['lang']['label_fichiers'].'</button>'."\n";
+		// create folder list
+		$tab_types = explode(',', str_replace(array(', ', ' ,'), ',', trim($folders_files['documents'], ',')));
+		$tab_types = array_count_values($tab_types);
+		foreach ($tab_types as $type => $nb) {
+			$out_html .= "\t\t".'<button data-type="'.$type.'">'.$type.' ('.$nb.')</button>'."\n";
+		}
 		$out_html .= "\t".'</div>'."\n";
 		$out_html .= "\t".'<table id="file-list">'."\n";
-
 		$out_html .= "\t\t".'<thead>'."\n";
 		$out_html .= "\t\t\t".'<tr><th></th><th>'.$GLOBALS['lang']['label_dp_nom'].'</th><th>'.$GLOBALS['lang']['label_dp_poids'].'</th><th>'.$GLOBALS['lang']['label_dp_date'].'</th><th></th><th></th></tr>'."\n";
 		$out_html .= "\t\t".'</thead>'."\n";
-		$out_html .= "\t\t".'<tbody></tbody>'."\n";
+		$out_html .= "\t\t".'<tbody>'."\n";
+		$out_html .= "\t\t\t".'<tr id="" data-type="" hidden>'."\n";
+		$out_html .= "\t\t\t\t".'<td><img id="" alt="" src=""></td>'."\n";
+		$out_html .= "\t\t\t\t".'<td><a href=""></a></td>'."\n";
+		$out_html .= "\t\t\t\t".'<td></td>'."\n";
+		$out_html .= "\t\t\t\t".'<td></td>'."\n";
+		$out_html .= "\t\t\t\t".'<td><a href="" download="">DL</a></td>'."\n";
+		$out_html .= "\t\t\t\t".'<td><a href="#" data-id="">DEL</a></td>'."\n";
+		$out_html .= "\t\t\t".'</tr>'."\n";
+		$out_html .= "\t\t".'</tbody>'."\n";
 		$out_html .= "\t".'</table>'."\n";
 		$out_html .= '</div>'."\n";
+
 	}
 	echo $out_html;
 }
@@ -312,6 +339,7 @@ echo "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
 echo "\n".'<script>'."\n";
 echo 'var counter = 0;'."\n";
 echo 'var nbDraged = false;'."\n";
+echo 'var diffCount = '.($diffcount).';'."\n";
 echo 'var nbDone = 0;'."\n";
 echo 'var list = []; // list of uploaded files'."\n";
 

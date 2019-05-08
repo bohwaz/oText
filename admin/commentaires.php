@@ -43,37 +43,38 @@ setcookie('lastAccessComments', time(), time()+365*24*60*60, null, null, false, 
 
 
 function afficher_commentaire($comment) {
-	echo '<div class="commentbloc'.(!$comment['bt_statut'] ? ' privatebloc' : '').'" id="'.article_anchor($comment['bt_id']).'">'."\n";
-	echo '<div class="comm-side-icon">'."\n";
-	echo "\t".'<div class="comm-title">'."\n";
-	echo "\t\t".'<img class="author-icon" src="'.URL_ROOT.'favatar.php?w=gravatar&amp;q='.md5((!empty($comment['bt_email']) ? $comment['bt_email'] : $comment['bt_author'] )).'&amp;s=48&amp;d=monsterid" alt="favatar" />'."\n";
-	echo "\t\t".'<span class="date">'.date_formate($comment['bt_id']).'<span>'.heure_formate($comment['bt_id']).'</span></span>'."\n" ;
-	echo "\t\t".'<span class="reply" onclick="reply(\'[b]@['.str_replace('\'', '\\\'', $comment['bt_author']).'|#'.article_anchor($comment['bt_id']).'] :[/b] \'); ">Reply</span> ';
+	$html = '';
+	$html .= '<div class="commentbloc'.(!$comment['bt_statut'] ? ' privatebloc' : '').'" id="'.article_anchor($comment['bt_id']).'">'."\n";
+	$html .= '<div class="comm-side-icon">'."\n";
+	$html .= "\t".'<div class="comm-title">'."\n";
+	$html .= "\t\t".'<img class="author-icon" src="'.URL_ROOT.'favatar.php?w=gravatar&amp;q='.md5((!empty($comment['bt_email']) ? $comment['bt_email'] : $comment['bt_author'] )).'&amp;s=48&amp;d=monsterid" alt="favatar" />'."\n";
+	$html .= "\t\t".'<span class="date">'.date_formate($comment['bt_id']).'<span>'.heure_formate($comment['bt_id']).'</span></span>'."\n" ;
+	$html .= "\t\t".'<span class="reply" onclick="reply(\'[b]@['.str_replace('\'', '\\\'', $comment['bt_author']).'|#'.article_anchor($comment['bt_id']).'] :[/b] \'); ">Reply</span> ';
 	if (!empty($comment['bt_webpage']))
-	echo "\t\t".'<span class="webpage"><a href="'.$comment['bt_webpage'].'" title="'.$comment['bt_webpage'].'">'.$comment['bt_webpage'].'</a></span>'."\n";
+	$html .= "\t\t".'<span class="webpage"><a href="'.$comment['bt_webpage'].'" title="'.$comment['bt_webpage'].'">'.$comment['bt_webpage'].'</a></span>'."\n";
 	if (!empty($comment['bt_email']))
-	echo "\t\t".'<span class="email"><a href="mailto:'.$comment['bt_email'].'" title="'.$comment['bt_email'].'">'.$comment['bt_email'].'</a></span>'."\n";
-	echo "\t".'</div>'."\n";
-	echo '</div>'."\n";
-	echo '<div class="comm-main-frame">'."\n";
-	echo "\t".'<div class="comm-header">'."\n";
-	echo "\t\t".'<div class="comm-title">'."\n";
-	echo "\t\t\t".'<span class="author"><a href="?filtre=auteur.'.$comment['bt_author'].'" title="'.$GLOBALS['lang']['label_all_comm_by_author'].'">'.$comment['bt_author'].'</a> :</span>'."\n";
-	echo "\t\t".'</div>'."\n";
+	$html .= "\t\t".'<span class="email"><a href="mailto:'.$comment['bt_email'].'" title="'.$comment['bt_email'].'">'.$comment['bt_email'].'</a></span>'."\n";
+	$html .= "\t".'</div>'."\n";
+	$html .= '</div>'."\n";
+	$html .= '<div class="comm-main-frame">'."\n";
+	$html .= "\t".'<div class="comm-header">'."\n";
+	$html .= "\t\t".'<div class="comm-title">'."\n";
+	$html .= "\t\t\t".'<span class="author"><a href="?filtre=auteur.'.$comment['bt_author'].'" title="'.$GLOBALS['lang']['label_all_comm_by_author'].'">'.$comment['bt_author'].'</a> :</span>'."\n";
+	$html .= "\t\t".'</div>'."\n";
 	if (!isset($_GET['post_id']))
-	echo "\t\t".'<span class="link-article"> '.$GLOBALS['lang']['sur'].' <a href="'.basename($_SERVER['SCRIPT_NAME']).'?post_id='.$comment['bt_article_id'].'">'.$comment['bt_title'].'</a></span>'."\n";
-	echo "\t\t".'<div class="item-menu-options">'."\n";
-	echo "\t\t\t".'<ul>'."\n";
+	$html .= "\t\t".'<span class="link-article"> '.$GLOBALS['lang']['sur'].' <a href="'.basename($_SERVER['SCRIPT_NAME']).'?post_id='.$comment['bt_article_id'].'">'.$comment['bt_title'].'</a></span>'."\n";
+	$html .= "\t\t".'<div class="item-menu-options">'."\n";
+	$html .= "\t\t\t".'<ul>'."\n";
 	if (isset($_GET['post_id']))
-	echo "\t\t\t\t".'<li><button type="button" onclick="unfold(this)">'.$GLOBALS['lang']['editer'].'</button></li>'."\n";
-	echo "\t\t\t\t".'<li><button type="button" onclick="commAction(\'activate\', this)" data-comm-btid="'.$comment['bt_id'].'">'.$GLOBALS['lang'][(!$comment['bt_statut'] ? '' : 'des').'activer'].'</button></li>'."\n";
-	echo "\t\t\t\t".'<li><button type="button" onclick="commAction(\'delete\', this)" data-comm-btid="'.$comment['bt_id'].'">'.$GLOBALS['lang']['supprimer'].'</button></li>'."\n";
-	echo "\t\t\t".'</ul>'."\n";
-	echo "\t\t".'</div>'."\n";
-	echo "\t".'</div>'."\n";
-	echo "\t".'<div class="comm-content">'."\n";
-	echo $comment['bt_content'];
-	echo "\t".'</div>'."\n";
+	$html .= "\t\t\t\t".'<li><button type="button" onclick="unfold(this)">'.$GLOBALS['lang']['editer'].'</button></li>'."\n";
+	$html .= "\t\t\t\t".'<li><button type="button" onclick="commAction(\'activate\', this)" data-comm-btid="'.$comment['bt_id'].'">'.$GLOBALS['lang'][(!$comment['bt_statut'] ? '' : 'des').'activer'].'</button></li>'."\n";
+	$html .= "\t\t\t\t".'<li><button type="button" onclick="commAction(\'delete\', this)" data-comm-btid="'.$comment['bt_id'].'">'.$GLOBALS['lang']['supprimer'].'</button></li>'."\n";
+	$html .= "\t\t\t".'</ul>'."\n";
+	$html .= "\t\t".'</div>'."\n";
+	$html .= "\t".'</div>'."\n";
+	$html .= "\t".'<div class="comm-content">'."\n";
+	$html .= $comment['bt_content'];
+	$html .= "\t".'</div>'."\n";
 	$out = '{'.
 		'"auth":'.json_encode($comment['bt_author']).', '.
 		'"mail":'.json_encode($comment['bt_email']).', '.
@@ -81,9 +82,11 @@ function afficher_commentaire($comment) {
 		'"wiki":'.json_encode($comment['bt_wiki_content']).', '.
 		'"btid":'.json_encode($comment['bt_id']).
 	'}';
-	echo "\t".'<script id="s'.$comment['bt_id'].'" type="application/json">'.$out.'</script>'."\n";
-	echo "\t".'</div>'."\n\n";
-	echo '</div>'."\n\n";
+	$html .= "\t".'<script id="s'.$comment['bt_id'].'" type="application/json">'.$out.'</script>'."\n";
+	$html .= "\t".'</div>'."\n";
+	$html .= '</div>'."\n";
+
+	return $html;
 }
 
 
@@ -193,9 +196,9 @@ echo '<div id="page">'."\n";
 
 
 // COMMENTAIRES
-echo '<div id="liste-commentaires">'."\n";
+echo '<div id="liste-commentaires">';
 foreach ($commentaires as $content) {
-	afficher_commentaire($content);
+	echo "\n".afficher_commentaire($content);
 }
 echo '</div>'."\n";
 

@@ -69,10 +69,11 @@ if (isset($_GET['id'])) {
 else {
 
 	function rel2abs($article) { // convertit les URL relatives en absolues
-		$article = str_replace(' src="/', ' src="http://'.$_SERVER['HTTP_HOST'].'/' , $article);
-		$article = str_replace(' href="/', ' href="http://'.$_SERVER['HTTP_HOST'].'/' , $article);
+		$article = preg_replace('#(srcset=(\'|")?([^="\'\s]+))#i','src=$2$3$2 data-$0', $article);
+		$article = str_replace(' src="/', ' src="//'.$_SERVER['HTTP_HOST'].'/' , $article);
+		$article = str_replace(' href="/', ' href="//'.$_SERVER['HTTP_HOST'].'/' , $article);
 		$base = $GLOBALS['racine'];
-		$article = preg_replace('#(src|href)=\"(?!http)#i','$1="'.$base, $article);
+		$article = preg_replace('#(src|href)=\"(?!https?)#i','$1="'.$base, $article);
 		return $article;
 	}
 

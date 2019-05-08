@@ -68,8 +68,13 @@ function diacritique($texte) {
 }
 
 function rel2abs_admin($article) {
+	// transforms SRCSET to SRC (too complicated to regex the hell out of that)
+	$article = preg_replace('#(srcset=(\'|")?([^="\'\s]+))#i','src=$2$3$2 data-$0', $article);
+
 	// if relative URI in path, make absolute paths (since /admin/ panel is 1 lv deeper) for href/src.
 	$article = preg_replace('#(src|href)=\"(?!(/|[a-z]+://))#i','$1="../', $article);
+
+	//debug(preg_last_error());
 	return $article;
 }
 

@@ -59,18 +59,10 @@ if ( !empty($_GET['filtre'])) {
 
 // count total nb of notes
 $nb_notes_displayed = count($tableau);
-$html_sub_menu = '<div id="sub-menu" class="sm-notes">'."\n";
-$html_sub_menu .= "\t".'<span id="count-posts"><span id="counter"></span></span>'."\n";
-$html_sub_menu .= "\t".'<span id="message-return"></span>'."\n";
-$html_sub_menu .= "\t".'<ul class="notes-menu-buttons sub-menu-buttons">'."\n";
-$html_sub_menu .= "\t\t".'<li><button class="submit button-submit" type="submit" name="enregistrer" id="enregistrer" disabled>'.$GLOBALS['lang']['enregistrer'].'</button></li>'."\n";
-$html_sub_menu .= "\t".'</ul>'."\n";
-$html_sub_menu .= '</div>'."\n";
-
 
 // DEBUT PAGE
 afficher_html_head($GLOBALS['lang']['mesnotes'], "notes");
-afficher_topnav($GLOBALS['lang']['mesnotes'], $html_sub_menu); #top
+afficher_topnav($GLOBALS['lang']['mesnotes'], ''); #top
 
 echo '<div id="axe">'."\n";
 echo '<div id="subnav">'."\n";
@@ -125,10 +117,14 @@ $out_html .= "\t\t\t".'</div>'."\n";
 $out_html .= "\t\t\t".'<div class="content" data-id=""></div>'."\n";
 $out_html .= "\t\t".'</div>'."\n";
 
-$out_html .= "\t".'<h2 id="are-pinned" hidden>Notes épinglées</h2>'."\n";
-$out_html .= "\t".'<h2 id="are-unpinned">Autres</h2>'."\n";
+$out_html .= "\t".'<div id="are-pinned"></div>'."\n";
+$out_html .= "\t".'<div id="are-unpinned"></div>'."\n";
 
 $out_html .= "\t".'</div>'."\n";
+
+// popup notif node
+$out_html .= "\t".'<span id="popup-notif"><span id="count-posts"><span id="counter"></span></span><span id="message-return"></span></span>'."\n";
+
 
 $out_html .= send_notes_json($tableau, true);
 $out_html .= php_lang_to_js()."\n";

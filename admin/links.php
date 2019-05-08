@@ -181,7 +181,8 @@ function afficher_lien($link) {
 	$list .= "\t".'</div>'."\n";
 
 	$list .= '</div>'."\n";
-	echo $list;
+
+	return $list;
 }
 
 
@@ -284,9 +285,9 @@ elseif ($step == 2) { // lien donné dans l’URL
 }
 else { // aucun lien à ajouter ou éditer : champ nouveau lien + listage des liens en dessus.
 	echo afficher_form_link(1, $erreurs_form);
-	echo '<div id="list-link">'."\n";
+	echo '<div id="list-link">';
 	foreach ($tableau as $link) {
-		afficher_lien($link);
+		echo "\n".afficher_lien($link);
 	}
 	echo '</div>'."\n";
 }

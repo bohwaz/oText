@@ -33,7 +33,7 @@ function chemin_thb_img_test($filepath) {
 function create_thumbnail($filepath) {
 	// if GD library is not loaded by PHP, abord. Thumbnails are not required.
 	if (!extension_loaded('gd')) return;
-	$maxwidth = '700';
+	$maxwidth = '600';
 	$maxheight = '200';
 	$ext = strtolower(pathinfo($filepath, PATHINFO_EXTENSION));
 

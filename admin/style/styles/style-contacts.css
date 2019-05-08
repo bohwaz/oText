@@ -88,8 +88,13 @@
 
 #table-contacts tr > td.label > span {
 	padding: 1px 10px;
-	background-color: lightblue;
+	background-color: var(--md-primary-color);
+	color: var(--main-md-text-color);
 	border-radius: 10px;
+}
+
+#table-contacts tr > td.label > span:empty {
+	display: none;
 }
 
 #table-contacts tr > td.buttons {
@@ -162,9 +167,14 @@
 }
 #popup.popup-contact > .contact-title span.contact-label {
 	padding: 1px 10px;
-	background-color: lightblue;
+	background-color: var(--md-primary-color);
+	color: var(--main-md-text-color);
 	border-radius: 10px;
 	margin-left: 10px;
+}
+
+#popup.popup-contact > .contact-title span.contact-label:empty {
+	display: none;
 }
 
 #popup.popup-contact > .contact-title > .button-edit {

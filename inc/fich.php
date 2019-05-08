@@ -342,7 +342,8 @@ function refresh_rss($feeds) {
 	$count_new = 0;
 	$total_feed = count($feeds);
 
-	foreach ($GLOBALS['liste_flux'] as $i => $feed) {
+	//foreach ($GLOBALS['liste_flux'] as $i => $feed) {
+	foreach ($feeds as $i => $feed) {
 		$urls[$feed['link']] = $i;
 	}
 
@@ -503,7 +504,7 @@ function feed2array($feed_content) {
 				if (isset($flux['items'][$c]['bt_link']) and strpos(parse_url($flux['items'][$c]['bt_link'], PHP_URL_HOST), 'youtube.com') !== FALSE) {
 					$content = (string)$item->children('media', true)->group->description;
 					$yt_video_id = (string)$item->children('yt', true)->videoId;
-					if (!empty($yt_video_id) ) { $flux['items'][$c]['bt_content'] = '<iframe width="1120" height="630" src="https://www.youtube.com/embed/'.$yt_video_id.'?rel=0"></iframe>'; }
+					if (!empty($yt_video_id) ) { $flux['items'][$c]['bt_content'] = '<div class="youtube-iframe-container"><iframe width="1120" height="630" src="https://www.youtube.com/embed/'.$yt_video_id.'?rel=0"></iframe></div>'; }
 					if (!empty($content) ) { $flux['items'][$c]['bt_content'] .= nl2br((string) $content); }
 				}
 
@@ -525,38 +526,70 @@ function feed2array($feed_content) {
 }
 
 /* From the data out of DB, creates JSON, to send to browser
+*
+* @rss_entries : array of entries, as returned by `function liste_elements()`
+*
 */
-function send_rss_json($rss_entries, $enclose_in_script_tag) {
-	// send all the entries data in a JSON format
+function send_rss_json($rss_entries, $with_sites, $content_policy) {
+	$out = '';
 
-	$out = '{'."\n";
-	$out .= '"sites":'.json_encode($GLOBALS['liste_flux']).', '."\n";
+	// RSS feeds (sites)
+	if ($with_sites === true and $content_policy != 'ONLY_CONTENT') {
+		$out .= '"sites":'.'[';
+		foreach ($GLOBALS['liste_flux'] as $i => $feed) {
+			$out .= '{'.
+				'"id":'.json_encode($i).', '.
+				'"link":'.json_encode($feed['link'], JSON_UNESCAPED_UNICODE).', '.
+				'"title":'.json_encode($feed['title'], JSON_UNESCAPED_UNICODE).', '.
+				'"checksum":'.json_encode($feed['checksum']).', '.
+				'"time":'.json_encode($feed['time']).', '.
+				'"folder":'.json_encode($feed['folder'], JSON_UNESCAPED_UNICODE).', '.
+				'"iserror":'.json_encode($feed['iserror'], JSON_UNESCAPED_UNICODE).', '.
+				'"nbrun":'.$feed['nbrun'].''.
+			'},';
+		}
+		$out = rtrim(trim($out), ','); // trim out the last ',' (causes JSON error);
+		$out .= '],'."\n";
+	}
 
-	// RSS entries
+	// RSS entries (posts)
 	$out .= '"posts":'.'[';
 	foreach ($rss_entries as $i => $entry) {
 		if (isset($GLOBALS['liste_flux'][$entry['bt_feed']])) {
-			$out .= '{'.
-				'"id":'.json_encode($entry['bt_id']).', '.
-				'"datetime":'.json_encode($entry['bt_date']).', '.
-				'"feedhash":'.json_encode($entry['bt_feed']).', '.
-				'"statut":'.$entry['bt_statut'].', '.
-				'"fav":'.$entry['bt_bookmarked'].', '.
-				'"title":'.json_encode($entry['bt_title'], JSON_UNESCAPED_UNICODE).', '.
-				'"link":'.json_encode($entry['bt_link']).', '.
-				'"sitename":'.json_encode($GLOBALS['liste_flux'][$entry['bt_feed']]['title'], JSON_UNESCAPED_UNICODE).', '.
-				'"folder":'.json_encode($GLOBALS['liste_flux'][$entry['bt_feed']]['folder']).', '.
-				'"content":'.json_encode($entry['bt_content'], JSON_UNESCAPED_UNICODE).''.
-			'},';
+
+			if ($content_policy == 'ONLY_CONTENT') {
+				$out .= '{'.
+					'"id":'.json_encode($entry['bt_id']).', '.
+					'"content":'.json_encode($entry['bt_content'], JSON_UNESCAPED_UNICODE).''.
+				'},';
+			}
+
+			else {
+				$out .= '{'.
+					'"id":'.json_encode($entry['bt_id']).', '.
+					'"datetime":'.json_encode($entry['bt_date']).', '.
+					'"feedhash":'.json_encode($entry['bt_feed']).', '.
+					'"statut":'.$entry['bt_statut'].', '.
+					'"fav":'.$entry['bt_bookmarked'].', '.
+					'"title":'.json_encode($entry['bt_title'], JSON_UNESCAPED_UNICODE).', '.
+					'"link":'.json_encode($entry['bt_link']).', '.
+					'"sitename":'.json_encode($GLOBALS['liste_flux'][$entry['bt_feed']]['title'], JSON_UNESCAPED_UNICODE).', ';
+
+					if ($content_policy == 'WITH_CONTENT') {
+						$out .= '"content":'.json_encode($entry['bt_content'], JSON_UNESCAPED_UNICODE).', ';
+					} else {
+						$out .= '"content":"", ';
+					}
+					$out .= '"folder":'.json_encode($GLOBALS['liste_flux'][$entry['bt_feed']]['folder']).''.
+				'},';
+
+			}
 		}
 	}
-	$out = rtrim(trim($out), ','); // trim out the last ',' (causes JSON error);
-	$out .= ']';
-	$out .= '}';
 
-	if ($enclose_in_script_tag) {
-		$out = '<script id="json_rss" type="application/json">'.$out.'</script>'."\n";
-	}
+	$out = rtrim(trim($out), ','); // trim out the last ',' (causes JSON error);
+	$out .= ']'."\n";
+
 	return $out;
 }
 

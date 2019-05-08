@@ -108,9 +108,9 @@
 	}
 
 	/* links */
-	.linkbloc .link-header, .linkbloc .link-footer {
+	/*.linkbloc .link-footer {
 		display: block;
-	}
+	}*//
 
 	#post-new-lien, #post-new-note {
 		margin: 30px auto 50px;
@@ -163,8 +163,8 @@
 		padding: 0 10px;
 	}
 	#feed-list {
-		margin-right: 5px;
-		transform: translateX(-280px);	
+		transform: translateX(-320px);
+		overflow-y: scroll;
 	}
 	#rss-list {
 		margin-right: 5px;
@@ -201,34 +201,13 @@
 	#post-list > li > .post-head > .post-title:hover {
 		flex: 1 1 250px;
 	}
-	#post-list > li > .post-head > .share {
-		display: block;
-		flex: 1 0 auto;
-		text-align: right;
-		visibility: hidden;
-	}
-	#post-list > li:hover > .post-head > .share {
-		visibility: visible;
+	#post-list > li > .post-head > .meta {
+		margin-left: 10px;
 	}
 	#post-list > li .post-head .date {
 		flex: 1 0 auto;
 		text-align: right;
 	}
-
-	/* feed list config */
-	#form-rss-config {
-		margin: 25px 5px;
-	}
-	#rss-feed th,
-	#rss-feed td {
-		padding-left: 5px;
-		padding-right: 5px;
-	}
-	#rss-feed th:nth-of-type(5),
-	#rss-feed td:nth-of-type(5) {
-		display: none;
-	}
-
 
 	/* page fichiers */
 	#file-list td:nth-of-type(3),
@@ -255,7 +234,20 @@
 		display: none;
 	}
 
-
+	#daily-events-wrapper {
+		padding-left: 5px;
+		padding-right: 5px;
+	}
+	#daily-events > div {
+		padding-left: 10px;
+		padding-right: 10px;
+	}
+	#daily-events > div .eventDate {
+		grid-column-gap: 10px;
+	}
+	#daily-events > div .eventDate > .event-hhii {
+		font-size: .8em;
+	}
 	#side-nav {
 		margin-right: 5px;
 		transform: translateX(-280px);	

@@ -45,6 +45,11 @@ function afficher_topnav($titre, $html_sub_menu) {
 
 	$html .= "\t".'<div id="top">'."\n";
 
+	// hide side menu button
+	if (in_array($tab, array('feed.php', 'agenda.php'))) {
+		$html .= "\t\t".'<button id="hide-side-nav"></button>'."\n";
+	}
+
 	// page title
 	$html .=  "\t\t".'<h1 id="titre-page"><a href="'.$tab.'">'.$titre.'</a></h1>'."\n";
 
@@ -135,8 +140,8 @@ function get_notifications() {
 
 	// get near events
 	//if (isset($_COOKIE['lastAccessAgenda']) and is_numeric($_COOKIE['lastAccessAgenda'])) {
-	$query = 'SELECT count(ID) AS nbr FROM agenda WHERE bt_date >=? AND bt_date <=?';
-	$array = array( date('YmdHis', time()), date('YmdHis', (time()+24*60*60)) );
+	$query = 'SELECT count(ID) AS nbr FROM agenda WHERE DATETIME(bt_date_start) >= DATETIME(?) AND DATETIME(bt_date_start) <= DATETIME(?)';
+	$array = array( date('c', time()), date('c', (time()+7*24*60*60)) );
 	$nb_new = liste_elements_count($query, $array);
 	if ($nb_new > 0) {
 		$hasNotifs += $nb_new;
@@ -488,17 +493,19 @@ function html_readmore() {
 
 
 // returns the first image of an article
-/* @return : path of image
+/*
+* @param : $1: (string) article's content.
+*
+* @return : array(<img ...>, imageUri)
 */
 function html_get_image_from_article($article) {
 	// extract image from $article
-	preg_match('#<img *.* src=(["|\']?)([^\1 ]*)(\1)[^>]*>#U', $article, $matches);
-	$img = array('<img src="favicon.ico" alt="default_favicon" />', '', 'favicon.ico', '');
-	if (!empty($matches)) {
-		$img = $matches;
+	preg_match('#<img *.* src=(["|\'])([^\1 ]*)\1[^>]*>#U', $article, $matches);
+	$img = array('<img src="favicon.ico" alt="default_favicon" />', 'favicon.ico');
+	if (!empty($matches[2])) {
+		$img = array($matches[0], $matches[2]);
 	}
 	return $img;
-
 }
 
 

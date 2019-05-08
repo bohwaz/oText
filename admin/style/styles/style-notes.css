@@ -8,17 +8,9 @@
 #list-notes {
 }
 
-#list-notes > h2 {
-	padding: 10px;
-	font-size: 1em;
-	//display: none;
+#list-notes > #are-pinned:not(:empty) {
+	margin-bottom: 20px;
 }
-
-#list-notes > h2+h2,
-#list-notes > h2:last-child {
-	display: none;
-}
-
 
 #post-new-note {
 	cursor: pointer;
@@ -48,11 +40,21 @@
 	padding: 0 0 50px;
 	text-align: left;
 	border-radius: 5px;
-	overflow: hidden;
+	position: relative;
 }
 
 .notebloc[data-isarchived="0"] {
 	filter: sepia(1);
+}
+
+.notebloc[data-ispinned="1"]::after {
+	content: "\e226";
+	font-size: 1.8em;
+	position: absolute;
+	right: -9px;
+	top: -9px;
+	transform: rotate(35deg);
+	color: #222;
 }
 
 .notebloc:hover {

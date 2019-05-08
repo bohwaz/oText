@@ -32,13 +32,47 @@ $GLOBALS['liste_flux'] = open_serialzd_file(FEEDS_DB);
 
 // retrieve all RSS feeds on page load.
 if (isset($_POST['get_initial_data'])) {
-	$tableau = liste_elements('SELECT * FROM rss WHERE bt_statut=1 OR bt_bookmarked=1 ORDER BY bt_date DESC', array());
+
+	// if a search query is made
+	$tableau = array();
+	if (!empty($_GET['q'])) {
+		$sql_where_status = '';
+		$q_query = $_GET['q'];
+		// search "in:read"
+		if (substr($_GET['q'], -8) === ' in:read') {
+			$sql_where_status = 'AND bt_statut=0 ';
+			$q_query = substr($_GET['q'], 0, strlen($_GET['q'])-8);
+		}
+		// search "in:unread"
+		if (substr($_GET['q'], -10) === ' in:unread') {
+			$sql_where_status = 'AND bt_statut=1 ';
+			$q_query = substr($_GET['q'], 0, strlen($_GET['q'])-10);
+		}
+		$arr = parse_search($q_query);
+
+
+		$sql_where = implode(array_fill(0, count($arr), '( bt_content || bt_title ) LIKE ? '), 'AND '); // AND operator between words
+		$query = "SELECT * FROM rss WHERE ".$sql_where.$sql_where_status."ORDER BY bt_date DESC";
+		//debug($query);
+		$tableau = liste_elements($query, $arr);
+	} elseif (empty($_POST['only_content'])) {
+		$tableau = liste_elements('SELECT bt_id, bt_date, bt_feed, bt_statut, bt_bookmarked, bt_title, bt_link FROM rss WHERE bt_statut=1 OR bt_bookmarked=1 ORDER BY bt_date DESC', array());
+		$content_policy = 'NO_CONTENT';
+	} elseif (!empty($_POST['only_content'])) {
+		$tableau = liste_elements('SELECT bt_id, bt_content, bt_feed FROM rss WHERE bt_statut=1 OR bt_bookmarked=1 ORDER BY bt_date DESC', array());
+		$content_policy = 'ONLY_CONTENT';
+	}
+
 	header('Cache-Control: max-age=0');
 	header("Content-type:application/json;charset=utf-8");
-	echo 'Success';
 
-	echo send_rss_json($tableau, false);
-	die();
+	$json = '{'."\n";
+	$json .= '"status":"success",'."\n";
+	$json .= send_rss_json($tableau, true, $content_policy);
+	$json .= '}';
+
+	echo $json;
+	die;
 }
 
 // retreive all RSS feeds from the sources, and save them in DB.
@@ -48,11 +82,14 @@ if (isset($_POST['refresh_all'])) {
 	if (!empty($erreurs)) {
 		die(erreurs($erreurs));
 	}
-	$new_entries = refresh_rss($GLOBALS['liste_flux']);
-	echo 'Success';
-	$new_entries = tri_selon_sous_cle($new_entries, 'bt_date');
+	$new_entries = tri_selon_sous_cle(refresh_rss($GLOBALS['liste_flux']), 'bt_date');
 
-	echo send_rss_json($new_entries, false);
+	$json = '{'."\n";
+	$json .= '"status":"success",'."\n";
+	$json .= send_rss_json($new_entries, true, 'WITH_CONTENT');
+	$json .= '}';
+
+	echo $json;
 	die;
 }
 
@@ -99,7 +136,6 @@ if (isset($_POST['add-feed'])) {
 		die('Error: not an RSS/ATOM feed.');
 	}
 
-
 	// adding to serialized-db
 	$GLOBALS['liste_flux'][hash('md5', $new_feed)] = array(
 		'link' => $new_feed,
@@ -126,7 +162,7 @@ if (isset($_POST['add-feed'])) {
 	file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' */');
 
 	// Update DB
-	refresh_rss(array($new_feed => $GLOBALS['liste_flux'][hash('md5', $new_feed)]));
+	refresh_rss(array(hash('md5', $new_feed) => $GLOBALS['liste_flux'][hash('md5', $new_feed)]));
 	die('Success');
 }
 
@@ -214,52 +250,44 @@ if (isset($_POST['mark-as-fav'])) {
 
 
 if (isset($_POST['edit-feed-list'])) {
-	$posted_feeds = json_decode($_POST['edit-feed-list'], TRUE);
+	$posted_feed = json_decode($_POST['edit-feed-list'], TRUE);
 
-	foreach ($posted_feeds as $i => $entry) {
-		$posted_feeds[$entry['id']] = $entry;
-	}
+	if (isset($GLOBALS['liste_flux'][$posted_feed['id']])) {
 
-	try {
-		$GLOBALS['db_handle']->beginTransaction();
+		try {
 
-		foreach($GLOBALS['liste_flux'] as $i => $feed) {
+			switch ($posted_feed['action']) {
+				case 'delete':
+					$req = $GLOBALS['db_handle']->prepare('DELETE FROM rss WHERE bt_feed = ?');
+					$req->execute(array($posted_feed['id']));
+					unset($GLOBALS['liste_flux'][$posted_feed['id']]);
+					break;
 
-			if (isset($posted_feeds[$feed['checksum']])) {
+				case 'edited':
+					// update feed in $GLOBALS['liste_flux']
+					$GLOBALS['liste_flux'][$posted_feed['id']]['link'] = $posted_feed['link'];
+					$GLOBALS['liste_flux'][$posted_feed['id']]['title'] = $posted_feed['title'];
+					$GLOBALS['liste_flux'][$posted_feed['id']]['folder'] = $posted_feed['folder'];
 
-				switch ($posted_feeds[$feed['checksum']]['action']) {
-					case 'delete':
-						// rm posts from that feed
-						$req = $GLOBALS['db_handle']->prepare('DELETE FROM rss WHERE bt_feed = ?');
-						$req->execute(array($i));
-						// rm feed from feed list $GLOBALS['liste_flux']
-						unset($GLOBALS['liste_flux'][$i]);
-						break;
+					$req = $GLOBALS['db_handle']->prepare('UPDATE rss SET bt_folder = ? WHERE bt_feed = ?');
+					$req->execute(array($posted_feed['folder'], $posted_feed['id']));
 
-					case 'edited':
-						// update feed in $GLOBALS['liste_flux']
-						//unset($GLOBALS['liste_flux'][$i]);
-						$GLOBALS['liste_flux'][$i]['link'] = $posted_feeds[$feed['checksum']]['link'];
-						$GLOBALS['liste_flux'][$i]['title'] = $posted_feeds[$feed['checksum']]['title'];
-						$GLOBALS['liste_flux'][$i]['folder'] = $posted_feeds[$feed['checksum']]['folder'];
-
-						break;
-				}
+					break;
 			}
+
+			$GLOBALS['liste_flux'] = array_reverse(tri_selon_sous_cle($GLOBALS['liste_flux'], 'title'));
+			file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' *'.'/');
+
+
+		} catch (Exception $e) {
+			die('SQL Feeds-update Error: '.$e->getMessage());
 		}
-		// commit to DB
-		$GLOBALS['db_handle']->commit();
 
-		// commit to feed list FILE
-		$GLOBALS['liste_flux'] = array_reverse(tri_selon_sous_cle($GLOBALS['liste_flux'], 'title'));
-		file_put_contents(FEEDS_DB, '<?php /* '.chunk_split(base64_encode(serialize($GLOBALS['liste_flux']))).' *'.'/');
-
-
-		die('Success');
-	} catch (Exception $e) {
-		die('SQL Feeds-update Error: '.$e->getMessage());
+		die ('Success');
 	}
 	die ('Success');
+
+
 }
 
 exit;

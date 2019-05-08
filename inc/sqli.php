@@ -114,7 +114,8 @@ function create_tables() {
 		(
 			ID INTEGER PRIMARY KEY $auto_increment,
 			bt_id BIGINT,
-			bt_date BIGINT,
+			bt_date_start BIGINT,
+			bt_date_end BIGINT,
 			bt_color TINYTEXT,
 			bt_event_loc TEXT,
 			bt_title TEXT,
@@ -549,7 +550,7 @@ function bdd_commentaire($comm, $what) {
 		$article_id = $comm['bt_article_id'];
 
 		$query = 'INSERT INTO commentaires ( bt_type, bt_id, bt_article_id, bt_content, bt_wiki_content, bt_author, bt_link, bt_webpage, bt_email, bt_subscribe, bt_statut ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-		$array = array( 'comment', $comm['bt_id'], $comm['bt_article_id'], $comm['bt_content'], $comm['bt_wiki_content'], $comm['bt_author'], $comm['bt_link'], $comm['bt_webpage'], $comm[' t_email'], $comm['bt_subscribe'], $comm['bt_statut'] );
+		$array = array( 'comment', $comm['bt_id'], $comm['bt_article_id'], $comm['bt_content'], $comm['bt_wiki_content'], $comm['bt_author'], $comm['bt_link'], $comm['bt_webpage'], $comm['bt_email'], $comm['bt_subscribe'], $comm['bt_statut'] );
 	}
 
 	// ÉDITION D'UN COMMENTAIRE DÉJÀ EXISTANT. (hors activation)

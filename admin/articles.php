@@ -9,49 +9,19 @@
 require_once 'inc/boot.php';
 operate_session();
 
-
-/*
-
-$query = "SELECT bt_id, bt_link, bt_title FROM articles";
-$req = $GLOBALS['db_handle']->prepare($query);
-$req->execute(array());
-$result = $req->fetch();
-while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
-	$return[] = $row;
-}
-
-//debug($return);
-
-try {
-
-	$GLOBALS['db_handle']->beginTransaction();
-
-	foreach ($return as $i => $art) {
-		$req = $GLOBALS['db_handle']->prepare('UPDATE articles SET bt_link=? WHERE bt_id=?');
-		$req->execute(array(get_blogpath($art['bt_id'], $art['bt_title']), $art['bt_id']));
-	}
-
-	$GLOBALS['db_handle']->commit();
-
-} catch (Exception $e) {
-	return 'Erreur : '.$e->getMessage();
-}
-
-die('done');*/
-
 function afficher_liste_articles($tableau) {
 	$out = '';
+	$out .= '<div id="blocBillets">';
 	if (!empty($tableau)) {
 		$i = 0;
 		$previous_date = '';
-		$out .= '<div id="blocBillets">'."\n";
 		foreach ($tableau as $article) {
 			$article_date = substr($article['bt_date'], 0, 6);
 			if ($previous_date !== $article_date) {
 				if ($previous_date !== '') {
-					$out .= '</ul>'."\n\n";
+					$out .= '</ul>'."\n";
 				}
-				$out .= '<h2>'.mois_en_lettres(substr($article_date, 4, 2)).' '.substr($article_date, 0, 4).'</h2>'."\n";
+				$out .= "\n".'<h2>'.mois_en_lettres(substr($article_date, 4, 2)).' '.substr($article_date, 0, 4).'</h2>'."\n";
 				$out .= '<ul class="billets">'."\n";
 				$previous_date = $article_date;
 			}
@@ -72,9 +42,9 @@ function afficher_liste_articles($tableau) {
 		if ($previous_date !== '') {
 			$out .= '</ul>'."\n\n";
 		}
-		$out .= '</div>'."\n";
 	}
 
+	$out .= '</div>'."\n";
 	$out .= '<a id="fab" class="add-article" href="ecrire.php" title="'.$GLOBALS['lang']['titre_ecrire'].'">'.$GLOBALS['lang']['titre_ecrire'].'</a>'."\n";
 
 	echo $out;

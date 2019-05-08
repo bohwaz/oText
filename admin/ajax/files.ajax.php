@@ -93,3 +93,29 @@ elseif (isset($_POST['do']) and $_POST['do'] == 'delete') {
 	echo 'failure';
 	exit;
 }
+
+// LOAD ALL IMAGES
+elseif (isset($_POST['do']) and $_POST['do'] == 'loadall') {
+	$query = "SELECT * FROM images WHERE bt_type=? ORDER BY bt_id DESC LIMIT -1 OFFSET 25";
+	$tableau = liste_elements($query, array('image'));
+
+	$dossier = '../'.trim(str_replace(dirname(DIR_IMAGES), '', DIR_IMAGES), '/');
+	$json_img = '['."\n";
+	foreach ($tableau as $i => $im) {
+		$json_img .= "\t".'{'.
+			'"id":'.json_encode($im['bt_id']).', '.
+			'"folder":'.json_encode($im['bt_folder']).', '.
+			'"absPath":'.json_encode($dossier.'/'.$im['bt_path'].'/').', '.
+			'"fileName":'.json_encode($im['bt_filename']).', '.
+			'"thbPath":'.json_encode(chemin_thb_img_test($dossier.'/'.$im['bt_path'].'/'.$im['bt_filename'])).', '.
+			'"action":'.'""'.', '.
+			'"w":'.json_encode($im['bt_dim_w']).', '.
+			'"h":'.json_encode($im['bt_dim_h']).
+		'},'."\n";
+	}
+	$json_img = trim(trim($json_img), ',')."\n".']';
+
+	echo $json_img;
+	exit;
+
+}

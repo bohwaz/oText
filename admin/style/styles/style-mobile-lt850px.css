@@ -14,8 +14,21 @@
 		padding: 8px;
 	}
 
+	#titre-page {
+		font-size: 1.2em;
+	}
+
+	/* icon sizes */
+	#hide-side-nav:before,
+	#nav::before,
+	#notif-icon::before,
+	#nav-acc::before {
+		width: 36px;
+		line-height: 36px;
+	}
+
 	#search {
-		flex: 0 0 48px;
+		flex: 0 0 36px;
 		background-color: transparent;
 		margin: 0;
 		overflow: hidden;
@@ -23,7 +36,7 @@
 	}
 
 	#search #q { /* normal */
-		width: 48px;
+		width: 36px;
 		height: 48px;
 		position: absolute;
 		opacity: 0;
@@ -37,8 +50,8 @@
 	#search #q[value=""]:focus,
 	#search #q:not([value=""]) { /* focus OR not empty (a search is done) */
 		border-radius: 3px;
-		width: calc( 100% - 8px - 48px - 13px - 48px - 48px - 8px );
-		right: 165px;
+		width: calc( 100% - 8px - 36px - 13px - 36px - 36px - 8px );
+		right: calc( 13px + 36px + 36px + 36px + 8px);
 		transition: 0s;
 		padding: 5px 10px;
 		opacity: 1;
@@ -55,14 +68,20 @@
 	}
 
 	#nav > ul::before {
-		right: 113px;
+		right: 82px;
 	}
 
 	#notif-icon > ul::before {
-		right: 64px;
+		right: 46px;
 	}
 
-	/* liste fichiers */
+	#nav-acc > ul::before {
+		right: 10px;
+	}
+
+	/* ----------------------------------------------------------
+	liste fichiers */
+
 	#image-wall {
 		text-align: center;
 	}
@@ -162,6 +181,10 @@
 		padding: 0;
 	}
 
+	#popup {
+		border-radius: 0;
+	}
+
 
 	/* AGENDA */
 	#popup.popup-edit-event .event-content-descr {
@@ -172,6 +195,30 @@
 		height: 100%;
 		width: 100%;
 	}
+
+	#popup.popup-edit-event .event-content-date p {
+		padding: 20px 0px 0;
+	}
+	#popup.popup-edit-event .event-content-date > .date-time-input > label[for^="date"] > input {
+		padding-left: 5px;
+		padding-right: 5px;
+	}
+	#popup.popup-edit-event .event-content-date > .date-time-input > label[for^="time"]::before {
+		left: 10px;
+	}
+	#popup.popup-edit-event .event-content-date > .date-time-input > label[for^="time"] > input {
+		padding-left: 5px;
+		padding-right: 0px;
+	}
+
+	#popup.popup-edit-event .event-content > div {
+		padding-left: 25px;
+	}
+
+	#popup.popup-edit-event .event-content > div::before {
+		left: 0;
+	}
+
 
 	#daily-events > div .eventDate {
 		display: grid;

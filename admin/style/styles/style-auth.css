@@ -81,7 +81,7 @@
 }
 
 #install .unveilmdp::before {
-	content: "\e91c";
+	content: "\E417";
 	font-size: 2em;
 }
 
