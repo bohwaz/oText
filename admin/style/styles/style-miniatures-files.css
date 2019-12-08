@@ -2,11 +2,10 @@
 ---------------------------------------------------------------------------------- */
 /* IMAGES : DnD area */
 #form-image #dragndrop-area {
-	background: #f5f5f5;
+	background: var(--md-card-color-hover);
 	border: 1px dashed gray;
 	padding: 15px;
 	border-radius: 6px;
-	color: rgba(0, 0, 0, .4);
 }
 
 #form-image #dragndrop-area > p {
@@ -15,7 +14,7 @@
 
 /* IMAGES : DnD area : ondrag-style */
 #form-image #dragndrop-area.fullpagedrag {
-	background: rgba(84, 145, 245, .3);
+	background-color: rgba(84, 145, 245, .3);
 	border-color: #0061FF;
 }
 
@@ -46,6 +45,7 @@
 	font-weight: bold;
 	text-align: center;
 	margin-bottom: 50px;
+	opacity: .5;
 }
 
 #form-image .upload-info {
@@ -131,15 +131,15 @@
 	display: flex;
 	width: 660px;
 	max-width: 100%;
-	margin: auto;
+	margin: 15px auto;
 	flex-direction: row-reverse;
 }
 
 #img-others-infos label:not([for="statut"]) {
 	overflow: hidden;
-	color: rgba(0, 0, 0, .5);
 	font-size: 0;
 	z-index: 2;
+	opacity: .5;
 }
 
 #img-others-infos label:not([for="statut"])::before {
@@ -191,17 +191,27 @@
 }
 
 #interg-codes input.text {
-	width:99%;
+	width: 100%;
 	padding-left: 0;
 }
 
 #fichier-meta-info {
+	border-radius: 5px;
 	margin: 20px 6%;
-	display: inline-block;
-	padding: 5px;
+	display: block;
+	padding: 15px;
 	list-style: outside none none;
-	box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.2);
-	background: #fdfdfd;
+	//box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.2);
+	//background: var(--md-card-color-hover);
+}
+#fichier-meta-info > li {
+	padding: 5px;
+}
+
+#fichier-meta-info b {
+	display: inline-block;
+	width: 40%;
+	text-align: right;
 }
 
 /* IMAGES : on drop, file boxes wth status */
@@ -243,7 +253,7 @@
 }
 
 #result .pending {
-	background-color: #e8eaf6;
+	background-color: var(--md-card-color-hover);
 }
 
 
@@ -279,8 +289,8 @@
 
 #image-wall .image_bloc > span {
 	position: absolute;
-	//right: 0; left: 0; top: 0; bottom: 0;
 	width: 80%; height: 100%;
+	left: 0; top: 0; bottom: 0;
 	opacity: 0;
 	transition: opacity .3s;
 	display: grid;
@@ -333,7 +343,7 @@
 }
 
 #file-list thead {
-	background: #F6F6F6;
+	background: var(--md-card-color-focus);
 }
 
 #file-list thead th {
@@ -373,7 +383,6 @@
 }
 
 #file-list tr td:nth-of-type(n+3) {
-	color: rgba(0, 0, 0, .5);
 	font-size: .9em;
 }
 
@@ -395,7 +404,6 @@
 
 #file-list tr td:nth-of-type(n+4) a::before {
 	font-size: 1.4em;
-	color: rgba(0, 0, 0, .5);
 	display: block;
 	line-height: 30px;
 	margin-left: -30px;
@@ -410,14 +418,14 @@
 }
 
 #file-list tbody tr:hover {
-	background-color: rgba(0, 0, 0, .1);
+	background-color: var(--md-card-color-hover);
 	transition: background-color .5s;
 }
 
 /* IMAGES : buttons, list of albums/file-type */
 
 .list-buttons {
-	background: #F6F6F6;
+	background: var(--md-card-color-focus);
 }
 
 .list-buttons button:not([id]) {

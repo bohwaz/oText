@@ -55,6 +55,8 @@ if (isset($_POST['get_initial_data'])) {
 		$query = "SELECT * FROM rss WHERE ".$sql_where.$sql_where_status."ORDER BY bt_date DESC";
 		//debug($query);
 		$tableau = liste_elements($query, $arr);
+
+		$content_policy = 'WITH_CONTENT';
 	} elseif (empty($_POST['only_content'])) {
 		$tableau = liste_elements('SELECT bt_id, bt_date, bt_feed, bt_statut, bt_bookmarked, bt_title, bt_link FROM rss WHERE bt_statut=1 OR bt_bookmarked=1 ORDER BY bt_date DESC', array());
 		$content_policy = 'NO_CONTENT';

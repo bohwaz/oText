@@ -24,7 +24,6 @@
 #auth p label:not([for="stay_logged"]) {
 	width: 0px;
 	overflow: hidden;
-	color: rgba(0, 0, 0, .5);
 	font-size: 1.7em;
 	padding-left: 40px;
 	margin-right: -40px;

@@ -13,7 +13,7 @@
 }
 
 #apercu > h2 {
-	background: #f0f0f0;
+	background: var(--md-card-color);
 	border-top-left-radius: inherit;
 	border-top-right-radius: inherit;
 	padding: 10px 20px;
@@ -119,6 +119,7 @@
 #titre {
 	font-weight: bold;
 	font-size: 1.15em;
+	border-radius: 0;
 	border-top-left-radius: inherit;
 	border-top-right-radius: inherit;
 }
@@ -130,6 +131,7 @@
 #chapo_note > textarea {
 	width: auto;
 	min-width: 0;
+	border-radius: 0;
 }
 
 #form-ecrire #chapo {
@@ -142,6 +144,7 @@
 
 #type_tags,
 #mots_cles {
+	border-radius: 0;
 	border-bottom-left-radius: inherit;
 	border-bottom-right-radius: inherit;
 }
@@ -160,7 +163,7 @@
 p.formatbut {
 	margin: 0;
 	padding: 5px;
-	background: #f5f5f5;
+	background: var(--md-card-color-focus);
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -173,7 +176,7 @@ p.formatbut {
 	display: inline-block;
 	text-align: center;
 	vertical-align: middle;
-	background: rgba(0, 0, 0, 0);
+	background: inherit;
 	border: 1px solid transparent;
 	border-radius: 4px;
 }
@@ -185,8 +188,7 @@ p.formatbut {
 
 .formatbut .but:active {
 	border-color: gray;
-	background: #cde6ff;
-	background: linear-gradient(to top, white, #d6d6d6);
+	background: var(--md-card-color-focus);
 }
 
 .formatbut span.spacer {
@@ -213,16 +215,16 @@ p.formatbut {
 #button07::before { content: "\e234"; }  /* right align */
 #button08::before { content: "\e235"; }  /* justify */
 #button09::before { content: "\e250"; }  /* link */
-#button10::before { content: "\e244"; } /* quote */
-#button11::before { content: "\e251"; } /* image */
-#button12::before { content: "\e86f"; } /* code */
-#button13::before { content: "\e23c"; } /* color edit */
-#button14::before { content: "\e245"; } /* font size edit */
-#button15::before { content: "\e24a"; } /* unicode char insert */
-#button16::before { content: "\e241"; } /* ul list */
-#button17::before { content: "\e242"; } /* ol list */
-#button18::before { content: "\e8ce"; } /* autocorrect */
-#button19::before { content: "\e5d0"; } /* fullscreen */
+#button10::before { content: "\e244"; }  /* quote */
+#button11::before { content: "\e251"; }  /* image */
+#button12::before { content: "\e86f"; }  /* code */
+#button13::before { content: "\e23c"; }  /* color edit */
+#button14::before { content: "\e245"; }  /* font size edit */
+#button15::before { content: "\e24a"; }  /* unicode char insert */
+#button16::before { content: "\e241"; }  /* ul list */
+#button17::before { content: "\e242"; }  /* ol list */
+#button18::before { content: "\e8ce"; }  /* autocorrect */
+#button19::before { content: "\e5d0"; }  /* fullscreen */
 
 #button19 { float: right; }
 
@@ -233,7 +235,7 @@ p.formatbut {
 .but-dropdown .list {
 	display:none;
 	padding: 3px;
-	background-color: white;
+	background-color: inherit;
 	width: 140px;
 	position: absolute;
 	box-shadow: 0px 4px 8px rgba(0, 0, 0, .3);
@@ -242,6 +244,11 @@ p.formatbut {
 .but-dropdown:hover .list {
 	display: block;
 }
+
+.but-dropdown .list button:hover {
+	background-color: var(--md-card-color-hover);
+}
+
 
 /* list colors */
 .but-dropdown .list-color {
@@ -272,13 +279,9 @@ p.formatbut {
 .but-dropdown .list-size button {
 	padding: 10px;
 	text-align: left;
-	background: white;
+	background: inherit;
 	width: 100%;
 	border: 0px solid transparent;
-}
-
-.but-dropdown .list-size button:hover {
-	background-color: #ddd;
 }
 
 /* list caractères unicodes */
@@ -289,7 +292,7 @@ p.formatbut {
 }
 
 .but-dropdown .list-spechr button {
-	background: white;
+	background: inherit;
 	margin: 0 2px 2px 0;
 	width: 26px;
 	padding: 0;
@@ -297,10 +300,6 @@ p.formatbut {
 	border: 1px solid #ddd;
 	border-radius: 2px;
 	text-align: center;
-}
-
-.but-dropdown .list-spechr button:hover {
-	background-color: #ddd;
 }
 
 #form-ecrire .main-form #contenu {
@@ -320,8 +319,7 @@ p.formatbut {
 
 #form-ecrire.fullscreen_text #content_format .formatbut {
 	text-align: center;
-	background-color: white;
-	color: rgba(0, 0, 0, .4);
+	opacity: .4;
 }
 
 #form-ecrire.fullscreen_text #content_format #button19::before {
@@ -329,7 +327,7 @@ p.formatbut {
 }
 
 #form-ecrire.fullscreen_text #content_format .formatbut:hover {
-	color: rgba(0, 0, 0, .7);
+	opacity: 1;
 }
 
 #form-ecrire.fullscreen_text #content_format #contenu {
@@ -402,7 +400,6 @@ p.formatbut {
 }
 
 #datetime input {
-	background: #FAFAFA;
 	box-shadow: 0 0 2px rgba(0, 0, 0, .2);
 	border: 0;
 	padding: 13px 12px;

@@ -110,7 +110,7 @@
 	/* links */
 	/*.linkbloc .link-footer {
 		display: block;
-	}*//
+	}*/
 
 	#post-new-lien, #post-new-note {
 		margin: 30px auto 50px;
@@ -121,6 +121,10 @@
 		margin: 20px 0;
 		word-wrap: break-word;
 		word-break: break-all;
+	}
+
+	#fichier-meta-info b {
+		display: inline;
 	}
 
 	/* preferences */
@@ -217,9 +221,18 @@
 
 	/* page agenda */
 	#calendar-table {
-		padding: 5px 0;
 		border-spacing: 0px;
+		height: calc(100vh - 64px);
 	}
+
+	#calendar-table.table-day-mode > tbody > tr {
+		grid-template-columns: 50px 1fr;
+	}
+
+	#calendar-table > tbody.day-mode > tr > td:first-of-type > span {
+		padding: 5px;
+	}
+
 	#calendar-table > tbody span.eventLabel {
 		padding: 2px 0;
 		margin: 2px 0;
@@ -256,9 +269,6 @@
 		margin-left: 0px;
 	}
 
-	#calendar-table {
-		height: calc(100vh - 108px);
-	}
 	#side-nav.hidden-sidenav {
 		transform: translateX(0px);
 	}
@@ -270,6 +280,12 @@
 
 	#calendar-table.table-year-mode > tbody > tr > td {
 		padding: 18px;
+	}
+
+
+	/* page notes */
+	.notebloc[data-ispinned="1"]::after {
+		right: 0;
 	}
 
 }

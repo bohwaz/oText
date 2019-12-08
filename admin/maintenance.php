@@ -763,7 +763,7 @@ function importer_vcf($vcf_content) {
 
 // DEBUT PAGE
 afficher_html_head($GLOBALS['lang']['titre_maintenance'], "maintenance");
-afficher_topnav($GLOBALS['lang']['titre_maintenance'], ''); #top
+afficher_topnav($GLOBALS['lang']['titre_maintenance']); #top
 
 echo '<div id="axe">'."\n";
 echo '<div id="page">'."\n";

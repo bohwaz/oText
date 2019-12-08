@@ -64,26 +64,15 @@ if ( !empty($_GET['filtre']) ) {
 }
 
 
-// count total nb of notes
-$nb_notes_displayed = count($tableau);
-$html_sub_menu = '<div id="sub-menu" class="sm-contacts">'."\n";
-$html_sub_menu .= "\t".'<span id="count-posts"><span id="counter"></span></span>'."\n";
-$html_sub_menu .= "\t".'<span id="message-return"></span>'."\n";
-$html_sub_menu .= "\t".'<ul class="contacts-menu-buttons sub-menu-buttons">'."\n";
-$html_sub_menu .= "\t\t".'<li><button class="submit button-submit" type="submit" name="enregistrer" id="enregistrer" disabled>'.$GLOBALS['lang']['enregistrer'].'</button></li>'."\n";
-$html_sub_menu .= "\t".'</ul>'."\n";
-$html_sub_menu .= '</div>'."\n";
-
-
 // DEBUT PAGE
 afficher_html_head($GLOBALS['lang']['mescontacts'], "contacts");
-afficher_topnav($GLOBALS['lang']['mescontacts'], $html_sub_menu); #top
+afficher_topnav($GLOBALS['lang']['mescontacts']); #top
 
 echo '<div id="axe">'."\n";
 echo '<div id="subnav">'."\n";
 	afficher_form_filtre('contacts', (isset($_GET['filtre'])) ? htmlspecialchars($_GET['filtre']) : '');
 	echo "\t".'<div class="nombre-elem">';
-	echo "\t\t".ucfirst(nombre_objets($nb_notes_displayed, 'contact')).' '.$GLOBALS['lang']['sur'].' '.liste_elements_count("SELECT count(*) AS nbr FROM contacts", array())."\n";
+	echo "\t\t".ucfirst(nombre_objets(count($tableau), 'contact')).' '.$GLOBALS['lang']['sur'].' '.liste_elements_count("SELECT count(*) AS nbr FROM contacts", array())."\n";
 	echo "\t".'</div>'."\n";
 echo '</div>'."\n";
 
@@ -214,7 +203,10 @@ $out_html .= "\t\t\t".'</tr>'."\n";
 $out_html .= "\t\t".'</thead>'."\n";
 $out_html .= "\t\t".'</table>'."\n";
 $out_html .= "\t".'</div>'."\n";
+
 $out_html .= "\t".'<button type="button" id="fab" class="add-contact" title="'.$GLOBALS['lang']['rss_label_config'].'">'.$GLOBALS['lang']['rss_label_addfeed'].'</button>'."\n";
+$out_html .= "\t".'<span id="popup-notif"><span id="count-posts"><span id="counter"></span></span><span id="message-return"></span></span>'."\n";
+
 $out_html .= send_contacts_json($tableau, true);
 $out_html .= php_lang_to_js()."\n";
 $out_html .= "\n".'<script src="style/scripts/javascript.js"></script>'."\n";

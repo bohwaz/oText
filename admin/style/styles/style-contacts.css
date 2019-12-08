@@ -8,7 +8,6 @@
 #table-contacts {
 	width: 100%;
 	border-collapse: collapse;
-	background-color: white;
 	overflow: hidden;
 }
 
@@ -19,7 +18,7 @@
 }
 
 #table-contacts > thead {
-	background-color: #f6f6f6;
+	background-color: var(--md-card-color-hover);
 }
 
 #table-contacts tr {
@@ -80,7 +79,6 @@
 	text-decoration: underline;
 }
 
-
 #table-contacts tr > td.label,
 #table-contacts tr > th.label {
 	text-align: center;
@@ -118,7 +116,7 @@
 #table-contacts tr > td.buttons > button::before {
 	content: '\e3c9';
 	font-size: 1.4em;
-	color: rgba(0, 0, 0, .5);
+	opacity: .8;
 	display: block;
 	height: 30px;
 	width: 30px;
@@ -132,7 +130,6 @@
 #table-contacts tr > td.buttons > button:focus {
 	background-color: rgba(0, 0, 0, .2);
 }
-
 
 
 /* the display-contact popup
@@ -212,7 +209,7 @@
 	position: absolute;
 	left: -40px;
 	top: 10px;
-	color: rgba(0, 0, 0, .4)
+	opacity: .5;
 }
 
 #popup.popup-contact > .contact-content ul > li {
@@ -276,7 +273,7 @@
 	position: absolute;
 	left: 20px;
 	top: 19px;
-	color: rgba(0, 0, 0, .4);
+	opacity: .5;
 }
 
 #popup.popup-edit-contact .contact-content label {
@@ -319,7 +316,6 @@
 #popup.popup-edit-contact .contact-content label > input:focus + span,
 #popup.popup-edit-contact .contact-content label > input:invalid + span {
 	opacity: 1;
-	color: #000;
 }
 #popup.popup-edit-contact .contact-content label > input:invalid + span {
 	color: red;

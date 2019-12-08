@@ -21,7 +21,8 @@
 
 .commentbloc:not(:last-of-type) .comm-side-icon::after {
 	content: "";
-	background-color: rgba(0, 0, 0, .05);
+	background-color: currentColor;
+	opacity: .1;
 	display: block;
 	width: 6px;
 	height: 20%;
@@ -90,14 +91,13 @@
 	width: 20px;
 	height: 20px;
 	overflow: hidden;
-	opacity: .1;
+	opacity: .3;
 }
 
 .commentbloc .webpage a::before,
 .commentbloc .email a::before,
 .commentbloc .reply::before {
 	font-size: 20px;
-	color: rgba(0, 0, 0, .5);
 }
 
 .commentbloc .reply::before {     content: "\e15e"; }
@@ -107,7 +107,7 @@
 .commentbloc:hover .webpage a,
 .commentbloc:hover .email a,
 .commentbloc:hover .reply {
-	opacity: 1;
+	opacity: .6;
 }
 
 .commentbloc .author {
@@ -163,7 +163,7 @@
 	right: 9999px;
 	position: absolute;
 	top: -10px;
-	background: white;
+	background: var(--md-card-color);
 	margin: 0;
 	padding: 4px 0;
 	list-style: none;
@@ -208,7 +208,7 @@
 
 /* desactivated comments */
 .privatebloc .comm-main-frame {
-	background: rgba(0, 0, 0, .03);
+	filter: brightness(.8) opacity(.8);
 }
 .privatebloc .comm-side-icon {
 	filter: saturate(0) contrast(0.6) opacity(.6);
@@ -216,10 +216,6 @@
 
 .privatebloc h3, .privatebloc h3 a {
 	font-style: italic;
-}
-
-.privatebloc a, .privatebloc:hover a {
-	color: black;
 }
 
 /* Commentbloc on Hover */
@@ -270,8 +266,8 @@
 
 #form-commentaire label {
 	overflow: hidden;
-	color: rgba(0, 0, 0, .5);
 	font-size: 0;
+	opacity: .5;
 	position: relative;
 	z-index: 2;
 }

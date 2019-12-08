@@ -2,126 +2,63 @@
 ------------------------------------------------------------*/
 
 @font-face {
-  font-family: "Roboto";
-  font-style: normal;
-  font-weight: 300;
-  src: local("roboto light"), url("../webfonts/roboto-300.woff2") format("woff2");
+	font-family: "Roboto";
+	font-style: normal;
+	font-weight: 300;
+	font-display: fallback;
+	src: local("roboto light"), url("../webfonts/roboto-300.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "Roboto";
-  font-style: normal;
-  font-weight: 400;
-  src: local("roboto regular"), url("../webfonts/roboto-400.woff2") format("woff2");
+	font-family: "Roboto";
+	font-style: normal;
+	font-weight: 400;
+	font-display: fallback;
+	src: local("roboto regular"), url("../webfonts/roboto-400.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "Roboto";
-  font-style: normal;
-  font-weight: 500;
-  src: local("roboto medium"), url("../webfonts/roboto-500.woff2") format("woff2");
+	font-family: "Roboto";
+	font-style: normal;
+	font-weight: 500;
+	font-display: fallback;
+	src: local("roboto medium"), url("../webfonts/roboto-500.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "Roboto";
-  font-style: normal;
-  font-weight: 700;
-  src: local("roboto bold"), url("../webfonts/roboto-700.woff2") format("woff2");
+	font-family: "Roboto";
+	font-style: normal;
+	font-weight: 700;
+	font-display: fallback;
+	src: local("roboto bold"), url("../webfonts/roboto-700.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "icon";
-  src: url("../webfonts/icons.woff2") format("woff2");
+	font-family: "icon";
+	font-display: block;
+	src: url("../webfonts/icons.woff2") format("woff2");
 }
 
 /* CSS VARIABLES
 ------------------------------------------------------------*/
 :root {
-	--md-primary-color: #3F51B5; /* UI objects BG : top, etc. ; */
-	--md-secondary-color: #FF4081; /* UI items : FAB, buttons…; */
-	--main-md-text-color: #ffffff;
-	--scnd-md-text-color: #ffffff;
+	--md-primary-color: #0288D1; /* UI objects BG : top, etc. ; */
+	--md-primary-color-variant: #E5e8ff; /* lighter version, semi-transparent of primary */
+	--md-secondary-color: #FF5252; /* UI items : FAB, buttons…; */
+	--md-secondary-color-variant: #E0D0E3; /* lighter version, semi-transparent of primary */
+
+	--md-card-color: #fff; /* Card background color */
+	--md-card-color-hover: #eee; /* Card background color */
+	--md-card-color-focus: #fff; /* Card background color */
+
+
+	--main-md-text-color: #fff;
+	--scnd-md-text-color: #fff;
 }
 
 ::selection {
 	color: var(--main-md-text-color);
 	background: var(--md-primary-color);
-}
-
-#body.preferences,
-#body.maintenance { /* dark gray */
-	--md-primary-color: #383838;
-	--md-secondary-color:;
-	--main-md-text-color: #fff;
-	--scnd-md-text-color:;
-}
-
-#body.index { /* white */
-	--md-primary-color: #fff;
-	--main-md-text-color: #333;
-}
-
-#body.articles { /* red */
-	--md-primary-color: #CA2825;
-	--main-md-text-color: #f5f5f5;
-	--md-secondary-color: #E88A1A;
-	--scnd-md-text-color:;
-}
-
-#body.ecrire { /* dark blue */
-	--md-primary-color: #20639B;
-	--md-secondary-color: #65C6C4;
-	--main-md-text-color: #f5f5f5;
-	--scnd-md-text-color:;
-}
-
-#body.comments { /* light orange */
-	--md-primary-color: #ED553B;
-	--md-secondary-color: #665C84;
-	--main-md-text-color: #fff;
-	--scnd-md-text-color:#fff;
-}
-
-#body.feeds { /* orange */
-	--md-primary-color: #344955;
-	--main-md-text-color: #fff;
-	--md-secondary-color: #F87D42;
-	--scnd-md-text-color: #000;
-}
-
-#body.notes { /* light green */
-	--md-primary-color: #FFCE00;
-	--md-secondary-color:;
-	--main-md-text-color: #000;
-	--scnd-md-text-color:;
-}
-
-#body.files { /* dark blue */
-	--md-primary-color: #7C49B2;
-	--md-secondary-color:;
-	--main-md-text-color: #fff;
-	--scnd-md-text-color:;
-}
-
-#body.links { /* light-blue */
-	--md-primary-color: #00C2FF;
-	--md-secondary-color:;
-	--main-md-text-color: #000;
-	--scnd-md-text-color:;
-}
-
-#body.agenda { /* teal */
-	--md-primary-color: #DB2D43;
-	--md-secondary-color: #03DAC5;
-	--main-md-text-color: #fff;
-	--scnd-md-text-color: #000;
-}
-
-#body.contacts { /* skyblue */
-	--md-primary-color: #039BE5;
-	--md-secondary-color:;
-	--main-md-text-color: #fff;
-	--scnd-md-text-color:;
 }
 
 /* ANIMATIONS
@@ -251,8 +188,7 @@ body.noscroll {
 	z-index: 100;
 	color: var(--main-md-text-color);
 	color: inherit;
-	background: var(--md-primary-color);
-	background: white;
+	background: inherit;
 	position: sticky;
 	top: 0;
 	box-shadow: 0 1px 8px rgba(0,0,0,.5);
@@ -355,29 +291,6 @@ q, blockquote {
 	margin: 0;
 }
 
-/* Message de confirmation ou d’erreur */
-.confirmation, .no_confirmation {
-	max-width: 400px;
-	position: fixed;
-	bottom: -100px; left: 20px;
-	padding: 15px;
-	margin: auto;
-	text-align: center;
-	font-weight: bold;
-	z-index: 150;
-	box-shadow: 0px 2px 24px 0px rgba(0, 0, 0, 0.2);
-	animation: popup-disapear 7s;
-	animation-fill-mode: forwards;
-	border: 1px solid #333;
-	border-radius: 3px;
-	background: #444;
-	color: #fff;
-}
-
-.no_confirmation {
-	color: #faa;
-}
-
 #erreurs, .erreurs {
 	display: block;
 	clear: both;
@@ -393,7 +306,7 @@ q, blockquote {
 	align-items: center; /* vertical align*/
 	height: 64px;
 	padding: 8px 20px 8px 8px;
-	background: inherit;
+	background: var(--md-card-color);
 }
 
 #top a {
@@ -401,13 +314,14 @@ q, blockquote {
 	color: inherit;
 }
 
+
 /* TOP > "hide menu" button (burger menu)
 ------------------------------------------------------*/
 #hide-side-nav {
 	padding: 0;
 	background-color: transparent;
 	border: none;
-	color: rgba(0, 0, 0, .7);
+	opacity: .7;
 	flex-shrink: 0;
 }
 
@@ -471,7 +385,6 @@ q, blockquote {
 	margin: 0 15px 0 8px;
 	display: flex;
 	align-items: stretch;
-	color: rgb(0, 0, 0);
 	background-color: rgba(0, 0, 0, .05);
 	border-radius: 4px;
 }
@@ -489,6 +402,7 @@ q, blockquote {
 	background-color: transparent;
 	border-top-right-radius: inherit;
 	border-bottom-right-radius: inherit;
+	-webkit-appearance: none;
 }
 
 #q:focus,
@@ -501,7 +415,6 @@ q, blockquote {
 }
 
 #label_q {
-	//overflow: hidden;
 	flex: 0 0 48px;
 	text-align: center;
 	border-top-left-radius: inherit;
@@ -511,11 +424,9 @@ q, blockquote {
 
 #label_q::before {
 	content: "\e8b6";
-	//position: relative;
 	font-size: 1.6rem;
 	display: block;
 	line-height: 48px;
-	//padding-top: 1px /* icon-form centering compensation */
 }
 
 #q:hover { /* hover */
@@ -543,7 +454,7 @@ q, blockquote {
 	padding: 20px;
 	box-sizing: border-box;
 	position: absolute;
-	background-color: white;
+	background: var(--md-card-color-focus);
 	right: 8px;
 	transform: translateY(-700px);
 	top: 60px;
@@ -552,7 +463,7 @@ q, blockquote {
 	border-radius: 2px;
 	display: grid;
 	grid-template-columns: repeat(3, 100px);
-	z-index: 1;
+	z-index: 2;
 }
 
 #nav > ul::before {
@@ -580,12 +491,12 @@ q, blockquote {
 }
 
 #nav > ul > li:hover {
-	border-color: rgba(0, 0, 0, .1);
+	box-shadow: 0 0 3px currentColor;
 }
 
 #nav a {
 	display: block;
-	color: rgba(0, 0, 0, .6);
+	color: inherit;
 	padding: 5px;
 	font-size: .8em;
 }
@@ -593,7 +504,6 @@ q, blockquote {
 #nav a::before {
 	display: block;
 	font-size: 2em;
-	color: rgba(0, 0, 0, .7);
 	border-radius: 100%;
 	height: 1em;
 	width: 1em;
@@ -656,14 +566,14 @@ q, blockquote {
 	margin: 0;
 	padding: 20px;
 	position: absolute;
-	background-color: white;
+	background: var(--md-card-color-focus);
 	right: 8px;
 	transform: translateY( calc(-100% - 50px) ) ;
 	top: 60px;
 	box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.6);
 	opacity: 0;
 	border-radius: 2px;
-	color: initial;
+	color: inherit;
 	z-index: 1;
 }
 
@@ -718,7 +628,7 @@ q, blockquote {
 	padding: 5px 0;
 	box-sizing: border-box;
 	position: absolute;
-	background-color: white;
+	background: var(--md-card-color-focus);
 	right: 8px;
 	transform: translateY(-230px);
 	top: 60px;
@@ -726,7 +636,7 @@ q, blockquote {
 	text-align: right;
 	opacity: 0;
 	border-radius: 2px;
-	color: initial;
+	color: inherit;
 	z-index: 1;
 }
 
@@ -850,7 +760,7 @@ q, blockquote {
 #popup-notif {
 	position: absolute;
 	z-index: 110;
-	background: indianred;
+	background: var(--md-primary-color);
 	color: white;
 	top: -48px;
 	left: 50%;
@@ -896,52 +806,41 @@ q, blockquote {
 
 #subnav > .nombre-elem {
 	font-weight: bold;
-	color: #333;
 	margin: auto 0 auto auto ;
+	display: flex;
+	align-items: first baseline;
+	height: 48px;
 }
 
 #subnav > .nombre-elem > ul { /* list on link-hover on comm-page */
 	display: inline-block;
 	list-style: none;
 	margin: 0;
-	padding: 0;
+	padding: 5px 0;
 	position: relative;
-	z-index: 15;
+	z-index: +1;
 	border-radius: 3px;
 }
 
-#subnav > .nombre-elem li {
-	margin: 0;
-	width: 100%;
-	box-sizing: border-box;
-	transition: box-shadow ease 0s, opacity ease .1s;
+#subnav > .nombre-elem > ul:hover {
+	box-shadow: 0 15px 20px rgba(0, 0, 0, .2);
+	background: var(--md-card-color);
 }
 
 #subnav > .nombre-elem li+li {
-	position: absolute;
-	height: 0;
-	overflow: hidden;
+	display: none;
 }
 
-#subnav > .nombre-elem ul:hover > li {
-	background: #fefefe;
-	box-shadow: 0 15px 20px rgba(0, 0, 0, .2);
-	transition: box-shadow ease .1s, opacity ease 0s;
-}
-
-#subnav > .nombre-elem li:hover {
-	background: #fafafa;
-}
-
-#subnav > .nombre-elem a:hover {
-	color: #45a6ff;
+#subnav > .nombre-elem ul:hover > li:hover {
+	background: var(--md-card-color-hover);
 }
 
 #subnav > .nombre-elem ul:hover li+li {
-	height: auto;
+	display: block;
 }
 
 #subnav > .nombre-elem a {
+	color: inherit;
 	text-decoration: none;
 	display: inline-block;
 	padding: 10px;
@@ -1014,8 +913,8 @@ fieldset {
 	padding: 15px;
 	border: 1px solid transparent;
 	border-bottom-color: silver;
-	border-radius: 0;
-	background: white no-repeat;
+	/*border-radius: 5px;*/
+	background: var(--md-card-color);
 	position: relative;
 }
 
@@ -1045,16 +944,15 @@ fieldset {
 
 .submit-bttns .button-delete {
 	float: left;
-	min-width: 140px;
+	min-width: 130px;
 }
 
 .submit {
 	color: white;
 	font-weight: 500;
 	vertical-align: middle;
-	padding: 6px 12px;
-	//box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-	border-radius: 2px;
+	padding: 8px 9px;
+	border-radius: 20px;
 	border: 0px solid transparent;
 	min-width: 100px;
 	text-transform: uppercase;
@@ -1065,7 +963,7 @@ fieldset {
 }
 
 .button-submit {
-	min-width: 140px;
+	min-width: 120px;
 	background: #2196f3;
 }
 
@@ -1229,8 +1127,8 @@ fieldset {
 	min-height: 350px;
 	min-width: 600px;
 	width: 600px;
-	background: white;
-	box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.3), 0 0px 12px 0 rgba(0, 0, 0, 0.3);
+	background: var(--md-card-color);
+	//box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.3), 0 0px 12px 0 rgba(0, 0, 0, 0.3);
 	padding: 0;
 	overflow: hidden; /* for rounded corners */
 	border-radius: 2px;
@@ -1241,7 +1139,6 @@ fieldset {
 }
 
 #popup > .popup-title {
-	background: #F6F6F6;
 	padding: 5px 15px;
 	position: relative;
 	display: flex;
@@ -1297,7 +1194,7 @@ fieldset {
 #popup > .popup-content::before {
 	content: "";
 	display: block;
-	background: linear-gradient(white 50%, transparent);
+	background: linear-gradient(var(--md-card-color) 50%, transparent);
 	height: 8px;
 	width: 100%;
 	position: absolute;
@@ -1319,7 +1216,6 @@ fieldset {
 
 #popup .popup-footer .button-submit {
 	background: white;
-	//box-shadow: none;
 	color: #222;
 }
 
@@ -1384,8 +1280,7 @@ fieldset {
 #table-contacts
  {
 	padding: 15px;
-	background: #ffffff;
-	box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0,0,0,0.2), 0 1px 5px 0 rgba(0,0,0,0.12);
+	background: var(--md-card-color);
 	box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.3), 0 3px 1px -2px rgba(0,0,0,0.2);
 	border-radius: 4px;
 }

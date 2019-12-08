@@ -28,7 +28,7 @@
 	transform: translateX(0px);
 	transition: transform .3s ease;
 	box-shadow: none;
-	background-color: inherit;
+	background-color: var(--md-card-color);
 }
 
 #feed-list:hover {
@@ -62,11 +62,13 @@
 	cursor: pointer;
 	background-size: 20px 20px;
 	border-radius: 0 25px 25px 0;
+	transition: background-color .3s;
+
 }
 
-#feed-list li.feed-site:hover {
+#feed-list li:not(.special):hover {
 	background-size: 0 0;
-	color: var(--md-secondary-color);
+	background-color: var(--md-primary-color-variant);
 }
 
 #feed-list li.feed-site > button {
@@ -78,7 +80,6 @@
 	left: 12px;
 	top: 10px;
 	opacity: 0;
-	color: var(--md-secondary-color);
 }
 
 #feed-list li.feed-site > button::before {
@@ -92,6 +93,7 @@
 }
 
 #feed-list li.feed-site:hover > button {
+	transition: .2s opacity;
 	opacity: 1;
 }
 
@@ -103,9 +105,6 @@
 	padding: 0 110px 0 0;
 }
 
-#feed-list > li.special:hover {
-	box-shadow: none;
-}
 
 #feed-list > li.special > ul {
 	padding: 0;
@@ -122,7 +121,7 @@
 	position: absolute;
 	top: 12px;
 	left: 20px;
-	color: rgba(0, 0, 0, .4);
+	opacity: .4;
 }
 
 #feed-list > li.special .all-feeds::before   { content: "\e8ef"; }
@@ -136,7 +135,6 @@
 	right: 20px;
 	padding: 2px;
 	opacity: .7;
-
 }
 
 #feed-list li[class^="feed-"]:not([data-nbrun="0"]).active-site::before {
@@ -187,8 +185,9 @@
 	width: 30px;
 	border-radius: 50%;
 	padding: 3px;
-	color: rgba(0, 0, 0, .4);
+	opacity: .4;
 }
+
 #feed-list li.feed-folder.active-site .unfold::before,
 #feed-list > li.special > ul > li.active-site::before {
 	color: inherit;
@@ -204,16 +203,8 @@
 
 #feed-list li.active-site,
 #feed-list > li.feed-folder.active-site {
-	background-color: #e8e8e8;
-	color: var(--md-secondary-color);
-}
-
-#feed-list > li.feed-folder.active-site li {
-	box-shadow: none;
-}
-
-#feed-list li.feed-site:hover,
-#feed-list li.feed-folder:not(.open):hover {
+	background-color: var(--md-primary-color-variant);
+	color: var(--md-primary-color);
 }
 
 #feed-list li[data-nbrun="0"] {
@@ -257,7 +248,7 @@
 	border-radius: 50%;
 	transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
 	padding: 6px;
-	color: rgba(0, 0, 0, .6);
+	opacity: .6;
 }
 
 #post-list-title > .posts-actions-buttons button::before {
@@ -274,7 +265,6 @@
 #post-list-title > .posts-actions-buttons > li:nth-of-type(2) > button.unfold::before { content: "\e5d6"; }
 #post-list-title > .posts-actions-buttons > li:nth-of-type(3) > button::before { content: "\e627"; }
 #post-list-title > .posts-actions-buttons > li:nth-of-type(4) > button::before { content: "\e923"; }
-
 
 #post-list-title > p {
 	margin: 0;
@@ -306,17 +296,16 @@
 }
 
 #post-list > li {
-	padding: 0px 15px 0px 10px;
+	padding: 10px;
 	border: 1px solid #dadce0;
 	margin: 0 0 20px;
 	border-radius: 8px;
-}
-
-#post-list > li:hover {
+	background: var(--md-card-color);
 }
 
 #post-list > li.read:not(.open-post) {
 	color: gray;
+	opacity: 0.8;
 }
 
 #post-list > li img,
@@ -343,13 +332,7 @@
 
 /* rss entry title */
 #post-list > li > .post-head {
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	display: flex;
-	flex-wrap: wrap;
-	min-width: 0;
-	align-items: center;
+	padding-left: 42px;
 }
 
 #post-list > li > .post-head a {
@@ -358,19 +341,21 @@
 
 /* bouton fav */
 #post-list > li > .post-head > .lien-fav {
-	flex: 0 0 32px;
+	width: 32px;
 	margin-right: 10px;
 	text-decoration: none;
-	color: rgba(0, 0, 0, .4);
+	color: inherit;
+	opacity: .4;
 	border-radius: 50%;
 	display: inline-block;
 	line-height: 32px;
 	text-align: center;
+	margin-left: -42px;
 }
 
 #post-list > li > .post-head > .lien-fav:hover {
 	background: rgba(0,0,0, .1);
-	color: rgba(0, 0, 0, .6);
+	opacity: .6;
 }
 
 #post-list > li > .post-head > .lien-fav::before {
@@ -387,11 +372,14 @@
 #post-list > li > .post-head > .folder {
 	margin: 0 10px 0 0;
 	padding: 1px 10px;
-	background-color: var(--md-primary-color);
-	color: var(--main-md-text-color);
+	background-color: var(--md-card-color-hover);
+	color: var(--md-primary-color);
 	border-radius: 10px;
 	font-style: italic;
-	transition: color .2s ease, background-color .2s ease;
+}
+
+#post-list > li:hover > .post-head > .folder {
+	background-color: var(--md-card-color-focus);
 }
 
 #post-list > li > .post-head > .folder:empty {
@@ -399,33 +387,25 @@
 }
 
 #post-list > li.open-post > .post-head > .folder {
-	background-color: var(--md-secondary-color);
-	color: var(--scnd-md-text-color);
+	color: var(--md-primary-color-variant);
+	background-color: var(--md-primary-color);
 }
-
 
 /* le titre */
 #post-list > li > .post-head > .post-title {
 	font-weight: bold;
 	text-decoration: none;
 	color: inherit;
-	flex: 1 1 100px;
-	overflow: hidden;
-	text-overflow: ellipsis;
 	padding: 15px 0;
-	margin-right: 10px;
 }
 
-#post-list > li:hover > .post-head > .post-title {
+#post-list > li > .post-head > .post-title:hover {
 	text-decoration: underline;
 }
 
 /* infos meta du post (site, date…) */
 #post-list > li > .post-head > .meta {
-	flex: 1 0 100%;
-	margin-left: 42px;
-	margin-bottom: 15px;
-	color: rgba(0, 0, 0, .5);
+	opacity: .5;
 	font-size: .9em;
 }
 
@@ -450,7 +430,6 @@
 #post-list > li > .post-head > .meta > .share {
 	opacity: 0;
 	transition: opacity 0.2s ease 0s;
-
 }
 
 #post-list > li:hover > .post-head > .meta > .share {
@@ -460,7 +439,7 @@
 #post-list > li > .post-head > .meta > .share > a {
 	margin-left: 5px;
 	text-decoration: none;
-	color: rgba(0, 0, 0, .4);
+	color: inherit;
 	border-radius: 50%;
 	width: 32px;
 	display: inline-block;
@@ -486,7 +465,7 @@
 
 /* opened post */
 #post-list > li.open-post {
-	border-color: var(--md-secondary-color);
+	border-color: currentColor;
 	cursor: auto;
 }
 
@@ -531,7 +510,7 @@
 	position: absolute;
 	left: 20px;
 	top: 19px;
-	color: rgba(0, 0, 0, .4);
+	opacity: .5;
 }
 
 #popup.popup-edit-feed .feed-content > div label {
@@ -572,16 +551,15 @@
 	padding-top: 0;
 	padding-bottom: 0;
 }
+
 #popup.popup-edit-feed .feed-content label > .text:focus + span,
 #popup.popup-edit-feed .feed-content label > .text:invalid + span {
 	opacity: 1;
-	color: #000;
 }
+
 #popup.popup-edit-feed .feed-content label > .text:invalid + span {
 	color: red;
 }
-
-
 
 #popup.popup-edit-feed .feed-content-url::before    { content: "\E80B"; }
 #popup.popup-edit-feed .feed-content-title::before  { content: "\E892"; }

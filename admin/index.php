@@ -58,7 +58,7 @@ function get_tableau_date($data_type) {
 
 // DEBUT PAGE
 afficher_html_head($GLOBALS['lang']['label_resume'], "index");
-afficher_topnav($GLOBALS['lang']['label_resume'], ''); #top
+afficher_topnav($GLOBALS['lang']['label_resume']); #top
 
 
 echo '<div id="axe">'."\n";

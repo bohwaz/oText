@@ -118,14 +118,14 @@ function afficher_form_fichier($erreurs, $fichiers, $what) { // ajout d’un fic
 		
 		// la partie listant les infos du fichier.
 		$form .= '<ul id="fichier-meta-info">'."\n";
-			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_nom'].'</b> '.$myfile['bt_filename'].'</li>'."\n";
-			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_type'].'</b> '.$myfile['bt_type'].' (.'.$myfile['bt_fileext'].')</li>'."\n";
+			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_nom'].' </b> '.$myfile['bt_filename'].'</li>'."\n";
+			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_type'].' </b> '.$myfile['bt_type'].' (.'.$myfile['bt_fileext'].')</li>'."\n";
 			if ($myfile['bt_type'] == 'image') // si le fichier est une image, on ajout ses dimensions en pixels
-			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_dimensions'].'</b> '.$myfile['bt_dim_w'].'px × '.$myfile['bt_dim_h'].'px'.'</li>'."\n";
-			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_date'].'</b>'.date_formate($myfile['bt_id']).', '.heure_formate($myfile['bt_id']).'</li>'."\n";
-			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_poids'].'</b>'.taille_formate($myfile['bt_filesize']).'</li>'."\n";
-			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_checksum'].'</b>'.$myfile['bt_checksum'].'</li>'."\n";
-			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_visibilite'].'</b>'.(($myfile['bt_statut'] == 1) ? 'Publique' : 'Privée').'</li>'."\n";
+			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_dimensions'].' </b> '.$myfile['bt_dim_w'].'px × '.$myfile['bt_dim_h'].'px'.'</li>'."\n";
+			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_date'].' </b> '.date_formate($myfile['bt_id']).', '.heure_formate($myfile['bt_id']).'</li>'."\n";
+			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_poids'].' </b> '.taille_formate($myfile['bt_filesize']).'</li>'."\n";
+			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_checksum'].' </b> '.$myfile['bt_checksum'].'</li>'."\n";
+			$form .= "\t".'<li><b>'.$GLOBALS['lang']['label_dp_visibilite'].' </b> '.(($myfile['bt_statut'] == 1) ? 'Publique' : 'Privée').'</li>'."\n";
 		$form .= '</ul>'."\n";
 
 		// Integration codes.
@@ -135,14 +135,14 @@ function afficher_form_fichier($erreurs, $fichiers, $what) { // ajout d’un fic
 		$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<a href="'.$absolute_URI.'">'.$myfile['bt_filename'].'</a>\' />'."\n";
 		// for images
 		if ($myfile['bt_type'] == 'image') {
-			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<img src="'.$absolute_URI.'" alt="i" width="'.$myfile['bt_dim_w'].'" height="'.$myfile['bt_dim_h'].'" />\' />'."\n";
+			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<img src="'.$absolute_URI.'" alt="i" width="'.$myfile['bt_dim_w'].'" height="'.$myfile['bt_dim_h'].'" loading="lazy" />\' />'."\n";
 			//$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<img src="/'.$relativeFilePath.'" alt="i" width="'.$myfile['bt_dim_w'].'" height="'.$myfile['bt_dim_h'].'" />\' />'."\n";
-			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<img src="'.$relativeFilePath.'" alt="i" width="'.$myfile['bt_dim_w'].'" height="'.$myfile['bt_dim_h'].'" />\' />'."\n";
+			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<img src="'.$relativeFilePath.'" alt="i" width="'.$myfile['bt_dim_w'].'" height="'.$myfile['bt_dim_h'].'" loading="lazy" />\' />'."\n";
 			//$form .= '<input onfocus="this.select()" class="text" type="text" value=\'[img]'.$absolute_URI.'[/img]\' />'."\n";
 			//$form .= '<input onfocus="this.select()" class="text" type="text" value=\'[spoiler][img]'.$absolute_URI.'[/img][/spoiler]\' />'."\n";
 
-			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<img src="'.$relativeFilePath.'" alt="i" srcset="'.$relativeFilePath.' '.$myfile['bt_dim_w'].'w, '.substr(chemin_thb_img_test('../'.$relativeFilePath), 3).' 600w" sizes="50vw" class="" />\' />'."\n";
-			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<figure><img src="'.$relativeFilePath.'" alt="i" width="'.$myfile['bt_dim_w'].'" height="'.$myfile['bt_dim_h'].'" /><figcaption></figcaption></figure>\' />'."\n";
+			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<img src="'.$relativeFilePath.'" alt="i" srcset="'.$relativeFilePath.' '.$myfile['bt_dim_w'].'w, '.substr(chemin_thb_img_test('../'.$relativeFilePath), 3).' 600w" sizes="50vw" loading="lazy" class="" />\' />'."\n";
+			$form .= '<input onfocus="this.select()" class="text" type="text" value=\'<figure><img src="'.$relativeFilePath.'" alt="i" width="'.$myfile['bt_dim_w'].'" height="'.$myfile['bt_dim_h'].'" loading="lazy" /><figcaption></figcaption></figure>\' />'."\n";
 
 		// video
 		} elseif ($myfile['bt_type'] == 'video') {
@@ -237,7 +237,7 @@ if (isset($_POST['_verif_envoi'])) {
 
 // DEBUT PAGE
 afficher_html_head($GLOBALS['lang']['titre_fichier'], "files");
-afficher_topnav($GLOBALS['lang']['titre_fichier'], ''); #top
+afficher_topnav($GLOBALS['lang']['titre_fichier']); #top
 
 echo '<div id="axe">'."\n";
 echo '<div id="subnav">'."\n";

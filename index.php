@@ -22,14 +22,6 @@ if ( !file_exists('config/user.ini') or !file_exists('config/prefs.php') ) {
 	die;
 }
 
-// gzip compression
-if (extension_loaded('zlib')) {
-	if (ob_get_length() > 0) {
-		ob_end_clean();
-	}
-	ob_start("ob_gzhandler");
-}
-
 header('Content-Type: text/html; charset=UTF-8');
 
 session_start([

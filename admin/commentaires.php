@@ -9,36 +9,6 @@
 require_once 'inc/boot.php';
 operate_session();
 
-
-
-/*
-$query = "SELECT bt_id, bt_link FROM commentaires";
-$req = $GLOBALS['db_handle']->prepare($query);
-$req->execute(array());
-$result = $req->fetch();
-while ($row = $req->fetch(PDO::FETCH_ASSOC)) {
-	$return[] = $row;
-}
-
-debug($return);
-
-try {
-
-	$GLOBALS['db_handle']->beginTransaction();
-
-	foreach ($return as $i => $com) {
-		$req = $GLOBALS['db_handle']->prepare('UPDATE commentaires SET bt_link=? WHERE bt_id=?');
-		$req->execute(array('#'.article_anchor($com['bt_id']), $com['bt_id']));
-	}
-
-	$GLOBALS['db_handle']->commit();
-
-} catch (Exception $e) {
-	return 'Erreur : '.$e->getMessage();
-}
-
-die('done');*/
-
 setcookie('lastAccessComments', time(), time()+365*24*60*60, null, null, false, true);
 
 
@@ -174,7 +144,7 @@ else {
 
 // DEBUT PAGE
 afficher_html_head($GLOBALS['lang']['titre_commentaires']. ((!empty($article_title)) ?' | '.$article_title : ''), "comments");
-afficher_topnav($GLOBALS['lang']['titre_commentaires'], ''); #top
+afficher_topnav($GLOBALS['lang']['titre_commentaires']); #top
 
 echo '<div id="axe">'."\n";
 echo '<div id="subnav">'."\n";
@@ -219,6 +189,9 @@ if (!empty($article_id)) {
 	echo afficher_form_commentaire($article_id, 'admin', $erreurs_form, '');
 	echo '</div>'."\n";
 }
+
+// popup notif node
+echo "\t".'<span id="popup-notif"><span id="count-posts"><span id="counter"></span></span><span id="message-return"></span></span>'."\n";
 
 echo php_lang_to_js();
 echo "\n".'<script src="style/scripts/javascript.js"></script>'."\n";

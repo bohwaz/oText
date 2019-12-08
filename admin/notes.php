@@ -62,7 +62,7 @@ $nb_notes_displayed = count($tableau);
 
 // DEBUT PAGE
 afficher_html_head($GLOBALS['lang']['mesnotes'], "notes");
-afficher_topnav($GLOBALS['lang']['mesnotes'], ''); #top
+afficher_topnav($GLOBALS['lang']['mesnotes']); #top
 
 echo '<div id="axe">'."\n";
 echo '<div id="subnav">'."\n";
@@ -76,11 +76,11 @@ $out_html .= '<div id="page">'."\n";
 $out_html .= "\t".'<div id="popup-wrapper" hidden>'."\n";
 $out_html .= "\t\t".'<div id="popup" class="popup-note" style="" data-ispinned="" data-isarchived="">'."\n";
 $out_html .= "\t\t\t".'<div class="popup-title">'."\n";
-$out_html .= "\t\t\t\t".'<h2 contenteditable="true">Title</h2>'."\n";
+$out_html .= "\t\t\t\t".'<h2 contenteditable="true" tabindex="1">Title</h2>'."\n";
 $out_html .= "\t\t\t\t".'<button type="button" class="archiveIcon" title="'.$GLOBALS['lang']['archiver'].'"></button>'."\n";
 $out_html .= "\t\t\t\t".'<button type="button" class="pinnedIcon" title="'.$GLOBALS['lang']['epingler'].'"></button>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
-$out_html .= "\t\t\t".'<textarea class="popup-content" cols="30" rows="8" placeholder="Content"></textarea>'."\n";
+$out_html .= "\t\t\t".'<textarea class="popup-content" cols="30" rows="8" placeholder="Content" tabindex="1"></textarea>'."\n";
 $out_html .= "\t\t\t".'<div class="popup-footer">'."\n";
 $out_html .= "\t\t\t\t".'<div class="date"></div>'."\n";
 $out_html .= "\t\t\t\t".'<button type="button" class="colorIcon"></button>'."\n";
@@ -98,7 +98,7 @@ $out_html .= "\t\t\t\t".'</ul>'."\n";
 $out_html .= "\t\t\t\t".'<button type="button" class="supprIcon"></button>'."\n";
 $out_html .= "\t\t\t\t".'<span class="submit-bttns">'."\n";
 $out_html .= "\t\t\t\t\t".'<button class="submit button-cancel" type="button">'.$GLOBALS['lang']['annuler'].'</button>'."\n";
-$out_html .= "\t\t\t\t\t".'<button class="submit button-submit" type="button" name="editer">'.$GLOBALS['lang']['enregistrer'].'</button>'."\n";
+$out_html .= "\t\t\t\t\t".'<button class="submit button-submit" type="button" name="editer" tabindex="1">'.$GLOBALS['lang']['enregistrer'].'</button>'."\n";
 $out_html .= "\t\t\t\t".'</span>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
 $out_html .= "\t\t".'</div>'."\n";

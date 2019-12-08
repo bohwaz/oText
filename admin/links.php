@@ -11,143 +11,150 @@ operate_session();
 
 
 /// Formulaire pour ajouter un lien dans Links côté Admin
-function afficher_form_link($step, $erreurs, $editlink='') {
+function afficher_form_link($erreurs, $editlink='') {
 	if ($erreurs) {
 		echo erreurs($erreurs);
 	}
 	$form = '';
-	if ($step == 1) { // postage de l'URL : un champ affiché en GET
+
+	// Affichage du formulaire simple-champ pour poster un nouveau lien (et les anciels liens en dessous)
+	if (!isset($_GET['url']) and !isset($_GET['id'])) {
 		$form .= '<form method="get" id="post-new-lien" action="'.basename($_SERVER['SCRIPT_NAME']).'">'."\n";
 		$form .= '<fieldset>'."\n";
 		$form .= "\t".'<div class="contain-input">'."\n";
 		$form .= "\t\t".'<label for="url">'.$GLOBALS['lang']['label_nouv_lien'].'</label>'."\n";
-		$form .= "\t\t".'<input type="text" name="url" id="url" value="" size="70" placeholder="'.$GLOBALS['lang']['label_nouv_lien'].'" class="text" autocomplete="off" tabindex="10" />'."\n";
+		$form .= "\t\t".'<input type="text" inputmode="url" name="url" id="url" value="" size="70" placeholder="'.$GLOBALS['lang']['label_nouv_lien'].'" class="text" autocomplete="off" tabindex="10" />'."\n";
+		$form .= "\t\t".'<button type="submit" class="submit">'.$GLOBALS['lang']['envoyer'].'</button>'."\n";
 		$form .= "\t".'</div>'."\n";
-		//$form .= "\t".'<p class="submit-bttns"><button type="submit" class="submit button-submit">'.$GLOBALS['lang']['envoyer'].'</button></p>'."\n";
 		$form .= '</fieldset>'."\n";
 		$form .= '</form>'."\n\n";
+	}
 
-	} elseif ($step == 2) { // Form de l'URL, avec titre, description, en POST cette fois, et qu'il faut vérifier avant de stoquer dans la BDD.
-		$form .= '<form method="post" id="post-lien" action="'.basename($_SERVER['SCRIPT_NAME']).'">'."\n";
 
-		$url = $_GET['url'];
-		$type = 'url';
-		$title = $url;
+	// affichage du formulaire complet, soit d’ajout, soit d’édition.
+	else {
+		$get_id = '';
+		$url = '';
+		$url_hidden = '';
+		$type = 'link';
+		$title = '';
 		$charset = "UTF-8";
-		$new_id = date('YmdHis');
+		$new_id = '';
+		$content = '';
+		$HTML = '';
+		$tags = '';
+		$checked = '';
+		$HTML_submit = '';
+		$HTML_suppr = '';
 
-		// URL is empty or no URI. It’s a note: we hide the URI field.
-		if (empty($url) or (strpos($url, 'http') !== 0) ) {
-			$type = 'note';
-			$title = 'Note'.(!empty($url) ? ' : '.html_entity_decode( $url, ENT_QUOTES | ENT_HTML5, 'UTF-8') : '');
-			$url = $GLOBALS['racine'].'?mode=links&amp;id='.$new_id;
-			$form .= hidden_input('url', $url);
-			$form .= hidden_input('type', 'note');
-		// URL is not empty
-		} else {
-			// Find out type of file
-			$response = request_external_files(array($url => '1'), 15, false);
-			$ext_file = $response[1];
-			$rep_hdr = $ext_file['headers'];
-			$cnt_type = (isset($rep_hdr['content-type'])) ? (is_array($rep_hdr['content-type']) ? $rep_hdr['content-type'][count($rep_hdr['content-type'])-1] : $rep_hdr['content-type']) : 'text/';
-			$cnt_type = (is_array($cnt_type)) ? $cnt_type[0] : $cnt_type;
+		// ajout d’un lien : on récupère le titre du lien, etc.
+		if (isset($_GET['url'])) {
+			$new_id = date('YmdHis');
+			$HTML_submit = "\t\t".'<button class="submit button-submit" type="submit" name="enregistrer" tabindex="4">'.$GLOBALS['lang']['envoyer'].'</button>'."\n";
+			$url = htmlspecialchars($_GET['url']);
 
-			// Image
-			if (strpos($cnt_type, 'image/') === 0) {
-				$filename = basename(parse_url($url, PHP_URL_PATH));
-				$title = $filename.' ('.$GLOBALS['lang']['label_image'].')';
-				if (list($width, $height) = @getimagesize($url)) {
-					$fdata = $url;
-					$type = 'image';
-					$title .= ' - '.$width.'x'.$height.'px ';
+			// URL is empty or no URI. It’s a note: we hide the URI field.
+
+			if (empty($url) or (strpos($url, 'http') !== 0) ) {
+				$type = 'note';
+				$title = 'Note'.(!empty($url) ? ' : '.html_entity_decode( $url, ENT_QUOTES | ENT_HTML5, 'UTF-8') : '');
+				$url = $GLOBALS['racine'].'?mode=links&amp;id='.$new_id;
+				$url_hidden = 'hidden';
+
+			// URL is not empty
+			} else {
+				// Find out type of file
+				$response = request_external_files(array($url => '1'), 15, false);
+				$ext_file = $response[1];
+				$rep_hdr = $ext_file['headers'];
+				$cnt_type = (isset($rep_hdr['content-type'])) ? (is_array($rep_hdr['content-type']) ? $rep_hdr['content-type'][count($rep_hdr['content-type'])-1] : $rep_hdr['content-type']) : 'text/';
+				$cnt_type = (is_array($cnt_type)) ? $cnt_type[0] : $cnt_type;
+
+				// Image
+				if (strpos($cnt_type, 'image/') === 0) {
+					$filename = basename(parse_url($url, PHP_URL_PATH));
+					$title = $filename.' ('.$GLOBALS['lang']['label_image'].')';
+					if (list($width, $height) = @getimagesize($url)) {
+						$fdata = $url;
+						$title .= ' - '.$width.'x'.$height.'px ';
+					}
 				}
+
+				// a HTML document: parse it for any <title> ; fallback : $url
+				elseif (!empty($ext_file['body'])) {
+					libxml_use_internal_errors(true);
+					$dom = new DOMDocument();
+					$dom->strictErrorChecking = FALSE;
+					$dom->loadHTML(mb_convert_encoding($ext_file['body'], 'HTML-ENTITIES',  $charset));
+					//$dom->loadHTML($ext_file['body']);
+					$elements = $dom->getElementsByTagName('title');
+					if ($elements->length > 0) {
+						$title = trim($elements->item(0)->textContent);
+					}
+
+					libxml_use_internal_errors(false);
+				}
+
+				$title = htmlspecialchars($title);
 			}
 
-			// Non-image NON-textual file (pdf…)
-			elseif (strpos($cnt_type, 'text/') !== 0 and strpos($cnt_type, 'xml') === FALSE) {
-				if ($GLOBALS['dl_link_to_files'] == 2) {
-					$type = 'file';
-				}
-			}
-
-			// a HTML document: parse it for any <title> ; fallback : $url
-			elseif (!empty($ext_file['body'])) {
-				libxml_use_internal_errors(true);
-				$dom = new DOMDocument();
-				$dom->strictErrorChecking = FALSE;
-				//$dom->loadHTML(mb_convert_encoding($ext_file['body'], 'HTML-ENTITIES',  'UTF-8'));
-				$dom->loadHTML($ext_file['body']);
-				$elements = $dom->getElementsByTagName('title');
-				if ($elements->length > 0) {
-					$title = trim($elements->item(0)->textContent);
-				}
-				libxml_use_internal_errors(false);
-			}
-
-			$form .= "\t".'<input type="text" name="url" value="'.htmlspecialchars($url).'" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_url']).'" size="50" class="text readonly-like" />'."\n";
-			$form .= hidden_input('type', 'link');
 		}
 
-		$link = array('title' => htmlspecialchars($title), 'url' => htmlspecialchars($url));
-		$form .= "\t".'<input type="text" name="title" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_titre']).'" required="" value="'.$link['title'].'" size="50" class="text" autofocus />'."\n";
 
-		$form .= "\t".'<textarea class="text description" name="description" cols="40" rows="7" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_description']).'"></textarea>'."\n";
-
-		$form .= "\t".'<div id="tag_bloc">'."\n";
-		$form .= form_categories_links('links', '');
-		$form .= "\t".'<input list="htmlListTags" type="text" class="text" id="type_tags" name="tags" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_tags']).'"/>'."\n";
-		$form .= "\t".'<input type="hidden" id="categories" name="categories" value="" />'."\n";
-		$form .= "\t".'</div>'."\n";
-
-		$form .= "\t".'<p>'."\n";
-		$form .= "\t\t".'<input type="checkbox" name="statut" id="statut" class="checkbox" />'.'<label class="forcheckbox" for="statut">'.$GLOBALS['lang']['label_lien_priv'].'</label>'."\n";
-		$form .= "\t".'</p>'."\n";
-		if ($type == 'image' or $type == 'file') {
-			// download of file is asked
-			$form .= "\t".'<p>'."\n";
-			if ($GLOBALS['dl_link_to_files'] == 2)
-			$form .= "\t\t".'<input type="checkbox" name="add_to_files" id="add_to_files" class="checkbox" />'.'<label class="forcheckbox" for="add_to_files">'.$GLOBALS['lang']['label_dl_fichier'].'</label>'."\n";
-			// download of file is systematic
-			elseif ($GLOBALS['dl_link_to_files'] == 1)
-			$form .= hidden_input('add_to_files', 'on');
-			$form .= "\t".'</p>'."\n";
+		// édition d’un lien, dont l’ID est dans l’URL
+		elseif (isset($_GET['id']) and preg_match('#\d{14}#', $_GET['id'])) {
+			$get_id = '?id='.$editlink['bt_id'];
+			$new_id = $editlink['bt_id'];
+			$HTML .= hidden_input('is_it_edit', 'yes');
+			$HTML .= hidden_input('ID', $editlink['ID']);
+			$type = $editlink['bt_type'];
+			$title = $editlink['bt_title'];
+			$url = $editlink['bt_link'];
+			$content = $editlink['bt_wiki_content'];
+			$tags = $editlink['bt_tags'];
+			$checked = (($editlink['bt_statut'] == 0) ? 'checked ' : '');
+			$HTML_submit = "\t\t".'<button class="submit button-submit" type="submit" name="editer" id="valid-link" tabindex="4">'.$GLOBALS['lang']['envoyer'].'</button>'."\n";
+			$HTML_suppr = "\t\t".'<button class="submit button-delete" type="button" name="supprimer" onclick="rmArticle(this)">'.$GLOBALS['lang']['supprimer'].'</button>'."\n";
 		}
-		$form .= "\t".'<p class="submit-bttns">'."\n";
-		$form .= "\t\t".'<button class="submit button-cancel" type="button" onclick="goToUrl(\'links.php\');">'.$GLOBALS['lang']['annuler'].'</button>'."\n";
-		$form .= "\t\t".'<button class="submit button-submit" type="submit" name="enregistrer" id="valid-link">'.$GLOBALS['lang']['envoyer'].'</button>'."\n";
-		$form .= "\t".'</p>'."\n";
-		$form .= hidden_input('_verif_envoi', '1');
-		$form .= hidden_input('bt_id', $new_id);
-		$form .= hidden_input('token', new_token());
-		$form .= hidden_input('dossier', '');
-		$form .= '</form>'."\n\n";
 
-	} elseif ($step == 'edit') { // Form pour l'édition d'un lien : les champs sont remplis avec le "wiki_content" et il y a les boutons suppr/activer en plus.
-		$form = '<form method="post" id="post-lien" action="'.basename($_SERVER['SCRIPT_NAME']).'?id='.$editlink['bt_id'].'">'."\n";
-		$form .= "\t".'<input type="text" name="url" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_url']).'" required="" value="'.$editlink['bt_link'].'" size="70" class="text readonly-like" />'."\n";
-		$form .= "\t".'<input type="text" name="title" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_titre']).'" required="" value="'.$editlink['bt_title'].'" size="70" class="text" autofocus />'."\n";
-		$form .= "\t".'<textarea class="description text" name="description" cols="70" rows="7" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_description']).'" >'.$editlink['bt_wiki_content'].'</textarea>'."\n";
+
+
+		$form .= '<form method="post" id="post-lien" action="'.basename($_SERVER['SCRIPT_NAME']).$get_id.'">'."\n";
+
+		$form .= "\t".'<input type="text" name="url" value="'.$url.'" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_url']).'" size="50" class="text readonly-like" required="" inputmode="url" '.$url_hidden.' />'."\n";
+		$form .= "\t".'<input type="text" name="title" value="'.$title.'" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_titre']).'" size="50" class="text" required="" autofocus tabindex="1" />'."\n";
+
+		$form .= "\t".'<fieldset class="field">'."\n";
+		$form .= form_formatting_toolbar(FALSE);
+		$form .= "\t".'<textarea class="text description" name="description" cols="40" rows="7" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_description']).'" tabindex="2">'.$content.'</textarea>'."\n";
+		$form .= "\t".'</fieldset>'."\n";
+
+
 		$form .= "\t".'<div id="tag_bloc">'."\n";
-		$form .= form_categories_links('links', $editlink['bt_tags']);
-		$form .= "\t\t".'<input list="htmlListTags" type="text" class="text" id="type_tags" name="tags" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_tags']).'"/>'."\n";
+		$form .= "\t\t".form_categories_links('links', $tags);
+		$form .= "\t\t".'<input list="htmlListTags" type="text" class="text" id="type_tags" name="tags" placeholder="'.ucfirst($GLOBALS['lang']['placeholder_tags']).'" tabindex="3" />'."\n";
 		$form .= "\t\t".'<input type="hidden" id="categories" name="categories" value="" />'."\n";
 		$form .= "\t".'</div>'."\n";
 		$form .= "\t".'<p>'."\n";
-		$form .= "\t\t".'<input type="checkbox" name="statut" id="statut" class="checkbox" '.(($editlink['bt_statut'] == 0) ? 'checked ' : '').'/>'.'<label class="forcheckbox" for="statut">'.$GLOBALS['lang']['label_lien_priv'].'</label>'."\n";
+		$form .= "\t\t".'<input type="checkbox" name="statut" id="statut" class="checkbox" '.$checked.' />'.'<label class="forcheckbox" for="statut">'.$GLOBALS['lang']['label_lien_priv'].'</label>'."\n";
 		$form .= "\t".'</p>'."\n";
 		$form .= "\t".'<p class="submit-bttns">'."\n";
-		$form .= "\t\t".'<button class="submit button-delete" type="button" name="supprimer" onclick="rmArticle(this)">'.$GLOBALS['lang']['supprimer'].'</button>'."\n";
+		$form .= $HTML_suppr;
 		$form .= "\t\t".'<button class="submit button-cancel" type="button" onclick="goToUrl(\'links.php\');">'.$GLOBALS['lang']['annuler'].'</button>'."\n";
-		$form .= "\t\t".'<button class="submit button-submit" type="submit" name="editer">'.$GLOBALS['lang']['envoyer'].'</button>'."\n";
+		$form .= $HTML_submit;
 		$form .= "\t".'</p>'."\n";
-		$form .= hidden_input('ID', $editlink['ID']);
-		$form .= hidden_input('bt_id', $editlink['bt_id']);
+
+		$form .= $HTML;
+		$form .= hidden_input('bt_id', $new_id);
 		$form .= hidden_input('_verif_envoi', '1');
-		$form .= hidden_input('is_it_edit', 'yes');
 		$form .= hidden_input('token', new_token());
-		$form .= hidden_input('type', $editlink['bt_type']);
+		$form .= hidden_input('type', $type);
+
 		$form .= '</form>'."\n\n";
+
+
 	}
+
 	return $form;
 }
 
@@ -187,36 +194,11 @@ function afficher_lien($link) {
 
 
 // TRAITEMENT
-$step = 0;
 $erreurs_form = array();
-if (!isset($_GET['url'])) { // rien : on affiche le premier FORM
-	$step = 1;
-} else { // URL donné dans le $_GET
-	$step = 2;
-}
-if (isset($_GET['id']) and preg_match('#\d{14}#', $_GET['id'])) {
-	$step = 'edit';
-}
-
 if (isset($_POST['_verif_envoi'])) {
 	$link = init_post_link2();
 	$erreurs_form = valider_form_link($link);
-	$step = 'edit';
 	if (empty($erreurs_form)) {
-
-		// URL est un fichier !html !js !css !php ![vide] && téléchargement de fichiers activé :
-		if (!isset($_POST['is_it_edit']) and $GLOBALS['dl_link_to_files'] >= 1) {
-
-			// dl_link_to_files : 0 = never ; 1 = always ; 2 = ask with checkbox
-			if ( isset($_POST['add_to_files']) ) {
-				$_POST['fichier'] = $link['bt_link'];
-				$fichier = init_post_fichier();
-				$erreurs = valider_form_fichier($fichier);
-				if (empty($erreurs)) {
-					traiter_form_fichier($fichier);
-				}
-			}
-		}
 		traiter_form_link($link);
 	}
 }
@@ -262,29 +244,30 @@ if (!isset($_GET['url']) and !isset($_GET['ajout'])) {
 
 // DEBUT PAGE
 afficher_html_head($GLOBALS['lang']['mesliens'], "links");
-afficher_topnav($GLOBALS['lang']['mesliens'], ''); #top
+afficher_topnav($GLOBALS['lang']['mesliens']); #top
 
 echo '<div id="axe">'."\n";
 echo '<div id="subnav">'."\n";
 	// Affichage formulaire filtrage liens
 	afficher_form_filtre('links', (isset($_GET['filtre'])) ? htmlspecialchars($_GET['filtre']) : '');
-	if ($step != 'edit' and $step != 2) {
-		echo "\t".'<div class="nombre-elem">';
-		echo "\t\t".ucfirst(nombre_objets(count($tableau), 'link')).' '.$GLOBALS['lang']['sur'].' '.liste_elements_count("SELECT count(*) AS nbr FROM links", array())."\n";
-		echo "\t".'</div>'."\n";
-	}
+	echo "\t".'<div class="nombre-elem">';
+	echo "\t\t".ucfirst(nombre_objets(count($tableau), 'link')).' '.$GLOBALS['lang']['sur'].' '.liste_elements_count("SELECT count(*) AS nbr FROM links", array())."\n";
+	echo "\t".'</div>'."\n";
 echo '</div>'."\n";
 
 echo '<div id="page">'."\n";
 
-if ($step == 'edit' and !empty($tableau[0]) ) { // edit un lien : affiche le lien au dessus du champ d’édit
-	echo afficher_form_link($step, $erreurs_form, $tableau[0]);
+// edit un lien : affiche le formulaire d’édition
+if (isset($_GET['id']) and preg_match('#\d{14}#', $_GET['id']) and !empty($tableau[0]) ) {
+	echo afficher_form_link($erreurs_form, $tableau[0]);
 }
-elseif ($step == 2) { // lien donné dans l’URL
-	echo afficher_form_link($step, $erreurs_form);
+// ajout d’un lien : affiche le formulaire ajout.
+elseif (isset($_GET['url'])) {
+	echo afficher_form_link($erreurs_form);
 }
-else { // aucun lien à ajouter ou éditer : champ nouveau lien + listage des liens en dessus.
-	echo afficher_form_link(1, $erreurs_form);
+// aucun lien à ajouter ou éditer : champ nouveau lien + listage des liens en dessus.
+else {
+	echo afficher_form_link($erreurs_form);
 	echo '<div id="list-link">';
 	foreach ($tableau as $link) {
 		echo "\n".afficher_lien($link);
@@ -295,12 +278,13 @@ else { // aucun lien à ajouter ou éditer : champ nouveau lien + listage des li
 echo php_lang_to_js();
 echo "\n".'<script src="style/scripts/javascript.js"></script>'."\n";
 echo '<script>'."\n";
-if ($step == 1) {
+if (!isset($_GET['url']) and !isset($_GET['id']) ) {
 	echo 'document.getElementById(\'url\').addEventListener(\'focus\', function(){ document.getElementById(\'post-new-lien\').classList.add(\'focusedField\'); }, false);'."\n";
 	echo 'document.getElementById(\'post-new-lien\').addEventListener(\'click\', function(){ document.getElementById(\'url\').focus(); }, false);'."\n";
 	echo 'document.getElementById(\'url\').addEventListener(\'blur\', function(){ document.getElementById(\'post-new-lien\').classList.remove(\'focusedField\'); }, false);'."\n";
 } else {
 	echo 'handleTags(\'post-lien\', \'type_tags\', \'categories\', \'selected\');'."\n";
+	echo 'new writeForm();'."\n";
 }
 echo '</script>';
 

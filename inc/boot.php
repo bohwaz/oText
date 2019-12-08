@@ -89,6 +89,7 @@ if (file_exists(FILE_SETTINGS)) { require_once FILE_SETTINGS; }
 // GLOBAL TIMEZONE (from prefs)
 date_default_timezone_set($GLOBALS['fuseau_horaire']);
 
+
 // Constantes: URL
 define('URL_ROOT', $GLOBALS['racine'] . ((strrpos($GLOBALS['racine'], '/', -1) === false) ? '/' : '' ));
 

@@ -40,6 +40,7 @@
 		height: 48px;
 		position: absolute;
 		opacity: 0;
+		box-sizing: border-box;
 	}
 
 	#label_q {
@@ -166,11 +167,9 @@
 
 	#list-notes .notebloc {
 		display: block;
-		height: auto;
 		width: auto;
-		font-size: 1em;
 		margin: 15px 0;
-		max-height: 500px;
+		max-height: none;
 	}
 
 	#list-notes	.notebloc .content {

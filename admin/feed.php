@@ -13,7 +13,7 @@ $GLOBALS['liste_flux'] = open_serialzd_file(FEEDS_DB);
 
 // DEBUT PAGE
 afficher_html_head($GLOBALS['lang']['mesabonnements'], "feeds");
-afficher_topnav($GLOBALS['lang']['mesabonnements'], ''); #top
+afficher_topnav($GLOBALS['lang']['mesabonnements']); #top
 
 echo '<div id="axe">'."\n";
 echo '<div id="page">'."\n";
@@ -56,7 +56,7 @@ $out_html .= "\t\t\t".'<ul id="post-list">'."\n";
 $out_html .= "\t\t\t\t".'<li id="" data-datetime="" data-id="" data-sitehash="" data-is-fav="" data-folder="" hidden>'."\n";
 $out_html .= "\t\t\t\t\t".'<div class="post-head">'."\n";
 $out_html .= "\t\t\t\t\t\t".'<a href="#" class="lien-fav"></a>'."\n";
-$out_html .= "\t\t\t\t\t\t".'<div class="folder"></div>'."\n";
+$out_html .= "\t\t\t\t\t\t".'<span class="folder"></span>'."\n";
 $out_html .= "\t\t\t\t\t\t".'<a href="#" title="" class="post-title" target="_blank" data-id=""></a>'."\n";
 $out_html .= "\t\t\t\t\t\t".'<div class="meta">'."\n";
 $out_html .= "\t\t\t\t\t\t\t".'<span class="site"></span><time class="date"></time>'."\n";

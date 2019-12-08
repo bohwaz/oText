@@ -250,7 +250,7 @@ if (isset($_POST['_verif_envoi'])) {
 
 // DEBUT PAGE
 afficher_html_head($GLOBALS['lang']['preferences'], "preferences");
-afficher_topnav($GLOBALS['lang']['preferences'], ''); #top
+afficher_topnav($GLOBALS['lang']['preferences']); #top
 
 echo '<div id="axe">'."\n";
 echo '<div id="page">'."\n";

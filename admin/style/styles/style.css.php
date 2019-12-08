@@ -63,6 +63,9 @@ readfile('style-mobile-lt850px.css');
 /* Media-queries < 700px */
 readfile('style-mobile-lt700px.css');
 
+/* Dark theme */
+readfile('style-dark.css');
+
 /* Custon UserCSS */
 if (is_file('../../../config/custom-styles.css')) {
 	readfile('../../../config/custom-styles.css');

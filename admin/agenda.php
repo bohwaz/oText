@@ -59,7 +59,7 @@ $nb_events_displayed = count($tableau);
 
 // DEBUT PAGE
 afficher_html_head($GLOBALS['lang']['monagenda'], "agenda"); // <head></head>
-afficher_topnav($GLOBALS['lang']['monagenda'], ''); // #header #top
+afficher_topnav($GLOBALS['lang']['monagenda']); // #header #top
 
 echo '<div id="axe">'."\n";
 
@@ -103,11 +103,16 @@ $out_html .= "\t\t\t\t".'<button class="submit button-cancel" type="button"></bu
 $out_html .= "\t\t\t".'</div>'."\n";
 $out_html .= "\t\t\t".'<div class="popup-content event-content">'."\n";
 $out_html .= "\t\t\t".'<div class="event-content-date">'."\n";
-$out_html .= "\t\t\t\t".'<p><input type="checkbox" name="allDay" id="allDay" class="checkbox-toggle"><label for="allDay">'.$GLOBALS['lang']['question_entire_day'].'</label></p>'."\n";
+$out_html .= "\t\t\t\t".'<p class="date-time-allday">'."\n";
+$out_html .= "\t\t\t\t\t".'<input type="checkbox" name="allDay" id="allDay" class="checkbox-toggle"><label for="allDay">'.$GLOBALS['lang']['question_entire_day'].'</label>'."\n";
+$out_html .= "\t\t\t\t".'</p>'."\n";
 $out_html .= "\t\t\t\t".'<p class="date-time-input">'."\n";
-$out_html .= "\t\t\t\t\t".'<label for="date"><input class="text" type="date" required="" name="date" id="date"></label>'."\n";
-$out_html .= "\t\t\t\t\t".'<label for="time-start"><input class="text" type="time" required="" name="time-start" id="time-start"></label>'."\n";
-$out_html .= "\t\t\t\t\t".'<label for="time-end"><input class="text" type="time" required="" name="time-end" id="time-end"></label>'."\n";
+$out_html .= "\t\t\t\t\t".'<label for="date-start"><input class="text" type="date" required="" name="date-start" id="date-start" /></label>'."\n";
+$out_html .= "\t\t\t\t\t".'<label for="time-start"><input class="text" type="time" required="" name="time-start" id="time-start" /></label>'."\n";
+$out_html .= "\t\t\t\t".'</p>'."\n";
+$out_html .= "\t\t\t\t".'<p class="date-time-input">'."\n";
+$out_html .= "\t\t\t\t\t".'<label for="date-end"><input class="text" type="date" required="" name="date-end" id="date-end" /></label>'."\n";
+$out_html .= "\t\t\t\t\t".'<label for="time-end"><input class="text" type="time" required="" name="time-end" id="time-end" /></label>'."\n";
 $out_html .= "\t\t\t\t".'</p>'."\n";
 $out_html .= "\t\t\t".'</div>'."\n";
 $out_html .= "\t\t\t".'<div class="event-content-loc">'."\n";
@@ -175,7 +180,7 @@ $out_html .= "\t\t\t\t\t".'<tr class="monthrow">'."\n";
 $out_html .= "\t\t\t\t\t\t".'<td id="changeYear" colspan="4"><button id="show-full-year"></button><span></span></td>'."\n";
 $out_html .= "\t\t\t\t\t\t".'<td id="month" colspan="3"><button id="prev-month"></button><span></span><button id="next-month"></button></td>'."\n";
 $out_html .= "\t\t\t\t\t".'</tr>'."\n";
-$out_html .= "\t\t\t\t\t".'<tr class="dayAbbr">'; for ($i=0 ; $i<7 ; $i++) { $out_html .= '<th>'.$GLOBALS['lang']['days_abbr_narrow'][$i].'</th>';} $out_html .= "\t\t\t\t\t".'</tr>'."\n";
+$out_html .= "\t\t\t\t\t".'<tr class="dayAbbr">'; for ($i=0 ; $i<7 ; $i++) { $out_html .= '<th>'.$GLOBALS['lang']['days_abbr'][$i].'</th>';} $out_html .= "\t\t\t\t\t".'</tr>'."\n";
 $out_html .= "\t\t\t\t".'</thead>'."\n";
 $out_html .= "\t\t\t\t".'<tbody class="month-mode"></tbody>'."\n";
 $out_html .= "\t\t\t\t".'<thead class="year-mode">'."\n";

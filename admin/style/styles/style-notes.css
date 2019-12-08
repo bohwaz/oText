@@ -19,26 +19,24 @@
 #post-new-note .contain::before {
 	content: "\e3de";
 	font-size: 1.3em;
-	color: rgba(0, 0, 0, .5);
 	margin-right: 10px;
 	line-height: inherit;
 }
 
 #post-new-note .contain {
 	line-height: 3em;
-	color: rgba(0, 0, 0, .3);
+	opacity: .7;
 }
 
 .notebloc {
-	max-height: 300px;
+	max-height: 303px;
 	width: 240px;
 	vertical-align: text-top;
 	display: inline-flex; 
 	flex-direction: column;
 	transition: box-shadow .2s ease-in;
 	margin: 10px;
-	padding: 0 0 50px;
-	text-align: left;
+	padding: 0 0 15px;
 	border-radius: 5px;
 	position: relative;
 }

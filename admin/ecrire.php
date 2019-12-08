@@ -147,7 +147,7 @@ if ( !empty($post) ) {
 
 // DEBUT PAGE
 afficher_html_head($titre_ecrire, 'ecrire');
-afficher_topnav($titre_ecrire_court, ''); #top
+afficher_topnav($titre_ecrire_court); #top
 
 echo '<div id="axe">'."\n";
 if (!empty($post)) {

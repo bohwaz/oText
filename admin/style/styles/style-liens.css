@@ -42,35 +42,40 @@
 	opacity: 1;
 }
 
-#post-new-lien:hover,
-#post-new-note:hover {
-	color: #333;
-}
-
 #post-new-lien .contain-input {
 	display: flex;
 	align-items: center;
 }
 
 #post-new-lien label[for="url"] {
-	width: 24px;
 	height: 24px;
 	overflow: hidden;
+	flex: 0 0 24px;
 }
 
 #post-new-lien label[for="url"]::before {
 	content: "\e894";
 	font-size: 1.3em;
 	line-height: 24px;
-	color: rgba(0, 0, 0, .5);
+	opacity: .5;
 }
 
 #post-new-lien #url {
-	width: 100%;
-	min-width: 0;
-	background: white;
+	width: 50px;
+	background: inherit;
 	box-shadow: none;
 	border: none;
+	flex: 1 1 auto;
+}
+
+#post-new-lien .submit {
+	color: silver;
+	flex: 0;
+	margin-left: 5px;
+}
+
+#post-new-lien #url:not(:placeholder-shown)+.submit {
+	color: inherit;
 }
 
 /* Form new link (title, descr, tags…)
@@ -81,7 +86,7 @@
 	max-width: 100%;
 	padding: 0 0 20px;
 	box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.3);
-	background: white;
+	background: var(--md-card-color);
 	display: flex;
 	flex-direction: column;
 	resize: both;
@@ -99,12 +104,24 @@
 #post-lien .text {
 	max-width: 100%;
 	box-shadow: none;
+	border-radius: 0;
+}
+
+#post-lien .text:focus {
+	border-radius: 0;
 }
 
 #post-lien textarea {
-	min-height: 130px;
 	resize: none;
 	height: 100%;
+	height: calc(100% - 5px)
+}
+
+#post-lien fieldset {
+	padding-top: 42px;
+	min-height: 130px;
+	height: 100%;
+	position: relative;
 }
 
 #post-lien > p {
@@ -121,7 +138,6 @@
 .linkbloc {
 	position: relative;
 	z-index: 1;
-	color: #444;
 	margin: 20px auto;
 	padding: 0;
 	page-break-inside: avoid;
@@ -145,7 +161,6 @@
 }
 
 .linkbloc:hover {
-	color: #333;
 	z-index: 10;
 }
 
@@ -159,7 +174,7 @@
 
 .linkbloc.privatebloc {
     border-left: 10px #555 solid;
-    background: rgba(0, 0, 0, .02);
+    filter: brightness(.8) opacity(.8);
 }
 
 .linkbloc .link-header,
@@ -174,7 +189,7 @@
 	padding-top: 5px;
 	padding-bottom: 5px;
 	padding-right: 5px;
-	border-bottom: 1px solid #eee;
+	/*border-bottom: 1px solid #eee;*/
 }
 
 .linkbloc .date {
@@ -189,7 +204,7 @@
 .linkbloc .titre-lien {
 	text-decoration: none;
 	font-weight: bold;
-	color: #333;
+	color: inherit;
 	flex: 0 1 auto;
 	display: block;
 }
@@ -207,11 +222,15 @@
 .linkbloc .hard-link {
 	word-break: break-all;
 }
-
+/* LINKS : link content
+--------------------------------*/
+.linkbloc .link-content p {
+	opacity: .9;
+}
 /* LINKS : link footer
 --------------------------------*/
 .linkbloc .link-footer {
-	background-color: rgba(0, 0, 0, .05);
+	/*background-color: var(--md-card-color-hover);*/
 	border-top: #eee;
 	border-bottom-left-radius: inherit;
 	border-bottom-right-radius: inherit;
@@ -247,5 +266,9 @@
 	margin: 0 0 2px 25%;
 	padding-left: 21px;
 	line-height: 19px;
+}
+
+#post-lien #type_tags {
+	margin-bottom: 0;
 }
 

@@ -119,7 +119,8 @@ function create_tables() {
 			bt_color TINYTEXT,
 			bt_event_loc TEXT,
 			bt_title TEXT,
-			bt_content TEXT
+			bt_content TEXT,
+			bt_persons TEXT
 		); CREATE INDEX $if_not_exists dateE ON agenda ( bt_id );";
 
 	$dbase_structure['contacts'] = "CREATE TABLE IF NOT EXISTS contacts

@@ -37,7 +37,7 @@ function footer($begin_time='') {
 }
 
 /// menu haut panneau admin /////////
-function afficher_topnav($titre, $html_sub_menu) {
+function afficher_topnav($titre, $html_sub_menu='') {
 	$tab = pathinfo($_SERVER['SCRIPT_NAME'], PATHINFO_BASENAME);
 	if (strlen($titre) == 0) $titre = BLOGOTEXT_NAME;
 
@@ -89,18 +89,14 @@ function afficher_topnav($titre, $html_sub_menu) {
 
 	$html .= "\t".'</div>'."\n";
 
-	// Sub-menu-bar (for RSS, notes, agenda…)
-	$html .= $html_sub_menu;
-
 	// Popup node
 	if (isset($_GET['msg']) and array_key_exists($_GET['msg'], $GLOBALS['lang']) ) {
 		$message = $GLOBALS['lang'][$_GET['msg']];
-		$message .= (isset($_GET['nbnew'])) ? htmlspecialchars($_GET['nbnew']).' '.$GLOBALS['lang']['rss_nouveau_flux'] : ''; // nb new RSS
-		$html .= '<div class="confirmation">'.$message.'</div>'."\n";
+		$html .= '<span id="popup-notif" class="fading"><span id="message-return">'.$message.'</span></span>'."\n";
 
 	} elseif (isset($_GET['errmsg']) and array_key_exists($_GET['errmsg'], $GLOBALS['lang'])) {
 		$message = $GLOBALS['lang'][$_GET['errmsg']];
-		$html .= '<div class="no_confirmation">'.$message.'</div>'."\n";
+		$html .= '<span id="popup-notif" class="visible"><span id="message-return">'.$message.'</span></span>'."\n";
 	}
 
 	$html .= '</header>'."\n";
@@ -181,7 +177,7 @@ function moteur_recherche() {
 		$requete = htmlspecialchars(stripslashes($_GET['q']));
 	}
 	$return  = "\t\t".'<form action="?" method="get" id="search">'."\n";
-	$return .= "\t\t\t".'<input id="q" name="q" type="search" size="20" value="'.$requete.'" placeholder="'.$GLOBALS['lang']['placeholder_search'].'" accesskey="f" />'."\n";
+	$return .= "\t\t\t".'<input id="q" name="q" type="text" inputmode="search" size="20" value="'.$requete.'" placeholder="'.$GLOBALS['lang']['placeholder_search'].'" accesskey="f" />'."\n";
 	$return .= "\t\t\t".'<label id="label_q" for="q">'.$GLOBALS['lang']['rechercher'].'</label>'."\n";
 	$return .= "\t\t\t".'<button id="input-rechercher" type="submit">'.$GLOBALS['lang']['rechercher'].'</button>'."\n";
 	if (isset($_GET['mode']))
@@ -232,7 +228,7 @@ function encart_categories($mode) {
 		// create the <UL> with "tags (nb) "
 		foreach($liste as $tag => $nb) {
 			if ($tag != '' and $nb[1] > 2) {
-				$uliste .= "\t".'<li><a href="?tag='.urlencode(trim($tag)).$ampmode.'" rel="tag">'.ucfirst($tag).' ('.$nb[1].')</a><a href="rss.php?tag='.urlencode($tag).$ampmode.'" rel="alternate"></a></li>'."\n";
+				$uliste .= "\t".'<li data-tag="'.trim($tag).'"><a href="?tag='.urlencode(trim($tag)).$ampmode.'" rel="tag">'.ucfirst($tag).'<span> ('.$nb[1].')</span></a><a href="rss.php?tag='.urlencode($tag).$ampmode.'" rel="alternate"></a></li>'."\n";
 			}
 		}
 		$uliste .= '</ul>'."\n";

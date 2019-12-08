@@ -279,7 +279,42 @@ function commAction(action, button) {
 		if (reponse == false) { return; }
 	}
 
-	var notifDiv = document.createElement('div');
+	var notifNode = document.getElementById('message-return');
+
+	/* Feedback notif form scripts (handles the popup state: visible, hiding…) */
+	var backgroundWorkingPopup = function(state) {
+		var notifPopup = document.getElementById('popup-notif');
+		var spinner = document.getElementById('counter');
+
+		// started : popup shows + spinner is running
+		if (state === 'started') {
+			notifPopup.classList.add('visible');
+			spinner.classList.add('rotating');
+		}
+
+		// finished : working is done. Hide popup.
+		if (state === 'finished') {
+			spinner.classList.remove('rotating');
+			notifPopup.classList.remove('visible');
+		}
+
+		// waiting for dissapearing
+		if (state === 'waiting') {
+			spinner.classList.remove('rotating');
+			notifPopup.classList.add('fading');
+			notifPopup.addEventListener('animationend', function(e) {
+				notifPopup.classList.remove('fading');
+				backgroundWorkingPopup('finished');
+			}, {'once': true});
+
+		}
+	}
+
+	if (action == 'delete') {
+		notifNode.textContent = 'Saving';
+		backgroundWorkingPopup('started');
+	}
+	
 	var div_bloc = button.parentNode;
 	while (!div_bloc.classList.contains('commentbloc')) { div_bloc = div_bloc.parentNode; }
 
@@ -298,26 +333,23 @@ function commAction(action, button) {
 			if (action == 'delete') {
 				div_bloc.classList.add('deleteFadeOut');
 				div_bloc.addEventListener('animationend', function(event){event.target.parentNode.removeChild(event.target);}, false);
-				notifDiv.textContent = BTlang.confirmCommentSuppr;
-				notifDiv.classList.add('confirmation');
-				document.getElementById('top').appendChild(notifDiv);
+
+				// adding notif
+				notifNode.textContent = BTlang.confirmCommentSuppr;
+				backgroundWorkingPopup('waiting');
 			}
 			button.textContent = ((button.textContent === BTlang.activer) ? BTlang.desactiver : BTlang.activer );			
 			div_bloc.classList.toggle('privatebloc');			
-			// adding notif
 		} else {
 			// adding notif
-			notifDiv.textContent = this.responseText;
-			notifDiv.classList.add('no_confirmation');
-			document.getElementById('top').appendChild(notifDiv);
+			notifNode.textContent = this.responseText;
+			backgroundWorkingPopup('waiting');
 		}
 		div_bloc.classList.remove('ajaxloading');
 	};
 	xhr.onerror = function(e) {
-		notifDiv.textContent = BTlang.errorCommentSuppr + ' ' + e.target.status;
-		notifDiv.classList.add('no_confirmation');
-		document.getElementById('top').appendChild(notifDiv);
-		div_bloc.classList.remove('ajaxloading');
+		notifNode.textContent = BTlang.errorCommentSuppr + ' ' + e.target.status;
+		backgroundWorkingPopup('waiting');
 	};
 
 	// prepare and send FormData
@@ -1451,25 +1483,6 @@ function RssReader() {
 			});
 			this.openAllButton.classList.remove('unfold');
 		}
-
-
-
-		/*
-		if (!this.openAllButton.classList.contains('unfold')) {
-			posts.forEach(function(post) {
-				post.classList.add('open-post');
-				var content = post.querySelector('.rss-item-content');
-				if (content.childNodes[0] && content.childNodes[0].nodeType == 8) {
-					content.innerHTML = content.childNodes[0].data;
-				}
-			});
-			this.openAllButton.classList.add('unfold');
-		} else {
-			posts.forEach(function(post) {
-				post.classList.remove('open-post');
-			});
-			this.openAllButton.classList.remove('unfold');
-		}*/
 		return false;
 	}
 
@@ -2775,6 +2788,8 @@ function EventAgenda() {
 		// complete the actual <table>
 		for (var cell = 1; cell < lastDay.getDate() + nbDaysPrevMonth + nbDaysNextMonth ; cell++) {
 			let dateOfCell = new Date(date.getFullYear(), date.getMonth(), cell-(nbDaysPrevMonth-1) );
+			let dayStart = new Date(dateOfCell.getFullYear(), dateOfCell.getMonth(), dateOfCell.getDate(), 0, 0, 0);
+			let dayEnd = new Date(dateOfCell.getFullYear(), dateOfCell.getMonth(), dateOfCell.getDate(), 23, 59, 59);
 
 			// starts new line every %7 days
 			if (cell % 7 == 1) {
@@ -2808,23 +2823,19 @@ function EventAgenda() {
 				_this.addNewEvent();
 			});
 
+			// append events to calendar
+			for (let i = 0, len = this.eventsList.length ; i < len ; i++) {
+				let item = this.eventsList[i];
+				var eventStart = new Date(item.date_start);
+				var eventEnd = new Date(item.date_end);
+				// is event flaged as deleted?
+				if (item.action == "deleteEvent") continue;
+				// is event in current cell
+				if (!( eventStart <= dayEnd && eventEnd >= dayStart )) continue;
+				td.classList.add('hasEvent');
+			}
+
 			tr.appendChild(td);
-		}
-
-		/*******************
-		** append the events to the calendar
-		*/
-		for (var i = 0, len = this.eventsList.length ; i < len ; i++) {
-			var eventDateTime = new Date(this.eventsList[i].date_start);
-
-			// is event in different month ? in different year ?
-			if ( (eventDateTime.getMonth() !== date.getMonth()) || (eventDateTime.getFullYear() !== date.getFullYear()) ) continue;
-			// is event flaged as deleted?
-			if (this.eventsList[i].action == "deleteEvent") continue;
-
-			var selectCell = document.getElementById('m' + ("00" + (eventDateTime.getMonth() + 1)).slice(-2) + ("00" + eventDateTime.getDate()).slice(-2));
-
-			selectCell.classList.add('hasEvent');
 		}
 
 	}
@@ -2895,6 +2906,8 @@ function EventAgenda() {
 		// complete the actual <table>
 		for (var cell = 1; cell < lastDay.getDate() + nbDaysPrevMonth + nbDaysNextMonth ; cell++) {
 			let dateOfCell = new Date(date.getFullYear(), date.getMonth(), cell-(nbDaysPrevMonth-1) );
+			let dayStart = new Date(dateOfCell.getFullYear(), dateOfCell.getMonth(), dateOfCell.getDate(), 0, 0, 0);
+			let dayEnd = new Date(dateOfCell.getFullYear(), dateOfCell.getMonth(), dateOfCell.getDate(), 23, 59, 59);
 
 			// starts new line every %7 days
 			if (cell % 7 == 1) {
@@ -2942,47 +2955,47 @@ function EventAgenda() {
 			td.addEventListener('dblclick', function(e) {
 				_this.addNewEvent();
 			});
-		}
 
-		/*******************
-		** append the events to the calendar
-		*/
-		for (let i = 0, len = this.eventsList.length ; i < len ; i++) {
-			let item = this.eventsList[i];
-			var eventDateTime = new Date(item.date_start);
 
-			// is event flaged as deleted?
-			if (item.action == "deleteEvent") continue;
-			// is event in current month?
-			if (!( eventDateTime >= firstDay && eventDateTime <= lastDay ) ) continue;
+			// append events to cell
+			for (let i = 0, len = this.eventsList.length ; i < len ; i++) {
+				let item = this.eventsList[i];
+				var eventStart = new Date(item.date_start);
+				var eventEnd = new Date(item.date_end);
 
-			var selectCell = document.getElementById('i' + ("00" + (eventDateTime.getMonth() + 1)).slice(-2) + ("00" + eventDateTime.getDate()).slice(-2));
+				// is event flaged as deleted?
+				if (item.action == "deleteEvent") continue;
 
-			if (!selectCell.dataset.nbEvents || selectCell.dataset.nbEvents < 5) {
-				var span = document.createElement('SPAN');
-				span.style.backgroundColor = item.color;
-				var time = document.createElement('TIME');
-				time.setAttribute('datetime', item.date_start);
-				time.textContent = (eventDateTime).toLocaleTimeString('fr-FR', {hour: "2-digit", minute: "2-digit"});
-				span.appendChild(time);
-				span.appendChild(document.createTextNode(item.title));
+				// is event in currend cell
+				if (!( eventStart <= dayEnd && eventEnd >= dayStart )) continue;
 
-				span.classList.add('eventLabel');
-				span.dataset.id = item.id;
-				if (!isMobile()) {
-					span.addEventListener('click', function() {
-							_this.showEventPopup(item);
-					} );
+
+				if (!td.dataset.nbEvents || td.dataset.nbEvents < 5) {
+					var span = document.createElement('SPAN');
+					span.style.backgroundColor = item.color;
+					var time = document.createElement('TIME');
+					time.setAttribute('datetime', item.date_start);
+					time.textContent = (eventStart).toLocaleTimeString('fr-FR', {hour: "2-digit", minute: "2-digit"});
+					span.appendChild(time);
+					span.appendChild(document.createTextNode(item.title));
+
+					span.classList.add('eventLabel');
+					span.dataset.id = item.id;
+					if (!isMobile()) {
+						span.addEventListener('click', function() {
+								_this.showEventPopup(item);
+						} );
+					}
+					td.appendChild(span);
 				}
-				selectCell.appendChild(span);
-			}
-			
-			if (selectCell.classList.contains('hasEvent')) {
-				selectCell.dataset.nbEvents++;
-			}
-			else {
-				selectCell.dataset.nbEvents = 1;
-				selectCell.classList.add('hasEvent');
+				
+				if (td.classList.contains('hasEvent')) {
+					td.dataset.nbEvents++;
+				}
+				else {
+					td.dataset.nbEvents = 1;
+					td.classList.add('hasEvent');
+				}
 			}
 		}
 
@@ -3045,14 +3058,27 @@ function EventAgenda() {
 		// append the events to the calendar
 		for (let i = 0, len = this.eventsList.length ; i < len ; i++) {
 			let item = this.eventsList[i];
-			var eventDateTime = new Date(item.date_start);
-
 			// ignore if event flaged as deleted
 			if (item.action == "deleteEvent") continue;
-			// ignore if event is not today
-			if ( eventDateTime < firstHour || eventDateTime > lastHour ) continue;
 
-			var selectCell = document.getElementById( 'h' + ("00" + (eventDateTime.getHours())).slice(-2) + "00" ).querySelector('td:nth-of-type(2)');
+			var eventStart = new Date(item.date_start);
+			var eventEnd = new Date(item.date_end);
+			// ignore if event is not today
+			if (!( eventStart <= lastHour && eventEnd >= firstHour )) continue;
+
+			var eventDuration = (eventEnd - eventStart) / 1000 / 60 / 60;
+
+			var cellHeight = document.getElementById('h0000').getBoundingClientRect().bottom - document.getElementById('h0000').getBoundingClientRect().top;
+
+			// select cell to append event
+			// event started on previous day
+			if (eventStart.getDate() !== date.getDate()) {
+				var selectCell = document.getElementById('h0000').querySelector('td:nth-of-type(2)');
+				var topPadding = 0;
+			} else {
+				var selectCell = document.getElementById( 'h' + ("00" + (eventStart.getHours())).slice(-2) + "00" ).querySelector('td:nth-of-type(2)');
+				var topPadding = cellHeight * eventStart.getMinutes() / 60;
+			}
 			var span = document.createElement('SPAN');
 			span.classList.add('eventLabel');
 			span.style.backgroundColor = item.color;
@@ -3061,22 +3087,37 @@ function EventAgenda() {
 			span.addEventListener('click', function() {
 				_this.showEventPopup(item);
 			});
-			// spans the SPAN to give it a height proportionnal to the duration
-			var duration = (new Date(item.date_end) - eventDateTime) / 1000 / 60 / 60 ; // in hours
-			var parentHeight = selectCell.parentNode.getBoundingClientRect().bottom - selectCell.parentNode.getBoundingClientRect().top;
-			span.style.height = (parentHeight * duration  - (2*3)) + 'px';
-			span.style.top = parentHeight * eventDateTime.getMinutes() / 60 + 'px';
-
-			if (duration < 23) {
-				span.style.marginLeft = duration * 2 + '%';
+			// spans the SPAN to give it a height proportionnal to the duration on that day
+			var beginCellDate = new Date(selectCell.previousSibling.dataset.date);
+			if (eventEnd.getDate() !== date.getDate()) {
+				var endCell = document.getElementById('h2300').querySelector('td:nth-of-type(2)');
+				var endPadding = 0;
 			} else {
-				span.style.marginLeft = "80%";
+				var endCell = document.getElementById( 'h' + ("00" + (eventEnd.getHours())).slice(-2) + "00" ).querySelector('td:nth-of-type(2)');
+				var endPadding = cellHeight * (60 - eventEnd.getMinutes()) / 60;
+			}
+
+			span.style.top = topPadding + 'px'
+			span.style.height = endCell.parentNode.getBoundingClientRect().bottom - selectCell.parentNode.getBoundingClientRect().top - topPadding - endPadding - (2*3) + 'px';
+
+
+			//if (selectCell == document.getElementById('h0000').querySelector('td:nth-of-type(2)') && endCell == document.getElementById('h2300').querySelector('td:nth-of-type(2)')) {
+			if (eventDuration > 23) {
+				span.style.right = "0";
+				span.style.left = "auto";
 				span.style.marginRight = "0%";
-				span.style.width = 'auto';
+				span.style.width = '10%';
+			} else {
+				span.style.marginLeft = eventDuration * 2 + '%';
 			}
 
 			selectCell.appendChild(span);
 		}
+
+		// smooth scroll to 08:00 am
+		calBody.scrollTop = 0;
+		calBody.scrollBy({top: 7.5*cellHeight, left: 0, behavior: 'smooth'});
+
 
 	}
 
@@ -3110,7 +3151,7 @@ function EventAgenda() {
 			div.querySelector('.eventDate').title = itemDate.toLocaleDateString('fr', {weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "numeric"});
 			div.querySelector('.event-dd').textContent = itemDate.getDate();
 			div.querySelector('.event-mmdd').textContent = itemDate.toLocaleDateString('fr', {month: "short"}) + ", " + itemDate.toLocaleDateString('fr', {weekday: "short"});
-			div.querySelector('.event-hhii').textContent = itemDate.toLocaleTimeString('fr', {hour: 'numeric', minute: 'numeric'}) + ' - ' + itemDateEnd.toLocaleTimeString('fr', {hour: 'numeric', minute: 'numeric'});
+			div.querySelector('.event-hhii').textContent = itemDate.toLocaleTimeString('fr', {hour: 'numeric', minute: 'numeric'});// + ' - ' + itemDateEnd.toLocaleTimeString('fr', {hour: 'numeric', minute: 'numeric'});
 			div.querySelector('.eventSummary > .color').style.backgroundColor = item.color;
 			div.querySelector('.eventSummary > .title').textContent = item.title;
 			div.querySelector('.eventSummary > .loc').textContent = item.loc;
@@ -3206,8 +3247,19 @@ function EventAgenda() {
 		// fils data in popup
 		popup.querySelector('.event-title > .event-color').style.backgroundColor = item.color;
 		popup.querySelector('.event-title > .event-name').textContent = item.title;
-		popup.querySelector('.event-content > ul > li.event-time > span:nth-of-type(1)').textContent = (new Date(item.date_start)).toLocaleDateString('fr-FR', {weekday: "long", year: "numeric", month: "long", day: "numeric"});
-		popup.querySelector('.event-content > ul > li.event-time > span:nth-of-type(2)').textContent = (new Date(item.date_start)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}) + '-' + (new Date(item.date_end)).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+
+		var dateStart = new Date(item.date_start);
+		var dateEnd = new Date(item.date_end);
+
+		if (dateStart.getDate() === dateEnd.getDate()) {
+			popup.querySelector('.event-content > ul > li.event-time > span:nth-of-type(1)').textContent = dateStart.toLocaleDateString('fr-FR', {weekday: "long", year: "numeric", month: "long", day: "numeric"});
+			popup.querySelector('.event-content > ul > li.event-time > span:nth-of-type(2)').textContent = dateStart.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}) + '-' + dateEnd.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+			popup.querySelector('.event-content > ul > li.event-time > span:nth-of-type(2)').classList.add('time');
+		} else {
+			popup.querySelector('.event-content > ul > li.event-time > span:nth-of-type(1)').textContent = dateStart.toLocaleDateString('fr-FR', {weekday: "short", year: "numeric", month: "long", day: "numeric"}) + ' - ' + dateStart.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+			popup.querySelector('.event-content > ul > li.event-time > span:nth-of-type(2)').textContent = dateEnd.toLocaleDateString('fr-FR', {weekday: "short", year: "numeric", month: "long", day: "numeric"}) + ' - ' + dateEnd.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+		}
+
 		popup.querySelector('.event-content > ul > li.event-loc').textContent = item.loc;
 
 		// fill persons
@@ -3263,9 +3315,10 @@ function EventAgenda() {
 		// fill popup data
 		popup.querySelector('.event-title > .event-color').style.backgroundColor = item.color;
 		popup.querySelector('.event-title > input').value = item.title;
+		popup.querySelector('.event-content > .event-content-date #date-start').value = item.date_start.substr(0, 10);
 		popup.querySelector('.event-content > .event-content-date #time-start').value = item.date_start.substr(11, 5);
+		popup.querySelector('.event-content > .event-content-date #date-end').value = item.date_end.substr(0, 10);
 		popup.querySelector('.event-content > .event-content-date #time-end').value = item.date_end.substr(11, 5);
-		popup.querySelector('.event-content > .event-content-date #date').value = item.date_start.substr(0, 10);
 		popup.querySelector('.event-content input[name="event-loc"]').value = item.loc;
 		popup.querySelector('.event-content textarea[name="event-descr"]').value = item.content;
 
@@ -3306,12 +3359,15 @@ function EventAgenda() {
 			document.body.classList.remove('noscroll');
 		});
 		popup.querySelector('.event-content > .event-content-date #allDay').addEventListener('change', function() {
-			var dateTimeInput = popupWrapper.querySelector('#popup > .event-content .date-time-input');
 			if (this.checked) {
-				dateTimeInput.classList.add('date-only');
+				popupWrapper.querySelectorAll('#popup > .event-content .date-time-input').forEach(function(p) {
+					p.classList.add('date-only');
+				});
 			}
 			else {
-				dateTimeInput.classList.remove('date-only');
+				popupWrapper.querySelectorAll('#popup > .event-content .date-time-input').forEach(function(p) {
+					p.classList.remove('date-only');
+				});
 			}
 		});
 
@@ -3342,11 +3398,11 @@ function EventAgenda() {
 		item.title = popup.querySelector('.event-title input').value || BTlang.emptyTitle;
 
 		if (popup.querySelector('#allDay').checked ) {
-			var newDateStart = new Date(document.getElementById('date').value + " " + "00:00:00");
-			var newDateEnd = new Date(document.getElementById('date').value + " " + "23:59:59");
+			var newDateStart = new Date(document.getElementById('date-start').value + " " + "00:00:00");
+			var newDateEnd = new Date(document.getElementById('date-end').value + " " + "23:59:59");
 		} else {
-			var newDateStart = new Date(document.getElementById('date').value + " " + document.getElementById('time-start').value);
-			var newDateEnd = new Date(document.getElementById('date').value + " " + document.getElementById('time-end').value);
+			var newDateStart = new Date(document.getElementById('date-start').value + " " + document.getElementById('time-start').value);
+			var newDateEnd = new Date(document.getElementById('date-end').value + " " + document.getElementById('time-end').value);
 		}
 		item.date_start = newDateStart.toLocalISOString();
 		item.date_end = newDateEnd.toLocalISOString();
@@ -3559,7 +3615,6 @@ function ContactsList() {
 
 	// buttons events
 	document.getElementById('fab').addEventListener('click', function(e) { _this.addNewContact(); });
-	document.getElementById('enregistrer').addEventListener('click', function() { _this.saveContactsXHR(); } );
 
 	// Global Page listeners
 	// beforeunload : warns the user if some data is not saved when page closes
@@ -3579,6 +3634,35 @@ function ContactsList() {
 		_this.closePopup();
 	});
 
+
+	/* Feedback notif form scripts (handles the popup state: visible, hiding…) */
+	this.backgroundWorkingPopup = function(state) {
+		var notifPopup = document.getElementById('popup-notif');
+		var spinner = document.getElementById('counter');
+
+		// started : popup shows + spinner is running
+		if (state === 'started') {
+			notifPopup.classList.add('visible');
+			spinner.classList.add('rotating');
+		}
+
+		// finished : working is done. Hide popup.
+		if (state === 'finished') {
+			spinner.classList.remove('rotating');
+			notifPopup.classList.remove('visible');
+		}
+
+		// waiting for dissapearing
+		if (state === 'waiting') {
+			spinner.classList.remove('rotating');
+			notifPopup.classList.add('fading');
+			notifPopup.addEventListener('animationend', function(e) {
+				notifPopup.classList.remove('fading');
+				_this.backgroundWorkingPopup('finished');
+			}, {'once': true});
+
+		}
+	}
 
 	this.rebuiltContactsTable = function(ContactsData) {
 		// empties the node
@@ -3942,6 +4026,7 @@ function ContactsList() {
 
 		// raises global "updated" flag.
 		this.raiseUpdateFlag(true);
+		this.saveContactsXHR();
 	}
 
 	/**************************************
@@ -4011,6 +4096,7 @@ function ContactsList() {
 
 		// raises global "updated" flag.
 		this.raiseUpdateFlag(true);
+		this.saveContactsXHR();
 	}
 
 	/**************************************
@@ -4019,10 +4105,10 @@ function ContactsList() {
 	this.raiseUpdateFlag = function(flagRaised) {
 		if (flagRaised) {
 			this.hasUpdated = true;
-			document.getElementById('enregistrer').disabled = false;
+			//document.getElementById('enregistrer').disabled = false;
 		} else {
 			this.hasUpdated = false;
-			document.getElementById('enregistrer').disabled = true;
+			//document.getElementById('enregistrer').disabled = true;
 		}
 	}
 
@@ -4081,7 +4167,8 @@ function ContactsList() {
 	 * AJAX call to save events to DB
 	*/
 	this.saveContactsXHR = function() {
-		loading_animation('on');
+		this.backgroundWorkingPopup('started');
+
 		// only keep modified contacts
 		var toSaveContacts = Array();
 		for (var i=0, len=this.contactList.length; i<len ; i++) {
@@ -4108,19 +4195,19 @@ function ContactsList() {
 				for (var i=0, len=toSaveContacts.length; i<len ; i++) {
 					toSaveContacts[i].action = "";
 				}
-				loading_animation('off');
+				_this.backgroundWorkingPopup('waiting');
 				_this.raiseUpdateFlag(false);
 				return true;
 			} else {
 				_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
-				loading_animation('off');
+				_this.backgroundWorkingPopup('waiting');
 				return false;
 			}
 		};
 
 		// onerror
 		xhr.onerror = function(e) {
-			loading_animation('off');
+			_this.backgroundWorkingPopup('waiting');
 			// adding notif
 			_this.notifNode.textContent = 'Error ' + e.target.status + ' ' +this.responseText;
 		};

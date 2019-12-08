@@ -83,7 +83,7 @@ if ( !empty($_GET['filtre']) ) {
 
 // DEBUT PAGE
 afficher_html_head($GLOBALS['lang']['mesarticles'], "articles");  // <head></head>
-afficher_topnav($GLOBALS['lang']['mesarticles'], ''); #header
+afficher_topnav($GLOBALS['lang']['mesarticles']); #header
 
 echo '<div id="axe">'."\n";
 echo '<div id="subnav">'."\n";
