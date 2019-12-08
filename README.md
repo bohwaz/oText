@@ -8,7 +8,7 @@ With oText you can hold a blog, share links, upload and share photos or files, f
 
 oText is provided by Timo van Neerden (a.k.a. _le hollandais volant_), based upon the work of [Frederic Nassar](https://twitter.com/frednassar) and [Timo Van Neerden](https://lehollandaisvolant.net/).
 
-![alt tag](screenshot.png?raw=true)
+![alt tag](screenshot.png?raw=true&v2)
 
 ---
 
