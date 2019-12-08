@@ -29,6 +29,7 @@ oText  is provided by Timo van Neerden (a.k.a. _le hollandais volant_), based up
     * With ICS feed-link
  * Contacts manager
  * Import/Export (ICS (agenda), JSON (blog data), OPML (RSS), ZIP (all), HTML (links), VCard (contacts), XML (notes))
+ * (new!) **Dark-Theme** : uses the browser setting (in Firefox: go to `about:config` and set/create `ui.systemUsesDarkTheme` set to `1`).
 
 
 * PWA capable _(soon, for RSS, Notes, Agenda, Contacts)_
